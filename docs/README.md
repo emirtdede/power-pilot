@@ -43,6 +43,7 @@ Bu klasör Power Pilot'un **güncel** mimarisini, güvenlik sözleşmelerini ve 
 
 - [`reports/soak.md`](reports/soak.md) / [`reports/soak.json`](reports/soak.json) — konsol yük/soak sonucu
 - [`reports/licenses.json`](reports/licenses.json) — bağımlılık lisans özeti
+- [`reports/key-rotation-log.md`](reports/key-rotation-log.md) — anahtar rotasyon denetim kaydı
 
 ## Operasyon (`runbooks/`)
 

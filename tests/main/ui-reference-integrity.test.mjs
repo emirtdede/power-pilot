@@ -299,3 +299,42 @@ describe('E. Dokümanlardaki sayısal iddialar koddan türetilir', () => {
         expect(problems).toEqual([]);
     });
 });
+
+describe('F. Dokümanlarda anılan depo yolları gerçekten var', () => {
+    // Denetim kusuru: key-rotation runbook'u operatöre denetim kaydını
+    // `docs/reports/key-rotation-log.md` dosyasına yazmasını söylüyordu; dosya
+    // hiç yoktu. Runbook var olmayan bir prosedürü tarif ediyordu.
+    function walk(dir, out = [], test = (n) => n.endsWith('.md')) {
+        if (!fs.existsSync(dir)) return out;
+        for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+            if (['node_modules', '.git', 'dist', 'release', 'out', 'coverage'].includes(e.name)) continue;
+            const p = path.join(dir, e.name);
+            if (e.isDirectory()) walk(p, out, test);
+            else if (test(e.name)) out.push(p);
+        }
+        return out;
+    }
+
+    it('backtick içindeki depo-göreli yollar çözümlenir', () => {
+        const files = [...walk(path.join(root, 'docs')), path.join(root, 'README.md')];
+        const missing = [];
+        // Yalnızca depo köküne göre verilen yollar denetlenir. Kullanıcı verisi
+        // (powerpilot_data.json), üretilen sertifikalar ve ortam dosyaları hariç.
+        const REPO_PREFIX = /^(docs|src|tests|scripts|build|assets)\//;
+        const RUNTIME = /(powerpilot_data\.json|secrets\.v1\.json|\.pem$|\.key$|before-rollback\.json|key-rotation-log\.md$)/;
+
+        for (const file of files) {
+            const rel = file.replace(root, '').replace(/\\/g, '/');
+            fs.readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
+                for (const m of line.matchAll(/`([A-Za-z0-9_./-]+\.(?:md|js|mjs|cjs|json|yaml|yml|ps1))`/g)) {
+                    const target = m[1];
+                    if (!REPO_PREFIX.test(target)) continue;
+                    if (fs.existsSync(path.join(root, target))) continue;
+                    if (RUNTIME.test(target)) continue;
+                    missing.push(`${rel}:${i + 1}: ${target}`);
+                }
+            });
+        }
+        expect(missing).toEqual([]);
+    });
+});
