@@ -7,6 +7,7 @@ const fs = require('fs');
 // Import modular services
 const { PowerService } = require('./src/main/services/PowerService');
 const AppIconService = require('./src/main/services/AppIconService');
+const { OneDriveSyncService } = require('./src/main/services/OneDriveSyncService');
 const { DiagnosticsService } = require('./src/main/services/DiagnosticsService');
 const { searchDocs } = require('./src/main/services/DocsKnowledgeBase');
 const { summarize: summarizeHealth } = require('./src/main/services/HealthMetrics');
@@ -24,7 +25,7 @@ const { setCancelPinAction, clearCancelPinAction } = require('./src/main/ipc/can
 const Pin = require('./src/main/security/Pin');
 const { SecretStore, SECRET_SETTING_FIELDS } = require('./src/main/security/SecretStore');
 const { runBackup } = require('./src/main/storage/DbWorker');
-const { translate, actionLabel, taskName, loadLocale, normalizeLanguage } = require('./src/main/i18n');
+const { translate, actionLabel, taskName, loadLocale, normalizeLanguage, normalizeCatalogLanguage, ALL_LANGUAGE_CODES } = require('./src/main/i18n');
 const { registerAppScheme, installAppProtocol, isAllowedAppUrl } = require('./src/main/security/AppProtocol');
 const Acl = require('./src/main/security/Acl');
 const Permissions = require('./src/main/security/Permissions');
@@ -46,6 +47,7 @@ if (process.platform === 'win32' && typeof app.setAppUserModelId === 'function')
 }
 
 let diagnosticsService = null;
+let oneDriveSyncService = null;
 
 // Yayın dayanıklılığı: ana süreçteki yakalanmamış hata artık sessizce
 // uygulamayı kapatmaz; redakte edilmiş log satırı bırakır ve süreç ayakta kalır.
@@ -294,7 +296,7 @@ const TemplateTransfer = require('./src/main/services/TemplateTransfer');
 const DataWipe = require('./src/main/services/DataWipe');
 
 /**
- * "Tüm verileri sil" işaret dosyası — userData'nın DIŞINDA (geçici dizin).
+ * "Tüm verileri sil" işaret dosyası - userData'nın DIŞINDA (geçici dizin).
  * Kilitli kalan girdiler bir sonraki açılışta, hiçbir veri gösterilmeden önce
  * silinir. Aynı makinede farklı profiller karışmasın diye userData yolu
  * işaretin içinde saklanır ve yalnızca eşleşirse uygulanır.
@@ -645,6 +647,26 @@ async function initServices() {
         log.warn('[Init] bekleyen veri silme uygulanamadı:', err && err.message);
     }
     storageService = new StorageService();
+    // NSIS kurulumunda seçilen başlangıç dilini ilk açılışta otomatik uygula.
+    try {
+        if (!storageService.getSettings().language) {
+            const langFile = path.join(app.getPath('userData'), 'installer-language.json');
+            if (fs.existsSync(langFile)) {
+                const parsed = JSON.parse(fs.readFileSync(langFile, 'utf8'));
+                const rawLang = parsed && typeof parsed.language === 'string' ? parsed.language.trim() : '';
+                if (rawLang) {
+                    const resolved = normalizeCatalogLanguage(rawLang);
+                    if (ALL_LANGUAGE_CODES.includes(resolved)) {
+                        storageService.updateSettings({ language: resolved });
+                        log.info(`[Init] Kurulum dili uygulandı: ${resolved}`);
+                    }
+                }
+                try { fs.unlinkSync(langFile); } catch (_) { /* tek seferlik tüketim */ }
+            }
+        }
+    } catch (err) {
+        log.warn('[Init] Kurulum dili okunamadı:', err && err.message);
+    }
     await initSecrets();
     // WP-11.T7: kurcalanmış audit / bakım modu → yıkıcı eylem yok.
     PowerService.setExecutionGuard(() => {
@@ -667,7 +689,7 @@ async function initServices() {
     });
     smartFinishEngine = new SmartFinishEngine(metricCollector);
     webhookService = new WebhookService(storageService);
-    // WBS-0.1: Enjeksiyon sırası önemli — MetricCollector -> SmartFinishEngine -> TaskManager.
+    // WBS-0.1: Enjeksiyon sırası önemli - MetricCollector -> SmartFinishEngine -> TaskManager.
     // TaskManager condition dalı için ikisine de ihtiyaç duyar.
     taskManager = new TaskManager(storageService, warningManager, safetyPolicyEngine, historyService, webhookService, smartFinishEngine, metricCollector, null, timers);
     // WP-08.T3: renderer yalnızca gerçek terminal sonuçta başarı/hata toast'ı gösterir.
@@ -678,7 +700,7 @@ async function initServices() {
         const skipped = payload && (payload.code === 'blocked_by_policy' || payload.code === 'condition_invalid');
         if (!quiet && ((skipped && settings.desktopNotifySkip === true) || (!skipped && settings.desktopNotifyStart === true))) {
             const body = payload && payload.name
-                ? `${payload.name}${payload.message ? ` — ${payload.message}` : ''}`
+                ? `${payload.name}${payload.message ? ` - ${payload.message}` : ''}`
                 : t('trayTooltip');
             notifyDesktop('Power Pilot', body);
         }
@@ -727,7 +749,7 @@ async function initServices() {
             })
             .catch((err) => log.warn('[SchedulerBridge] kurtarma temizliği atlandı:', err && err.message));
     }
-    // FAZ B: kurumsal pilot — LocalApiService deps'i için ÖNCE kurulur.
+    // FAZ B: kurumsal pilot - LocalApiService deps'i için ÖNCE kurulur.
     const appVersion = getAppVersion();
     // FAZ D: UPS izleyici (ayar kapalıysa sorgulanmaz).
     upsMonitor = null;
@@ -751,7 +773,7 @@ async function initServices() {
     templateService = new TemplateService(storageService);
     energyService = new EnergyEstimateService(storageService);
     deviceService = new DeviceProfileService(storageService);
-    // WBS-7.1: AI arka ucu iskeleti — model yoksa AI_NOT_READY kipinde durur,
+    // WBS-7.1: AI arka ucu iskeleti - model yoksa AI_NOT_READY kipinde durur,
     // uygulama AI'sız tam işlevsel açılır (IPC + görünüm WBS-7.4'te).
     aiBackend = new AiBackend({ modelDir: path.join(app.getPath('userData'), 'models') });
     log.info(`[AiBackend] durum: ${JSON.stringify(aiBackend.getStatus())}`);
@@ -807,6 +829,21 @@ async function initServices() {
         log.warn('[UPS] gözetim başlatılamadı:', err && err.message);
     }
     startBackupSchedule();
+    // Sunucusuz yerel Microsoft OneDrive bulut yedekleme ve 300ms debounce esitleme servisi.
+    oneDriveSyncService = new OneDriveSyncService({
+        storageService,
+        userDataDir: app.getPath('userData'),
+        appVersion: getAppVersion(),
+        logger: log,
+        debounceMs: 300
+    });
+    storageService.setChangeListener((reason) => {
+        try {
+            if (oneDriveSyncService) oneDriveSyncService.scheduleAutoSync(reason);
+        } catch (err) {
+            log.warn('[OneDriveSync] Otomatik esitleme planlanamadi:', err && err.message);
+        }
+    });
     // WP-11.T10: süresi geçen nonce'lar periyodik temizlenir.
     maintenanceTimer = timers.setInterval(() => {
         try { storageService.purgeExpiredNonces(); } catch (_) { /* yut */ }
@@ -819,7 +856,7 @@ async function initServices() {
     }
 
     // P0/BLOCKER-001: `powercfg /requests` yükseltilmiş yetki ister; paket
-    // `asInvoker` çalışır. Yetenek yoksa kapı atlanır — bu GÖRÜNÜR olmalı:
+    // `asInvoker` çalışır. Yetenek yoksa kapı atlanır - bu GÖRÜNÜR olmalı:
     // açılışta tek denetim kaydı + get-security-status + Ayarlar uyarısı.
     // Pencere açılışını BLOKLAMAZ: sonda en fazla 3 sn sürebilir ve kapı
     // zaten ilk görevde lazily ölçer; bu yüzden sonraki tura bırakılır.
@@ -1029,30 +1066,66 @@ function getCurrentAppIconId() {
     return AppIconService.normalizeAppIcon(raw);
 }
 
+function getCurrentCustomIconColor() {
+    const settings = storageService && typeof storageService.getSettings === 'function'
+        ? storageService.getSettings()
+        : null;
+    return (settings && (settings.customIconColor || settings.customThemeColor)) || '#3b82f6';
+}
+
+function getCurrentUiZoom() {
+    const raw = storageService && typeof storageService.getSettings === 'function'
+        ? storageService.getSettings().uiZoom
+        : 100;
+    const num = Number(raw);
+    if (!Number.isFinite(num)) return 100;
+    return Math.min(150, Math.max(75, Math.round(num)));
+}
+
+function applyRuntimeUiZoom(zoomPercent) {
+    const clamped = Math.min(150, Math.max(75, Math.round(Number(zoomPercent) || 100)));
+    if (mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents) {
+        try {
+            mainWindow.webContents.setZoomFactor(clamped / 100);
+        } catch (err) {
+            log.warn('[Zoom] yakınlaştırma uygulanamadı:', err && err.message);
+        }
+    }
+    return clamped;
+}
+
 function getCurrentAppIconPath() {
     return AppIconService.resolveIconIcoPath(getCurrentAppIconId(), {
         rootDir: __dirname,
         resourcesPath: process.resourcesPath,
+        userDataDir: app.getPath('userData'),
+        customIconColor: getCurrentCustomIconColor(),
         isPackaged: app.isPackaged
     });
 }
 
 function getCurrentAppIconImage(targetSize = null) {
     const id = getCurrentAppIconId();
+    const userDataDir = app.getPath('userData');
+    const customIconColor = getCurrentCustomIconColor();
     const icoPath = AppIconService.resolveIconIcoPath(id, {
         rootDir: __dirname,
         resourcesPath: process.resourcesPath,
+        userDataDir,
+        customIconColor,
         isPackaged: app.isPackaged
     });
     const pngPath = AppIconService.resolveIconPngPath(id, {
         rootDir: __dirname,
         resourcesPath: process.resourcesPath,
+        userDataDir,
+        customIconColor,
         isPackaged: app.isPackaged
     });
     return AppIconService.buildRuntimeIconPayload(id, { icoPath, pngPath, nativeImage, targetSize });
 }
 
-function applyRuntimeAppIcon(iconId, { updateShortcuts = true } = {}) {
+function applyRuntimeAppIcon(iconId, { updateShortcuts = true, customIconColor = null } = {}) {
     const { desktopDirs, startMenuDirs, taskbarDirs } = getShortcutDirs();
     return AppIconService.applyAppIcon(iconId, {
         mainWindow,
@@ -1063,6 +1136,7 @@ function applyRuntimeAppIcon(iconId, { updateShortcuts = true } = {}) {
         rootDir: __dirname,
         resourcesPath: process.resourcesPath,
         userDataDir: app.getPath('userData'),
+        customIconColor: customIconColor || getCurrentCustomIconColor(),
         desktopDirs,
         startMenuDirs,
         taskbarDirs,
@@ -1108,9 +1182,14 @@ function createWindow() {
     // böylece beyaz parlama olmaz ve kullanıcı doğrudan arayüzü görür.
     // WP-2: Pencere HWND hazır olduğunda seçili ikon yeniden uygulanır (Windows
     // görev çubuğu tutarlılığı). WP-9: startMinimized etkinse tepside açılır.
+    mainWindow.webContents.on('did-finish-load', () => {
+        applyRuntimeUiZoom(getCurrentUiZoom());
+    });
+
     mainWindow.once('ready-to-show', () => {
         if (mainWindow && !mainWindow.isDestroyed()) {
             applyRuntimeAppIcon(getCurrentAppIconId(), { updateShortcuts: false });
+            applyRuntimeUiZoom(getCurrentUiZoom());
             const startMin = storageService && typeof storageService.getSettings === 'function'
                 && storageService.getSettings().startMinimized === true;
             if (!startMin) {
@@ -1420,7 +1499,7 @@ function createTray() {
             {
                 label: t('trayCancelNearest'), click: () => {
                     if (!nextTask) return;
-                    // WBS-11.2: PIN kuruluysa tray'den sessiz iptal yok — pencere açılır.
+                    // WBS-11.2: PIN kuruluysa tray'den sessiz iptal yok - pencere açılır.
                     if (settings.cancelPinHash) {
                         if (mainWindow) {
                             mainWindow.show();
@@ -1490,7 +1569,7 @@ if (!gotTheLock) {
     });
 
     app.whenReady().then(async () => {
-        // WP-10.T1: file:// yerine app:// — protokol handler'ı pencere açılmadan hazır.
+        // WP-10.T1: file:// yerine app:// - protokol handler'ı pencere açılmadan hazır.
         installAppProtocol(path.join(__dirname, 'src'));
         // WP-10.T2/T6: yalnızca bildirim ve (sesli komut için) mikrofon;
         // kamera/konum/genel medya reddedilir. Mikrofon `getUserMedia` ile
@@ -1589,7 +1668,7 @@ if (!gotTheLock) {
             if (BrowserWindow.getAllWindows().length === 0) createWindow();
         });
 
-        // WBS-E3: Arka-plan kalibrasyonu — metrikler otursun diye 30sn gecikmeli,
+        // WBS-E3: Arka-plan kalibrasyonu - metrikler otursun diye 30sn gecikmeli,
         // tek seferlik; ilk başarıda balon bildirim (sonrakiler sessiz).
         timers.setTimeout(() => {
             try {
@@ -1615,7 +1694,7 @@ app.on('window-all-closed', function () {
     if (process.platform !== 'darwin') app.quit();
 });
 
-// WP-12: Temiz kapanış — interval/sunucu sızıntısı bırakma. Görev durumu
+// WP-12: Temiz kapanış - interval/sunucu sızıntısı bırakma. Görev durumu
 // değiştirilmez; yarıda kalan işler açılışta recoverTasksOnStartup ile işaretlenir.
 app.on('before-quit', (event) => {
     // L-10: ilk kapanışta API/headless stop await edilir (timeout'lu).
@@ -1646,6 +1725,11 @@ app.on('before-quit', (event) => {
     } catch (_) { /* yut */ }
 
     const finish = () => {
+        try {
+            if (oneDriveSyncService && typeof oneDriveSyncService.flush === 'function') {
+                oneDriveSyncService.flush();
+            }
+        } catch (_) { /* kapanis flush best-effort; quit'i engellemez */ }
         try {
             if (storageService && storageService.auditCheckpoint) {
                 storageService.auditCheckpoint.write(storageService.getAuditLog(), { eventLog: false });
@@ -1696,7 +1780,7 @@ function cancelQuickTimer() {
 }
 
 ipcHandle('schedule-action', async (event, args) => {
-    // WBS-2.1: Şema doğrulaması — reddet + gerekçe, asla çökme yok.
+    // WBS-2.1: Şema doğrulaması - reddet + gerekçe, asla çökme yok.
     const check = validateScheduleAction(args);
     if (!check.ok) {
         log.warn(`[IPC] schedule-action reddedildi: ${check.error}`);
@@ -1706,7 +1790,7 @@ ipcHandle('schedule-action', async (event, args) => {
 
     cancelQuickTimer();
 
-    // Create tracked AutomationTask — tek doğruluk kaynağı budur.
+    // Create tracked AutomationTask - tek doğruluk kaynağı budur.
     let task;
     try {
         task = taskManager.createTask({
@@ -1769,12 +1853,16 @@ ipcHandle('cancel-action', async (event, args) => {
     return { success: true, code: activeResult.code || 'NO_ACTIVE_WARNING', message: t('toastActionCancelled') };
 });
 
-// NOT: mini widget sayaç beslemesi artık TEK kaynaktan gelir — `pushMiniTimerState`
+// NOT: mini widget sayaç beslemesi TEK kaynaktan gelir - `pushMiniTimerState`
 // (TaskManager aktif görevleri, 1 sn). Önceden renderer'ın `updateMiniTimer`
 // çağrısı burada mini pencereye köprüleniyordu; iki kaynak aynı kanala yazınca
 // sayaç titriyor ve hızlı zamanlayıcı dışındaki görevlerde widget boş kalıyordu.
-// Renderer yüzeyi geriye uyum için korunur ama veri yolu yok sayılır.
-ipcOn('update-mini-timer', () => { /* yoksayıldı: tek doğruluk kaynağı ana süreç */ });
+//
+// P1-6 (altıncı tur): `update-mini-timer` kanalı ve preload yüzeyi KALDIRILDI.
+// Tek doğruluk kaynağına geçildikten sonra bu kanalın işleyicisi boş bir
+// no-op'tu ve hiçbir renderer kodu onu çağırmıyordu. Sessiz no-op yüzeyi,
+// "placebo" kusurunun IPC biçimidir: yüzey var, davranış yok. Geriye uyum için
+// tutmanın bir faydası yoktu çünkü çağıran hiç yoktu.
 
 // D-03: mini pencere tooltip'leri renderer'a hardcoded gitmez.
 ipcHandle('get-mini-labels', () => ({
@@ -1850,7 +1938,7 @@ ipcHandle('resume-task', (event, taskId) => {
     return { success: true, code: result.code, status: result.status };
 });
 ipcHandle('cancel-task', async (event, payload) => {
-    // WBS-11.2: Geriye uyumlu — string id veya {taskId, pin}.
+    // WBS-11.2: Geriye uyumlu - string id veya {taskId, pin}.
     const taskId = typeof payload === 'string' ? payload : payload && payload.taskId;
     const pin = payload && typeof payload === 'object' ? payload.pin : undefined;
     const check = validateTaskId(taskId);
@@ -1980,7 +2068,7 @@ ipcHandle('export-statistics', async (event, args) => {
         return { success: false, code: 'IO_ERROR', message: t('errorSaveFailed') };
     }
 });
-// C5: yerel sağlık özeti — hiçbir veri dışarı çıkmaz, yalnızca cihazdaki
+// C5: yerel sağlık özeti - hiçbir veri dışarı çıkmaz, yalnızca cihazdaki
 // kayıtlar özetlenir (ürünün "telemetri yok" vaadi korunur).
 ipcHandle('get-health-summary', () => {
     let installedAtMs = null;
@@ -2022,7 +2110,7 @@ ipcHandle('save-template', (event, tpl) => {
         return { success: false, code: check.code, message: t('errorInvalidRequest') };
     }
     // NOT: id istemciden gelmez (renderer {name, action, ...} gönderir); sunucu
-    // üretir. Bu yüzden doğrulama NORMALEŞTİRİLMİŞ kayıt üzerinde yapılmalı —
+    // üretir. Bu yüzden doğrulama NORMALEŞTİRİLMİŞ kayıt üzerinde yapılmalı -
     // aksi halde isValidTemplate `typeof tpl.id !== 'string'` kontrolünde
     // takılır ve UI'daki "Şablonu Kaydet" her zaman INVALID_TEMPLATE dönerdi.
     const record = {
@@ -2150,7 +2238,7 @@ ipcHandle('import-templates', async () => {
     return { success: true, count: merged.added.length, rejected: merged.rejected };
 });
 
-// WBS-7.4: AI IPC — durum (RAM kapısı dahil) + komut ayrıştırma.
+// WBS-7.4: AI IPC - durum (RAM kapısı dahil) + komut ayrıştırma.
 const AI_STATUS_KEYS = {
     MODEL_MISSING: 'aiModelNotDownloaded',
     NOT_CONFIGURED: 'aiModelNotDownloaded',
@@ -2276,7 +2364,7 @@ ipcHandle('warning-confirm', (event, args) => {
         t
     });
 });
-// WBS-8.3: STT IPC — örnekler 16kHz mono olmalı (istemci yeniden örnekler).
+// WBS-8.3: STT IPC - örnekler 16kHz mono olmalı (istemci yeniden örnekler).
 ipcHandle('stt-status', () => sttService.getStatus());
 ipcHandle('stt-transcribe', async (event, payload) => {
     const { samples, sampleRate, uiLang } = payload || {};
@@ -2289,7 +2377,7 @@ ipcHandle('stt-transcribe', async (event, payload) => {
     }
     return localizeResult(await sttService.transcribePcm(samples, uiLang), STT_RESULT_KEYS);
 });
-// WBS-7.5: Model indirme/yükleme IPC — indirme arka planda sürer, durum polling ile izlenir.
+// WBS-7.5: Model indirme/yükleme IPC - indirme arka planda sürer, durum polling ile izlenir.
 let aiDownloadState = { state: 'idle', file: null, received: 0, total: null, step: 0, steps: 2, error: null };
 ipcHandle('ai-model-download', () => {
     // AI paketi = LLM + STT modeli (sıralı, arka planda; canlı ilerleme ai-status.download ile).
@@ -2520,8 +2608,15 @@ async function applySettingsPatch(newSettings, current, auditAction) {
             recreateUpsMonitor(storageService.getSettings());
         }
         let iconSync = null;
-        if (rest.appIcon !== undefined) {
-            iconSync = applyRuntimeAppIcon(rest.appIcon, { updateShortcuts: true });
+        if (rest.appIcon !== undefined || rest.customIconColor !== undefined) {
+            const eff = storageService.getSettings();
+            iconSync = applyRuntimeAppIcon(eff.appIcon, {
+                updateShortcuts: true,
+                customIconColor: eff.customIconColor
+            });
+        }
+        if (rest.uiZoom !== undefined) {
+            applyRuntimeUiZoom(rest.uiZoom);
         }
         if (auditAction) {
             try {
@@ -2566,8 +2661,14 @@ async function applySettingsPatch(newSettings, current, auditAction) {
                 || rest.upsAutoActionEnabled !== undefined || rest.upsAutoAction !== undefined || rest.upsCountdownSeconds !== undefined) {
                 recreateUpsMonitor(storageService.getSettings());
             }
-            if (rest.appIcon !== undefined) {
-                applyRuntimeAppIcon(before.appIcon, { updateShortcuts: true });
+            if (rest.appIcon !== undefined || rest.customIconColor !== undefined) {
+                applyRuntimeAppIcon(before.appIcon, {
+                    updateShortcuts: true,
+                    customIconColor: before.customIconColor
+                });
+            }
+            if (rest.uiZoom !== undefined) {
+                applyRuntimeUiZoom(before.uiZoom);
             }
         } catch (_) { /* rollback best-effort */ }
         return { success: false, code: err && err.code ? err.code : 'SETTINGS_APPLY_FAILED', message: t('errorSettingsApplyReverted') };
@@ -2678,7 +2779,7 @@ ipcHandle('generate-api-key', async (event, args) => {
     }
     return rawKey;
 });
-// FAZ B: kurumsal IPC — envanter, konsol senkronu, denetim (tümü salt-okunur + tetikleme;
+// FAZ B: kurumsal IPC - envanter, konsol senkronu, denetim (tümü salt-okunur + tetikleme;
 // muafiyet YAZMA yalnızca LocalAPI admin anahtarıyla, IPC'den değil).
 ipcHandle('get-inventory', async () => {
     try {
@@ -2701,7 +2802,7 @@ ipcHandle('get-security-status', () => {
     };
 });
 /**
- * Depo durumu — bakım modu görünür olmalı.
+ * Depo durumu - bakım modu görünür olmalı.
  * Aksi halde DB açılamadığında her kayıt sessizce reddedilirken arayüz
  * normal görünür ve kullanıcı görevlerinin kaydedildiğini sanır.
  */
@@ -2921,15 +3022,19 @@ ipcHandle('get-app-icon-status', () => {
 });
 ipcHandle('create-desktop-shortcut', () => {
     const iconId = getCurrentAppIconId();
+    const customIconColor = getCurrentCustomIconColor();
     const isPortable = Portable.isPortable(process.env);
     const sourceIco = AppIconService.resolveIconIcoPath(iconId, {
         rootDir: __dirname,
         resourcesPath: process.resourcesPath,
+        userDataDir: app.getPath('userData'),
+        customIconColor,
         isPackaged: app.isPackaged
     });
     const stableIco = AppIconService.ensureStableShortcutIco(iconId, {
         sourceIcoPath: sourceIco,
         userDataDir: app.getPath('userData'),
+        customIconColor,
         isPortable,
         isPackaged: app.isPackaged
     });
@@ -2944,6 +3049,46 @@ ipcHandle('create-desktop-shortcut', () => {
         isPortable,
         logger: log
     });
+});
+ipcHandle('save-custom-app-icon', async (_event, payload) => {
+    if (!payload || typeof payload !== 'object') {
+        return { ok: false, code: 'INVALID_BODY', message: t('errorInvalidRequest') };
+    }
+    const hex = typeof payload.hex === 'string' ? payload.hex.trim() : '';
+    if (!/^#[0-9a-fA-F]{6}$/.test(hex)) {
+        return { ok: false, code: 'INVALID_COLOR', message: t('errorInvalidRequest') };
+    }
+    const written = AppIconService.writeCustomIconFiles(hex, payload.frames, {
+        userDataDir: app.getPath('userData')
+    });
+    if (!written.ok) {
+        log.warn(`[AppIcon] özel ikon yazılamadı: ${written.code}`);
+        return { ok: false, code: written.code, message: t('errorSaveFailed') };
+    }
+    if (payload.apply === true) {
+        const current = storageService.getSettings();
+        const res = await applySettingsPatch(
+            { appIcon: 'custom', customIconColor: written.hex },
+            current,
+            null
+        );
+        return {
+            ok: Boolean(res && res.success),
+            hex: written.hex,
+            icoPath: written.icoPath,
+            pngPath: written.pngPath,
+            iconSync: res && res.iconSync ? res.iconSync : null
+        };
+    }
+    return written;
+});
+ipcHandle('set-ui-zoom', (_event, zoom) => {
+    const num = Number(zoom);
+    if (!Number.isFinite(num) || num < 75 || num > 150) {
+        return { ok: false, code: 'INVALID_ZOOM' };
+    }
+    const applied = applyRuntimeUiZoom(num);
+    return { ok: true, zoom: applied };
 });
 
 // WP-5: Tanılama, çökme raporları ve destek paketi (ZIP) IPC'leri
@@ -3100,6 +3245,186 @@ ipcHandle('test-desktop-notification', () => {
     return { ok: true, nativeShown: false };
 });
 
+// Sunucusuz yerel Microsoft OneDrive Bulut Yedekleme ve Esitleme IPC katmani
+function localizeOneDriveError(code) {
+    switch (code) {
+        case 'NO_VALID_BACKUP': return t('oneDriveErrNoBackup');
+        case 'EMPTY_LOCAL_PROTECTED': return t('oneDriveErrEmptyProtected');
+        case 'INVALID_PATH':
+        case 'PATH_TRAVERSAL':
+        case 'NOT_ABSOLUTE':
+        case 'DIR_UNWRITABLE': return t('oneDriveErrInvalidFolder');
+        case 'OPEN_FAILED': return t('errorOpenFolder');
+        case 'RESTORE_FAILED': return t('oneDriveErrRestoreFailed');
+        case 'STORAGE_UNAVAILABLE': return t('errorStorageMaintenance');
+        default: return t('oneDriveErrWriteFailed');
+    }
+}
+
+function applyRestoredOneDriveRuntime() {
+    try {
+        if (taskManager && typeof taskManager.reloadFromStorage === 'function') {
+            taskManager.reloadFromStorage();
+        }
+    } catch (err) {
+        log.warn('[OneDriveSync] Gorev listesi yenilenemedi:', err && err.message);
+    }
+    try {
+        const s = storageService ? storageService.getSettings() : null;
+        if (s) {
+            if (typeof applyRuntimeAppIcon === 'function') {
+                applyRuntimeAppIcon(s.appIcon, {
+                    updateShortcuts: true,
+                    customIconColor: s.customIconColor
+                });
+            }
+            if (typeof applyRuntimeUiZoom === 'function') {
+                applyRuntimeUiZoom(s.uiZoom);
+            }
+        }
+    } catch (err) {
+        log.warn('[OneDriveSync] Geri yukleme sonrasi gorunum guncellenemedi:', err && err.message);
+    }
+    scheduleTrayUpdate();
+}
+
+ipcHandle('onedrive-status', () => {
+    if (!oneDriveSyncService) return { ok: false, code: 'STORAGE_UNAVAILABLE', message: localizeOneDriveError('STORAGE_UNAVAILABLE') };
+    try {
+        return { ok: true, status: oneDriveSyncService.getStatus() };
+    } catch (err) {
+        log.warn('[OneDriveSync] Durum okunamadi:', err && err.message);
+        return { ok: false, code: 'SYNC_WRITE_FAILED', message: localizeOneDriveError('SYNC_WRITE_FAILED') };
+    }
+});
+
+ipcHandle('onedrive-connect', () => {
+    if (!oneDriveSyncService) return { ok: false, code: 'STORAGE_UNAVAILABLE', message: localizeOneDriveError('STORAGE_UNAVAILABLE') };
+    const res = oneDriveSyncService.connect();
+    if (!res.ok) {
+        return { ok: false, code: res.code, message: localizeOneDriveError(res.code), status: res.status };
+    }
+    if (res.action === 'restored') {
+        applyRestoredOneDriveRuntime();
+        return {
+            ok: true,
+            action: 'restored',
+            restored: res.restored,
+            recoveredFromFallback: res.recoveredFromFallback,
+            settings: toRendererSettings(storageService.getSettings()),
+            status: res.status,
+            message: t('oneDriveToastConnectedRestored')
+        };
+    }
+    return {
+        ok: true,
+        action: 'synced',
+        exportedAt: res.exportedAt,
+        status: res.status,
+        message: t('oneDriveToastConnectedSynced')
+    };
+});
+
+ipcHandle('onedrive-disconnect', () => {
+    if (!oneDriveSyncService) return { ok: false, code: 'STORAGE_UNAVAILABLE', message: localizeOneDriveError('STORAGE_UNAVAILABLE') };
+    const res = oneDriveSyncService.disconnect();
+    return { ok: true, status: res.status, message: t('oneDriveToastDisconnected') };
+});
+
+ipcHandle('onedrive-sync-now', () => {
+    if (!oneDriveSyncService) return { ok: false, code: 'STORAGE_UNAVAILABLE', message: localizeOneDriveError('STORAGE_UNAVAILABLE') };
+    const res = oneDriveSyncService.syncNow({ force: false });
+    if (!res.ok) {
+        return { ok: false, skipped: Boolean(res.skipped), code: res.code, message: localizeOneDriveError(res.code), status: res.status };
+    }
+    return { ok: true, exportedAt: res.exportedAt, status: res.status, message: t('oneDriveToastSynced') };
+});
+
+ipcHandle('onedrive-restore', (event, args) => {
+    if (!oneDriveSyncService) return { ok: false, code: 'STORAGE_UNAVAILABLE', message: localizeOneDriveError('STORAGE_UNAVAILABLE') };
+    const connect = Boolean(args && args.connect === true);
+    const res = oneDriveSyncService.restoreFromBackup({ connect });
+    if (!res.ok) {
+        return { ok: false, code: res.code, message: localizeOneDriveError(res.code), status: res.status };
+    }
+    applyRestoredOneDriveRuntime();
+    const message = res.recoveredFromFallback
+        ? t('oneDriveToastRestoredFallback')
+        : t('oneDriveToastRestored', {
+            tasks: res.restored.tasks,
+            templates: res.restored.templates,
+            settings: res.restored.settingsCount
+        });
+    return {
+        ok: true,
+        restored: res.restored,
+        recoveredFromFallback: res.recoveredFromFallback,
+        settings: toRendererSettings(storageService.getSettings()),
+        status: res.status,
+        message
+    };
+});
+
+ipcHandle('onedrive-set-autosync', (event, args) => {
+    if (!oneDriveSyncService) return { ok: false, code: 'STORAGE_UNAVAILABLE', message: localizeOneDriveError('STORAGE_UNAVAILABLE') };
+    const enabled = args && typeof args.enabled === 'boolean' ? args.enabled : null;
+    if (enabled === null) return { ok: false, code: 'INVALID_REQUEST', message: t('errorInvalidRequest') };
+    const res = oneDriveSyncService.setAutoSync(enabled);
+    return {
+        ok: res.ok,
+        status: res.status,
+        message: enabled ? t('oneDriveToastAutoSyncOn') : t('oneDriveToastAutoSyncOff')
+    };
+});
+
+ipcHandle('onedrive-open-folder', async () => {
+    if (!oneDriveSyncService) return { ok: false, code: 'STORAGE_UNAVAILABLE', message: localizeOneDriveError('STORAGE_UNAVAILABLE') };
+    try {
+        // Guvenlik: yol asla istemciden alinmaz; yalnizca sunucunun dogruladigi klasor acilir.
+        const dirInfo = oneDriveSyncService.resolveDirectory();
+        fs.mkdirSync(dirInfo.syncDir, { recursive: true });
+        const err = await shell.openPath(dirInfo.syncDir);
+        if (err) {
+            log.warn(`[OneDriveSync] Klasor acilamadi: ${err}`);
+            return { ok: false, code: 'OPEN_FAILED', message: localizeOneDriveError('OPEN_FAILED') };
+        }
+        return { ok: true, path: dirInfo.syncDir };
+    } catch (err) {
+        log.warn('[OneDriveSync] Klasor acma hatasi:', err && err.message);
+        return { ok: false, code: 'OPEN_FAILED', message: localizeOneDriveError('OPEN_FAILED') };
+    }
+});
+
+ipcHandle('onedrive-select-folder', async () => {
+    if (!oneDriveSyncService) return { ok: false, code: 'STORAGE_UNAVAILABLE', message: localizeOneDriveError('STORAGE_UNAVAILABLE') };
+    const currentDir = oneDriveSyncService.resolveDirectory().syncDir;
+    const picked = await dialog.showOpenDialog(mainWindow || undefined, {
+        title: t('oneDriveSelectFolderDialog'),
+        defaultPath: fs.existsSync(currentDir) ? currentDir : undefined,
+        properties: ['openDirectory', 'createDirectory']
+    });
+    if (picked.canceled || !picked.filePaths || picked.filePaths.length === 0) {
+        return { ok: false, code: 'CANCELLED' };
+    }
+    const res = oneDriveSyncService.setCustomDirectory(picked.filePaths[0]);
+    if (!res.ok) {
+        return { ok: false, code: res.code, message: localizeOneDriveError(res.code), status: res.status };
+    }
+    return { ok: true, status: res.status, message: t('oneDriveToastFolderUpdated') };
+});
+
+ipcHandle('onedrive-reset-folder', () => {
+    if (!oneDriveSyncService) return { ok: false, code: 'STORAGE_UNAVAILABLE', message: localizeOneDriveError('STORAGE_UNAVAILABLE') };
+    const res = oneDriveSyncService.setCustomDirectory(null);
+    return { ok: res.ok, status: res.status, message: t('oneDriveToastFolderReset') };
+});
+
+ipcHandle('onedrive-dismiss-recovery', () => {
+    if (!oneDriveSyncService) return { ok: false, code: 'STORAGE_UNAVAILABLE', message: localizeOneDriveError('STORAGE_UNAVAILABLE') };
+    const res = oneDriveSyncService.dismissRecovery();
+    return { ok: res.ok, status: res.status };
+});
+
 ipcOn('setting-autostart', (event, enable) => {
     if (typeof enable !== 'boolean') {
         log.warn('[IPC] setting-autostart reddedildi: boolean bekleniyor.');
@@ -3114,7 +3439,7 @@ ipcOn('setting-autostart', (event, enable) => {
     try {
         app.setLoginItemSettings({ openAtLogin: enable, path: exePath });
         // P1-6 (beşinci tur): `autostart` ayarı depoda ve şemada vardı ama
-        // hiçbir mantık okumuyor/yazmıyordu — yalnızca localStorage'da bir
+        // hiçbir mantık okumuyor/yazmıyordu - yalnızca localStorage'da bir
         // bayrak ve bir OS çağrısı vardı. Sonuç: uygulama ayarı bilmiyordu,
         // başlangıçta Windows'taki gerçek durumla uzlaştıramıyordu. Artık
         // gerçek OS durumu geri okunup ayara yazılır.
@@ -3155,7 +3480,7 @@ ipcHandle('open-data-folder', async () => {
 });
 
 /**
- * Store politikası 10.2.7 — "verilerimi sil".
+ * Store politikası 10.2.7 - "verilerimi sil".
  * Tüm yerel kullanıcı verisini (görevler, ayarlar, geçmiş, anahtarlar,
  * yedekler, modeller, loglar) kalıcı olarak siler ve uygulamayı kapatır.
  * Güvenlik: PIN varsa zorunlu; onay metni istemciden gelse de sunucu
@@ -3178,6 +3503,9 @@ ipcHandle('delete-all-data', async (event, args) => {
         isQuitting = true;
         // 1. Arka plan servislerini ve dosya tutamaklarını kilitlemeden kapat.
         try {
+            if (oneDriveSyncService && typeof oneDriveSyncService.cancelPending === 'function') {
+                oneDriveSyncService.cancelPending();
+            }
             if (consoleSyncTimer) { clearInterval(consoleSyncTimer); consoleSyncTimer = null; }
             if (taskManager && taskManager.loopInterval) {
                 clearInterval(taskManager.loopInterval);

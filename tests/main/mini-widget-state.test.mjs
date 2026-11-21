@@ -1,12 +1,12 @@
 /**
- * mini-widget-state.test.mjs — mini pencere sayaç sözleşmesi.
+ * mini-widget-state.test.mjs - mini pencere sayaç sözleşmesi.
  *
  * GERÇEK EKSİK (bu turda bulundu ve düzeltildi):
  *   Mini pencere `taskManager.getActiveTasks().length > 0` olduğunda açılıyor
  *   ama sayaç verisini YALNIZCA ana pencerenin hızlı zamanlayıcı renderer'ı
  *   gönderiyordu (`app.js` updateDisplay → updateMiniTimer). Diğer görevlerde
  *   (Smart Finish, şablon, zamanlanmış, zincir) widget açılıyor ama içi
- *   `--` / `00:00` kalıyordu — kullanıcıya boş bir widget gösteriliyordu.
+ *   `--` / `00:00` kalıyordu - kullanıcıya boş bir widget gösteriliyordu.
  *
  *   Ölçüm (öncesi): createTask({duration 1h}) → pencere gizle →
  *     mini: {"action":"--","countdown":"00:00"}
@@ -74,10 +74,10 @@ describe('hasCountdown', () => {
     });
 });
 
-describe('computeState — gerçek kullanıcı senaryoları', () => {
+describe('computeState - gerçek kullanıcı senaryoları', () => {
     const now = 1_700_000_000_000;
 
-    it('normal (zamanlanmış) görevde GERÇEK sayaç üretir — boş widget yok', () => {
+    it('normal (zamanlanmış) görevde GERÇEK sayaç üretir - boş widget yok', () => {
         const state = computeState({
             tasks: [task({ trigger: { type: 'duration', targetTime: now + 3_600_000 } })],
             now, t, actionLabel, taskDisplayName, daySuffix: 'gün'
@@ -167,9 +167,18 @@ describe('ana süreç bağlantısı (mini pencere sayaç beslemesi)', () => {
     it('mini widget iptal düğmesi gösterilen görevi iptal edebilir', () => {
         const block = mainSrc.slice(
             mainSrc.indexOf("ipcHandle('cancel-action'"),
-            mainSrc.indexOf("ipcOn('update-mini-timer'")
+            mainSrc.indexOf("ipcHandle('get-mini-labels'")
         );
         expect(block).toContain('miniWidgetTaskId');
         expect(block).toMatch(/taskManager\.cancelTask\(miniWidgetTaskId\)/);
+    });
+
+    it('tek doğruluk kaynağı: no-op mini sayaç kanalı yok', () => {
+        // P1-6 (altıncı tur): işleyicisi boş olan ve hiçbir çağıranı bulunmayan
+        // `update-mini-timer` kanalı kaldırıldı. Geri gelirse bu kapı düşer.
+        expect(mainSrc).not.toContain("ipcOn('update-mini-timer'");
+        const preloadSrc = fs.readFileSync(path.join(root, 'preload.js'), 'utf8');
+        expect(preloadSrc).not.toContain('update-mini-timer');
+        expect(preloadSrc).not.toContain('updateMiniTimer');
     });
 });

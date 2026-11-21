@@ -1,10 +1,10 @@
 /* ==========================================================================
- * Power Pilot — Agendamea + Dev Cleaner 2-Mode × 14-Color Theme System
+ * Power Pilot - Agendamea + Dev Cleaner 2-Mode × 14-Color Theme System
  * 28 combinations (Light & Dark × 14 palettes), 100% external CSS (CSP-safe).
  * Default: Dark Obsidian (#09090b canvas, #111114 surface, #24242b border).
  * ========================================================================== */
 
-/* --- 1. Obsidian (Siyah — Default) --------------------------------------- */
+/* --- 1. Obsidian (Siyah - Default) --------------------------------------- */
 :root,
 [data-theme='obsidian'] {
     --canvas: #f5f7f8;
@@ -17,6 +17,7 @@
     --text-secondary: #4b4b53;
     --text-muted: #52525b;
     --accent: #18181b;
+    --accent-text: #18181b;
     --accent-hover: #2c2c31;
     --accent-soft: rgba(24, 24, 27, 0.08);
     --accent-ring: rgba(24, 24, 27, 0.24);
@@ -38,6 +39,7 @@ html.dark[data-theme='obsidian'] {
     --text-secondary: #a8a8b3;
     --text-muted: #8b8b98;
     --accent: #f4f4f5;
+    --accent-text: #f4f4f5;
     --accent-hover: #dcdce0;
     --accent-soft: rgba(244, 244, 245, 0.12);
     --accent-ring: rgba(244, 244, 245, 0.28);
@@ -59,6 +61,7 @@ html.dark[data-theme='obsidian'] {
     --text-secondary: #475569;
     --text-muted: #52627a;
     --accent: #475569;
+    --accent-text: #475569;
     --accent-hover: #334155;
     --accent-soft: rgba(71, 85, 105, 0.10);
     --accent-ring: rgba(71, 85, 105, 0.25);
@@ -76,6 +79,7 @@ html.dark[data-theme='slate'] {
     --text-secondary: #94a3b8;
     --text-muted: #7d8ea6;
     --accent: #94a3b8;
+    --accent-text: #94a3b8;
     --accent-hover: #cbd5e1;
     --accent-soft: rgba(148, 163, 184, 0.14);
     --accent-ring: rgba(148, 163, 184, 0.30);
@@ -94,6 +98,7 @@ html.dark[data-theme='slate'] {
     --text-secondary: #425175;
     --text-muted: #53648a;
     --accent: #1e3a8a;
+    --accent-text: #1e3a8a;
     --accent-hover: #172e6e;
     --accent-soft: rgba(30, 58, 138, 0.10);
     --accent-ring: rgba(30, 58, 138, 0.25);
@@ -111,6 +116,7 @@ html.dark[data-theme='navy'] {
     --text-secondary: #9ab0d9;
     --text-muted: #7f96c2;
     --accent: #5b8def;
+    --accent-text: #5f90ef;
     --accent-hover: #7aa4f5;
     --accent-soft: rgba(91, 141, 239, 0.16);
     --accent-ring: rgba(91, 141, 239, 0.32);
@@ -129,6 +135,7 @@ html.dark[data-theme='navy'] {
     --text-secondary: #445573;
     --text-muted: #556785;
     --accent: #2563eb;
+    --accent-text: #2562ea;
     --accent-hover: #1d4ed8;
     --accent-soft: rgba(37, 99, 235, 0.10);
     --accent-ring: rgba(37, 99, 235, 0.25);
@@ -146,6 +153,7 @@ html.dark[data-theme='blue'] {
     --text-secondary: #9bb0d4;
     --text-muted: #7e94ba;
     --accent: #3b82f6;
+    --accent-text: #5291f7;
     --accent-hover: #60a5fa;
     --accent-soft: rgba(59, 130, 246, 0.16);
     --accent-ring: rgba(59, 130, 246, 0.32);
@@ -164,6 +172,7 @@ html.dark[data-theme='blue'] {
     --text-secondary: #3d5c66;
     --text-muted: #4b6e78;
     --accent: #0891b2;
+    --accent-text: #077793;
     --accent-hover: #0e7490;
     --accent-soft: rgba(8, 145, 178, 0.10);
     --accent-ring: rgba(8, 145, 178, 0.25);
@@ -181,6 +190,7 @@ html.dark[data-theme='cyan'] {
     --text-secondary: #96bec9;
     --text-muted: #78a3b0;
     --accent: #22d3ee;
+    --accent-text: #22d3ee;
     --accent-hover: #67e8f9;
     --accent-soft: rgba(34, 211, 238, 0.14);
     --accent-ring: rgba(34, 211, 238, 0.30);
@@ -199,6 +209,7 @@ html.dark[data-theme='cyan'] {
     --text-secondary: #4b4a73;
     --text-muted: #5a5982;
     --accent: #4f46e5;
+    --accent-text: #4f46e5;
     --accent-hover: #4338ca;
     --accent-soft: rgba(79, 70, 229, 0.10);
     --accent-ring: rgba(79, 70, 229, 0.25);
@@ -216,6 +227,7 @@ html.dark[data-theme='indigo'] {
     --text-secondary: #a5a7d6;
     --text-muted: #8a8cbd;
     --accent: #818cf8;
+    --accent-text: #818cf8;
     --accent-hover: #a5b4fc;
     --accent-soft: rgba(129, 140, 248, 0.15);
     --accent-ring: rgba(129, 140, 248, 0.30);
@@ -234,6 +246,7 @@ html.dark[data-theme='indigo'] {
     --text-secondary: #544670;
     --text-muted: #625380;
     --accent: #7c3aed;
+    --accent-text: #7c3aed;
     --accent-hover: #6d28d9;
     --accent-soft: rgba(124, 58, 237, 0.10);
     --accent-ring: rgba(124, 58, 237, 0.25);
@@ -251,6 +264,7 @@ html.dark[data-theme='purple'] {
     --text-secondary: #b5a8d4;
     --text-muted: #988ab8;
     --accent: #a78bfa;
+    --accent-text: #a78bfa;
     --accent-hover: #c4b5fd;
     --accent-soft: rgba(167, 139, 250, 0.15);
     --accent-ring: rgba(167, 139, 250, 0.30);
@@ -269,6 +283,7 @@ html.dark[data-theme='purple'] {
     --text-secondary: #694456;
     --text-muted: #785064;
     --accent: #db2777;
+    --accent-text: #c4236b;
     --accent-hover: #be185d;
     --accent-soft: rgba(219, 39, 119, 0.10);
     --accent-ring: rgba(219, 39, 119, 0.25);
@@ -286,6 +301,7 @@ html.dark[data-theme='pink'] {
     --text-secondary: #d1a3b9;
     --text-muted: #b08399;
     --accent: #f472b6;
+    --accent-text: #f472b6;
     --accent-hover: #f9a8d4;
     --accent-soft: rgba(244, 114, 182, 0.15);
     --accent-ring: rgba(244, 114, 182, 0.30);
@@ -304,6 +320,7 @@ html.dark[data-theme='pink'] {
     --text-secondary: #694444;
     --text-muted: #785050;
     --accent: #dc2626;
+    --accent-text: #cc2323;
     --accent-hover: #b91c1c;
     --accent-soft: rgba(220, 38, 38, 0.10);
     --accent-ring: rgba(220, 38, 38, 0.25);
@@ -321,6 +338,7 @@ html.dark[data-theme='red'] {
     --text-secondary: #d1a3a3;
     --text-muted: #b08282;
     --accent: #f87171;
+    --accent-text: #f87171;
     --accent-hover: #fca5a5;
     --accent-soft: rgba(248, 113, 113, 0.15);
     --accent-ring: rgba(248, 113, 113, 0.30);
@@ -339,6 +357,7 @@ html.dark[data-theme='red'] {
     --text-secondary: #664a38;
     --text-muted: #755845;
     --accent: #ea580c;
+    --accent-text: #b74509;
     --accent-hover: #c2410c;
     --accent-soft: rgba(234, 88, 12, 0.10);
     --accent-ring: rgba(234, 88, 12, 0.25);
@@ -356,6 +375,7 @@ html.dark[data-theme='orange'] {
     --text-secondary: #cfb19b;
     --text-muted: #b0917b;
     --accent: #fb923c;
+    --accent-text: #fb923c;
     --accent-hover: #fdba74;
     --accent-soft: rgba(251, 146, 60, 0.15);
     --accent-ring: rgba(251, 146, 60, 0.30);
@@ -374,6 +394,7 @@ html.dark[data-theme='orange'] {
     --text-secondary: #5e532b;
     --text-muted: #6e6237;
     --accent: #eab308;
+    --accent-text: #866605;
     --accent-hover: #ca8a04;
     --accent-soft: rgba(234, 179, 8, 0.16);
     --accent-ring: rgba(202, 138, 4, 0.30);
@@ -391,6 +412,7 @@ html.dark[data-theme='yellow'] {
     --text-secondary: #cfc69b;
     --text-muted: #b0a67b;
     --accent: #facc15;
+    --accent-text: #facc15;
     --accent-hover: #fde047;
     --accent-soft: rgba(250, 204, 21, 0.15);
     --accent-ring: rgba(250, 204, 21, 0.30);
@@ -409,6 +431,7 @@ html.dark[data-theme='yellow'] {
     --text-secondary: #3b6153;
     --text-muted: #4a7062;
     --accent: #059669;
+    --accent-text: #047c57;
     --accent-hover: #047857;
     --accent-soft: rgba(5, 150, 105, 0.10);
     --accent-ring: rgba(5, 150, 105, 0.25);
@@ -426,6 +449,7 @@ html.dark[data-theme='emerald'] {
     --text-secondary: #94c7b4;
     --text-muted: #76ab97;
     --accent: #34d399;
+    --accent-text: #34d399;
     --accent-hover: #6ee7b7;
     --accent-soft: rgba(52, 211, 153, 0.14);
     --accent-ring: rgba(52, 211, 153, 0.30);
@@ -444,6 +468,7 @@ html.dark[data-theme='emerald'] {
     --text-secondary: #3d6143;
     --text-muted: #4b7052;
     --accent: #16a34a;
+    --accent-text: #117d39;
     --accent-hover: #15803d;
     --accent-soft: rgba(22, 163, 74, 0.10);
     --accent-ring: rgba(22, 163, 74, 0.25);
@@ -461,6 +486,7 @@ html.dark[data-theme='grass'] {
     --text-secondary: #98c7a1;
     --text-muted: #7aab84;
     --accent: #4ade80;
+    --accent-text: #4ade80;
     --accent-hover: #86efac;
     --accent-soft: rgba(74, 222, 128, 0.14);
     --accent-ring: rgba(74, 222, 128, 0.30);
@@ -479,6 +505,7 @@ html.dark[data-theme='grass'] {
     --text-secondary: #4b5e2c;
     --text-muted: #586e36;
     --accent: #65a30d;
+    --accent-text: #4b790a;
     --accent-hover: #4d7c0f;
     --accent-soft: rgba(101, 163, 13, 0.12);
     --accent-ring: rgba(101, 163, 13, 0.28);
@@ -496,6 +523,7 @@ html.dark[data-theme='lime'] {
     --text-secondary: #b2c995;
     --text-muted: #93ad74;
     --accent: #a3e635;
+    --accent-text: #a3e635;
     --accent-hover: #bef264;
     --accent-soft: rgba(163, 230, 53, 0.14);
     --accent-ring: rgba(163, 230, 53, 0.30);
@@ -532,3 +560,103 @@ html.dark .pp-theme-swatch[data-swatch='yellow']   { background-color: #facc15; 
 html.dark .pp-theme-swatch[data-swatch='emerald']  { background-color: #34d399; }
 html.dark .pp-theme-swatch[data-swatch='grass']    { background-color: #4ade80; }
 html.dark .pp-theme-swatch[data-swatch='lime']     { background-color: #a3e635; }
+
+/* Custom color theme default fallback (overridden dynamically via CSSStyleSheet) */
+[data-theme='custom'] {
+    --canvas: #f6f8fc;
+    --surface: #ffffff;
+    --surface-subtle: #eff4fb;
+    --surface-hover: #e4eef9;
+    --border: #d7e3f4;
+    --border-strong: #b6cbe9;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #52627a;
+    --accent: #3b82f6;
+    --accent-text: #3069c7;
+    --accent-hover: #2563eb;
+    --accent-soft: rgba(59, 130, 246, 0.12);
+    --accent-ring: rgba(59, 130, 246, 0.30);
+    --accent-fg: #ffffff;
+}
+
+html.dark[data-theme='custom'] {
+    --canvas: #090e18;
+    --surface: #101726;
+    --surface-subtle: #162033;
+    --surface-hover: #1e2a42;
+    --border: #253450;
+    --border-strong: #354a70;
+    --text-primary: #f1f5f9;
+    --text-secondary: #a2b2c8;
+    --text-muted: #8093b0;
+    --accent: #3b82f6;
+    --accent-text: #4f8ff7;
+    --accent-hover: #60a5fa;
+    --accent-soft: rgba(59, 130, 246, 0.15);
+    --accent-ring: rgba(59, 130, 246, 0.32);
+    --accent-fg: #ffffff;
+}
+
+.pp-theme-swatch[data-swatch='custom'] {
+    background-color: transparent;
+    border-style: dashed;
+    border-width: 1.5px;
+}
+
+/* Custom color builder quick presets (CSP-safe: zero inline style attributes) */
+.pp-custom-preset-dot[data-preset-hex='#0ea5e9'] { background-color: #0ea5e9; }
+.pp-custom-preset-dot[data-preset-hex='#8b5cf6'] { background-color: #8b5cf6; }
+.pp-custom-preset-dot[data-preset-hex='#ec4899'] { background-color: #ec4899; }
+.pp-custom-preset-dot[data-preset-hex='#f97316'] { background-color: #f97316; }
+.pp-custom-preset-dot[data-preset-hex='#10b981'] { background-color: #10b981; }
+.pp-custom-preset-dot[data-preset-hex='#e11d48'] { background-color: #e11d48; }
+.pp-custom-preset-dot[data-preset-hex='#14b8a6'] { background-color: #14b8a6; }
+.pp-custom-preset-dot[data-preset-hex='#eab308'] { background-color: #eab308; }
+
+/* --- Accessibility Modes (Font Scale, High Contrast, Focus, Spacing) ----- */
+html[data-font-scale='large'] {
+    font-size: 17px;
+}
+
+html[data-font-scale='xlarge'] {
+    font-size: 18.5px;
+}
+
+html.pp-high-contrast,
+html.pp-high-contrast[data-theme] {
+    --canvas: #ffffff !important;
+    --surface: #ffffff !important;
+    --surface-subtle: #f4f4f5 !important;
+    --surface-hover: #e4e4e7 !important;
+    --border: #18181b !important;
+    --border-strong: #000000 !important;
+    --text-primary: #000000 !important;
+    --text-secondary: #09090b !important;
+    --text-muted: #18181b !important;
+}
+
+html.dark.pp-high-contrast,
+html.dark.pp-high-contrast[data-theme] {
+    --canvas: #000000 !important;
+    --surface: #000000 !important;
+    --surface-subtle: #111114 !important;
+    --surface-hover: #1e1e24 !important;
+    --border: #e4e4e7 !important;
+    --border-strong: #ffffff !important;
+    --text-primary: #ffffff !important;
+    --text-secondary: #f4f4f5 !important;
+    --text-muted: #e4e4e7 !important;
+}
+
+html.pp-enhanced-focus *:focus-visible {
+    outline: 3px solid var(--accent) !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 5px var(--accent-ring) !important;
+}
+
+html.pp-readable-spacing body {
+    letter-spacing: 0.025em;
+    word-spacing: 0.08em;
+    line-height: 1.65;
+}

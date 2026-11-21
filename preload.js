@@ -10,7 +10,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     scheduleAction: (args) => ipcRenderer.invoke('schedule-action', args),
     cancelAction: (pin) => ipcRenderer.invoke('cancel-action', pin === undefined ? undefined : { pin }),
     setAutostart: (enable) => ipcRenderer.send('setting-autostart', enable),
-    updateMiniTimer: (data) => ipcRenderer.send('update-mini-timer', data),
     hideMiniWidget: () => ipcRenderer.send('hide-mini-widget'),
     restoreMainWindow: () => ipcRenderer.send('restore-main-window'),
 
@@ -99,6 +98,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // App Icon & Desktop Shortcut API (WP-2)
     getAppIconStatus: () => ipcRenderer.invoke('get-app-icon-status'),
     createDesktopShortcut: () => ipcRenderer.invoke('create-desktop-shortcut'),
+    saveCustomAppIcon: (payload) => ipcRenderer.invoke('save-custom-app-icon', payload),
+    setUiZoom: (zoom) => ipcRenderer.invoke('set-ui-zoom', zoom),
 
     // Diagnostics & Crash Reports API (WP-5)
     getDiagnostics: () => ipcRenderer.invoke('get-diagnostics'),
@@ -115,7 +116,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
     importSettings: (args) => ipcRenderer.invoke('import-settings', args),
     testDesktopNotification: () => ipcRenderer.invoke('test-desktop-notification'),
 
-    // Enterprise pilot API (FAZ B/D) — konsol eşleştirme, envanter, denetim
+    // OneDrive Serverless Cloud Backup & Sync API
+    getOneDriveStatus: () => ipcRenderer.invoke('onedrive-status'),
+    connectOneDrive: () => ipcRenderer.invoke('onedrive-connect'),
+    disconnectOneDrive: () => ipcRenderer.invoke('onedrive-disconnect'),
+    syncOneDriveNow: () => ipcRenderer.invoke('onedrive-sync-now'),
+    restoreOneDrive: (args) => ipcRenderer.invoke('onedrive-restore', args),
+    setOneDriveAutoSync: (enabled) => ipcRenderer.invoke('onedrive-set-autosync', { enabled }),
+    openOneDriveFolder: () => ipcRenderer.invoke('onedrive-open-folder'),
+    selectOneDriveFolder: () => ipcRenderer.invoke('onedrive-select-folder'),
+    resetOneDriveFolder: () => ipcRenderer.invoke('onedrive-reset-folder'),
+    dismissOneDriveRecovery: () => ipcRenderer.invoke('onedrive-dismiss-recovery'),
+
+    // Enterprise pilot API (FAZ B/D) - konsol eşleştirme, envanter, denetim
     getInventory: () => ipcRenderer.invoke('get-inventory'),
     getExemptions: () => ipcRenderer.invoke('get-exemptions'),
     getSecurityStatus: () => ipcRenderer.invoke('get-security-status'),
@@ -140,7 +153,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onRequestAiSilence: (callback) => ipcRenderer.on('request-ai-silence', (event, until) => callback(until)),
     onWarningStarted: (callback) => ipcRenderer.on('warning-started', (event, data) => callback(data)),
     onWarningTick: (callback) => ipcRenderer.on('warning-tick', (event, data) => callback(data)),
-    // WBS-9.4: Banner kapatma — üç terminal olaydan biri.
+    // WBS-9.4: Banner kapatma - üç terminal olaydan biri.
     // D-04: abonelikten çıkma fonksiyonu döner; HMR/yeniden yüklemede listener birikmez.
     onWarningEnded: (callback) => {
         const h = (event, data) => callback(data);

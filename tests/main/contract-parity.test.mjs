@@ -1,5 +1,5 @@
 /**
- * contract-parity.test.mjs — P1-6 (üçüncü tur) sözleşme paritesi kapısı
+ * contract-parity.test.mjs - P1-6 (üçüncü tur) sözleşme paritesi kapısı
  *
  * Denetim kusuru: `TaskManager` `task_cancel_too_late` webhook olayını
  * GERÇEKTEN üretiyordu (kullanıcı iptali OS komutu başladıktan sonra gelince),
@@ -126,7 +126,7 @@ describe('B. Görev durumu paritesi', () => {
      *
      * Denetim kusuru: `waiting`, `snoozed` ve `disabled` TASK_STATUS içinde
      * ilan ediliyor, `docs/architecture/AUTOMATION_ENGINE.md` yaşam
-     * döngüsünde belgeleniyor ve 17 dilde çevirileri vardı — ama HİÇBİR kod
+     * döngüsünde belgeleniyor ve 17 dilde çevirileri vardı - ama HİÇBİR kod
      * yolu onları atamıyordu. Kullanıcı ertelediği görevi "Zamanlandı" olarak
      * görüyordu; görev duraklatmanın hiçbir yolu yoktu.
      *
@@ -271,7 +271,7 @@ describe('D. Güç eylemi paritesi', () => {
      *
      * Ama ana görev kurucusu (`#sf-action`) yalnızca dört seçenek sunuyordu:
      * `restart` ve `signout` ile görev oluşturmanın HİÇBİR yolu yoktu. Motor
-     * destekliyor, doğrulayıcı kabul ediyor, çeviri hazır — kapı yok. Aynı
+     * destekliyor, doğrulayıcı kabul ediyor, çeviri hazır - kapı yok. Aynı
      * `directory_idle` sınıfı.
      */
     const powerActionValues = () => {
@@ -364,11 +364,15 @@ describe('D. Güç eylemi paritesi', () => {
 /**
  * E. IPC kanal paritesi.
  *
- * Ölçülen durum: main.js 84 `ipcHandle` + 10 `ipcOn` kaydeder, preload.js 84
- * `invoke` + 10 `send` yapar — birebir simetrik. Bu simetrinin KORUNMASI
+ * Ölçülen durum: main.js 86 `ipcHandle` + 9 `ipcOn` kaydeder, preload.js 86
+ * `invoke` + 9 `send` yapar - birebir simetrik. Bu simetrinin KORUNMASI
  * gerekir: preload'da çağrılan ama karşılığı olmayan bir kanal, çağrı anında
  * sessizce reddedilen (veya hiç yanıt vermeyen) bir buton demektir; tersi ise
  * ulaşılamayan bir yetenektir.
+ *
+ * Simetri TEK BAŞINA yeterli değildir: `update-mini-timer` bir zamanlar iki
+ * tarafta da tanımlıydı ama işleyicisi boş bir no-op'tu ve hiçbir çağıranı
+ * yoktu. Bu yüzden no-op yüzeyi ayrıca yasaklanır (aşağıdaki son test).
  *
  * `window-minimize` gibi kanallar preload'da `ipcRenderer.send` ile gider;
  * bu yüzden invoke ve send birlikte değerlendirilir.
@@ -402,7 +406,19 @@ describe('E. IPC kanal paritesi', () => {
         const count = registeredChannels().size;
         // Kanal sayısı düşerse bir yetenek kaldırılmış demektir. Taban,
         // kazara silmeyi yakalar; yeni yetenek eklemek serbesttir.
-        expect(count, 'IPC kanal sayısı beklenenden az').toBeGreaterThanOrEqual(94);
+        // (Ölçülen: 95 - 86 handle + 9 on.)
+        expect(count, 'IPC kanal sayısı beklenenden az').toBeGreaterThanOrEqual(95);
+    });
+
+    it('hiçbir IPC işleyicisi boş no-op değil (sessiz yüzey yok)', () => {
+        // Denetim kusuru (altıncı tur): `ipcOn('update-mini-timer', () => {})`
+        // işleyicisi hiçbir şey yapmıyordu ve çağıranı da yoktu. Simetri
+        // kapısı bunu göremez çünkü kanal iki tarafta da tanımlıydı.
+        const main = read('main.js');
+        const bodies = [
+            ...main.matchAll(/ipcOn\(\s*'([^']+)'\s*,\s*(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*=>\s*\{\s*(\/\*[\s\S]*?\*\/)?\s*\}\s*\)/g)
+        ].map((m) => m[1]);
+        expect(bodies, `boş no-op işleyici: ${bodies.join(', ')}`).toEqual([]);
     });
 });
 
@@ -424,7 +440,7 @@ describe('F. Olay paritesi', () => {
      * Satır bazlı çıkarım şart: `.send(` çağrısının ilk argümanı bir ternary
      * olabilir (`payload.success ? 'task-executed' : 'task-failed'`). Satır
      * sınırını aşan bir regex, başka bir `? ... : ...` ifadesine kayar ve
-     * olmayan bir kanal uydurur — bu kapının ilk sürümü tam olarak bunu yaptı
+     * olmayan bir kanal uydurur - bu kapının ilk sürümü tam olarak bunu yaptı
      * (`wakeMode === 'skip' ? 'skip' : 'run'` satırını yakaladı).
      */
     const mainSentChannels = () => {

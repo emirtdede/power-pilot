@@ -1,12 +1,12 @@
 /**
- * settings-placibo-gate.test.mjs — P1-6 sınıfı regresyon kapısı
+ * settings-placibo-gate.test.mjs - P1-6 sınıfı regresyon kapısı
  *
  * Denetimin çekirdek eleştirisi: "arayüzde ayar var, davranışta yok" (plasebo).
  * Bu test, ikinci turda bulunan üç kusuru kalıcı olarak kilitler:
  *
- * 1. `clockFormat` — kaydediliyordu ama HİÇBİR saat render'ı okumuyordu.
- * 2. `lanModeWarning` — depolama katmanı üretiyordu ama arayüz göstermiyordu.
- * 3. `maintenanceWindowWarning` — aynı şekilde sessizce yutuluyordu.
+ * 1. `clockFormat` - kaydediliyordu ama HİÇBİR saat render'ı okumuyordu.
+ * 2. `lanModeWarning` - depolama katmanı üretiyordu ama arayüz göstermiyordu.
+ * 3. `maintenanceWindowWarning` - aynı şekilde sessizce yutuluyordu.
  *
  * Statik doğrulama: bu davranışların bağlı kalması, ayarın sessizce tekrar
  * plaseboya dönmesini engeller.
@@ -70,7 +70,7 @@ describe('depolama uyarıları arayüzde gösterilir (sessiz yutma yok)', () => 
 });
 
 /**
- * SINIF KAPISI — depolanan HER ayar en az bir mantık tarafından OKUNMALI.
+ * SINIF KAPISI - depolanan HER ayar en az bir mantık tarafından OKUNMALI.
  *
  * Denetim (beşinci tur) 92 varsayılan anahtarı tek tek taradı ve iki plasebo
  * buldu:
@@ -172,7 +172,7 @@ describe('her varsayılan ayar en az bir mantık tarafından okunur', () => {
  *
  * Depoda bir varsayılan anahtar varsa, onu ya kullanıcı yazabilmeli (normal
  * veya PIN'li güvenlik şemasında) ya da sunucu kendisi üretmeli/tutmalı.
- * Bu sözleşmenin üçüncü hâli — ne yazılabilir ne sunucu-sahipli — sessiz bir
+ * Bu sözleşmenin üçüncü hâli - ne yazılabilir ne sunucu-sahipli - sessiz bir
  * "depoda var, kimse dokunamaz" alanı demektir: kullanıcı arayüzde görür,
  * değiştirir, hiçbir şey olmaz.
  *
@@ -214,7 +214,9 @@ describe('varsayılan ayarlar şema veya sunucu sahipliğinde', () => {
         'consoleClientKeyPem', 'consoleClientPfxFile', 'consoleClientPfxPassphrase',
         'consoleClientCaFile', 'consoleClientCaPem',
         'hiddenBuiltInTemplates', 'templateOverrides',
-        'lanModeWarning', 'maintenanceWindowWarning'
+        'lanModeWarning', 'maintenanceWindowWarning',
+        'oneDriveConnected', 'oneDriveAutoSync', 'oneDriveCustomDir',
+        'oneDriveLastSyncAt', 'oneDriveRecoveryDismissed'
     ]);
 
     it('her varsayılan ya yazılabilir ya sunucu sahipliğinde', () => {
@@ -224,7 +226,7 @@ describe('varsayılan ayarlar şema veya sunucu sahipliğinde', () => {
     });
 
     it('sunucu-sahipli envanterde bayat kayıt yok (secrets hariç)', () => {
-        // Sırlar SecretStore'da tutulur, depo varsayılanında bulunmaz — meşru.
+        // Sırlar SecretStore'da tutulur, depo varsayılanında bulunmaz - meşru.
         const SECRETS = new Set(['localApiPfxPassphrase', 'consoleClientPfxPassphrase', 'consoleAgentKey',
             'localApiKeyPem', 'consoleClientKeyPem', 'consolePublicKeyPem']);
         const stale = [...SERVER_OWNED].filter((k) => !defaults.has(k) && !SECRETS.has(k));
@@ -270,5 +272,45 @@ describe('varsayılana döndürme arka uç anahtarlarını da yazar', () => {
         const region = app.slice(start, start + 6000);
         // setAutostart → arka uçta OS durumunu okuyup `autostart` ayarına yazar.
         expect(region, 'sıfırlama setAutostart çağırmıyor').toMatch(/setAutostart\(false\)/);
+    });
+});
+
+describe('erişilebilirlik tercihleri ilk boyamadan önce uygulanır', () => {
+    // Denetim kusuru (altıncı tur): `highContrast`, `enhancedFocus`,
+    // `readableSpacing` ve `reduceMotion` ayarları depolanıyor ve `app.js`
+    // açıldıktan sonra uygulanıyordu. `theme-boot.js` yalnızca ilk üçünü
+    // okuyordu; `reduceMotion` okunmadığı için hareket azaltma tercih eden
+    // kullanıcı, uygulama JS'i açılana kadar geçiş/animasyonları bir kez
+    // görüyordu. "İlk boyamadan önce uygula" sözü, ayarın gerçek davranışıdır;
+    // geç uygulanan bir ayar kullanıcı için plasebodur.
+    const boot = read('src/renderer/theme-boot.js');
+
+    it('dört erişilebilirlik tercihi de önyüklemede okunur', () => {
+        expect(boot).toContain("localStorage.getItem('pp-high-contrast')");
+        expect(boot).toContain("localStorage.getItem('pp-enhanced-focus')");
+        expect(boot).toContain("localStorage.getItem('pp-readable-spacing')");
+        expect(boot).toContain("localStorage.getItem('pp-reduce-motion')");
+    });
+
+    it('dört tercih de kök elemana ilk boyamadan önce uygulanır', () => {
+        for (const cls of ['pp-high-contrast', 'pp-enhanced-focus', 'pp-readable-spacing', 'pp-reduce-motion']) {
+            expect(boot, `${cls} önyüklemede uygulanmıyor`).toMatch(
+                new RegExp(`classList\\.toggle\\(\\s*'${cls}'`)
+            );
+        }
+    });
+
+    it('hareket azaltma kuralı html üzerinde de geçerli (body henüz yokken)', () => {
+        // theme-boot.js `document.documentElement` üzerinde çalışır; body o an
+        // henüz yoktur. Yalnızca `body.pp-reduce-motion` seçicisi varsa,
+        // ilk boyama kuralı hiç eşleşmez ve geçişler görünür.
+        //
+        // DİKKAT: düz `includes('html.pp-reduce-motion')` yeterli DEĞİLDİR -
+        // bu metin yorumda da geçebilir. Bu yüzden gerçek bir seçici + kural
+        // gövdesi aranır (mutasyonla doğrulandı: kural silinince düşer).
+        const css = read('src/renderer/app.css');
+        expect(css, 'html.pp-reduce-motion seçicili kural yok').toMatch(
+            /html\.pp-reduce-motion\s+\*[^{]*\{[^}]*transition-duration\s*:/
+        );
     });
 });
