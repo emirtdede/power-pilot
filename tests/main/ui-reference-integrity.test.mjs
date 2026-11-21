@@ -194,3 +194,44 @@ describe('C. Her gerçek kontrol bağlıdır (ölü kontrol yok)', () => {
         expect(unbound).toEqual([]);
     });
 });
+
+describe('D. Doküman bağlantıları çözümlenir (kırık bağlantı yok)', () => {
+    // Denetim kusuru: `.github/CONTRIBUTING.md` indeksi `docs/README.md` diye
+    // bağlıyordu; bu yol `.github/docs/README.md` olarak çözümlenip kırıktı.
+    function walk(dir, out = []) {
+        for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+            if (['node_modules', '.git', 'dist', 'release', 'out', 'coverage'].includes(e.name)) continue;
+            const p = path.join(dir, e.name);
+            if (e.isDirectory()) walk(p, out);
+            else if (e.name.endsWith('.md')) out.push(p);
+        }
+        return out;
+    }
+
+    it('her göreli markdown bağlantısı var olan bir dosyaya işaret eder', () => {
+        const files = [
+            ...walk(path.join(root, 'docs')),
+            ...walk(path.join(root, '.github')),
+            path.join(root, 'README.md'),
+            path.join(root, 'CHANGELOG.md'),
+            path.join(root, 'CONTRIBUTING.md')
+        ].filter((f) => fs.existsSync(f));
+
+        const broken = [];
+        for (const file of files) {
+            const rel = file.replace(root, '').replace(/\\/g, '/').replace(/^\//, '');
+            const text = fs.readFileSync(file, 'utf8');
+            for (const m of text.matchAll(/\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)) {
+                const target = m[1];
+                if (/^(https?:|mailto:|#)/.test(target)) continue;
+                const clean = target.split('#')[0];
+                if (!clean) continue;
+                const resolved = clean.startsWith('/')
+                    ? path.join(root, clean)
+                    : path.resolve(path.dirname(file), clean);
+                if (!fs.existsSync(resolved)) broken.push(`${rel} -> ${target}`);
+            }
+        }
+        expect(broken).toEqual([]);
+    });
+});

@@ -81,7 +81,7 @@ request is not ready to merge while a required check is failing or flaky.
 
 Documentation lives under `docs/`:
 
-- the index is [`docs/README.md`](docs/README.md);
+- the index is [`docs/README.md`](../docs/README.md);
 - architecture and security design in `docs/architecture/`;
 - release and signing procedures in `docs/release/`;
 - operations in `docs/runbooks/`;
