@@ -1736,7 +1736,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         network_speed: { labelKey: 'sfNetworkThreshold', placeholder: '50', kind: 'number', extra: 'none' },
         disk_activity: { labelKey: 'sfDiskThreshold', placeholder: '100', kind: 'number', extra: 'none' },
         battery_level: { labelKey: 'sfBatteryLevel', placeholder: '20', kind: 'number', extra: 'direction' },
-        file_stable: { labelKey: 'sfFilePath', placeholder: 'C:\\Yedekler', kind: 'text', extra: 'seconds' }
+        file_stable: { labelKey: 'sfFilePath', placeholder: 'C:\\Yedekler', kind: 'text', extra: 'seconds' },
+        // P1-6: `directory_idle` motor, doğrulayıcı ve şablonlarda vardı ama
+        // birincil Smart Finish formunda seçilemiyordu → ulaşılamayan özellik.
+        directory_idle: { labelKey: 'sfDirectoryPath', placeholder: 'C:\\İndirilenler', kind: 'text', extra: 'seconds' }
     };
     let sfConditions = [];
 
@@ -1790,6 +1793,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!raw) return { error: t('errorEnterPath') };
                 if (raw.length > 260) return { error: t('errorPathTooLong') };
                 return { cond: { type, filePath: raw, stableSeconds: (Number.isFinite(extraNum) && extraNum > 0) ? Math.floor(extraNum) : 60 } };
+            case 'directory_idle':
+                if (!raw) return { error: t('errorEnterPath') };
+                if (raw.length > 260) return { error: t('errorPathTooLong') };
+                return { cond: { type, dirPath: raw, stableSeconds: (Number.isFinite(extraNum) && extraNum > 0) ? Math.floor(extraNum) : 300 } };
             default:
                 return { error: t('errorUnknownCondition') };
         }
@@ -1804,6 +1811,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             case 'disk_activity': return t('sfConditionDisk', { kbps: c.thresholdKbps });
             case 'battery_level': return c.belowPercent != null ? t('sfConditionBatteryBelow', { percent: c.belowPercent }) : t('sfConditionBatteryAbove', { percent: c.abovePercent });
             case 'file_stable': return t('sfConditionFileStable', { seconds: c.stableSeconds });
+            case 'directory_idle': return t('sfConditionDirStable', { seconds: c.stableSeconds });
             default: return c.type;
         }
     }
@@ -1842,6 +1850,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else if (c.type === 'file_stable') {
             v.value = c.filePath || '';
             document.getElementById('sf-extra').value = c.stableSeconds ?? 60;
+        } else if (c.type === 'directory_idle') {
+            v.value = c.dirPath || c.filePath || '';
+            document.getElementById('sf-extra').value = c.stableSeconds ?? 300;
         }
     }
 

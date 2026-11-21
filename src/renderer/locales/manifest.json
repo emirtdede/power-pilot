@@ -2,73 +2,73 @@
   "version": 1,
   "languages": {
     "tr": {
-      "keys": 1195,
-      "sha256": "714c3075a79c5f2c42c93fbebda1abdd180d72a719f4523c33a03a743b3feff9"
+      "keys": 1198,
+      "sha256": "a0c18e028f625e64996a9c33edf412622c53e01225f30ee105fbde83c35c32a8"
     },
     "en": {
-      "keys": 1195,
-      "sha256": "dcc96ea28ce11b419effce9ab646173d63ad15958b1b51f1903f63d93ab239ef"
+      "keys": 1198,
+      "sha256": "e3689e01262f1d19ef5c239bfd9f505b4d74f7effa95bc863c121caed589945f"
     },
     "de": {
-      "keys": 1195,
-      "sha256": "5abb3df8ad1b8191bdafe0d4706f6cdcde4c68616592a039a88539362795aa5e"
+      "keys": 1198,
+      "sha256": "4ae3141423225f39d09cc58f2e66448f6995fcb40e8a464baa75da5dcee81a34"
     },
     "sv": {
-      "keys": 1195,
-      "sha256": "2bfbff402386ed7ac1c47a9233a36acf6a48bfd3350c3f0f873ed02ffe46eaa8"
+      "keys": 1198,
+      "sha256": "be04264177fd254092a1537c734ef11f1838bf20ffa599b5095881565740f833"
     },
     "no": {
-      "keys": 1195,
-      "sha256": "d17b017be7c7f2063ad9d5d5b27350ed524cffe055ac244e1b517e18e1ff6b7f"
+      "keys": 1198,
+      "sha256": "2c287342e0f2f7811d481e262f6b4a2c082700942163deff7fee4397f99da530"
     },
     "da": {
-      "keys": 1195,
-      "sha256": "93988b9eb5cefa0bb3f7137a49dc57c794859680c15a72cab357e463db622cdb"
+      "keys": 1198,
+      "sha256": "fbd799fcd3d3f273b6af90149aee18a2509173cf69dff4ef64240993b73a4af0"
     },
     "fr": {
-      "keys": 1195,
-      "sha256": "ff392ed9d8402d5c8ccf1a224cd08c782a44803418db27dd64fc68acaf6042a2"
+      "keys": 1198,
+      "sha256": "41f1024303844661ba600fa17ae8c1284fd6b8e188d588f3e643c0564997fb6c"
     },
     "pl": {
-      "keys": 1195,
-      "sha256": "ccc56bcb0868517f4530b4b62b60d4e28573785297f14e0e4eb4d50bf190a216"
+      "keys": 1198,
+      "sha256": "4868836e40544488e7cff1fcdae34be33c14afc351d843330c0e16f2735c74e1"
     },
     "it": {
-      "keys": 1195,
-      "sha256": "90a63141d51e66d43ce4b69efc861a62a354569555c430c2c0046e42f45b75df"
+      "keys": 1198,
+      "sha256": "baf5099a9c12f3795143eca2c56b9a3502fe90353799c5f0268c2e32d24a6a92"
     },
     "nl": {
-      "keys": 1195,
-      "sha256": "8c54679dd44306026aefde3e8f3d8e0777442b4a4509cd76a6ad512c9efb3d92"
+      "keys": 1198,
+      "sha256": "b0edc1f5db3eaa24504cbb838f33831a05fb7e856b9427149c241534609d85cd"
     },
     "cs": {
-      "keys": 1195,
-      "sha256": "10842540b8c21820663427eb29fcec4c69a0843227ac3e2a5d8c604e7e1d6d8f"
+      "keys": 1198,
+      "sha256": "8e54f1f553d25c0a369d2bf5d08d22f80f54ded11db674daa1b9eda273436c60"
     },
     "es": {
-      "keys": 1195,
-      "sha256": "3b6a6b91186ab169340f7f27cde0910ed18fd36c038c849feabe321554f90faf"
+      "keys": 1198,
+      "sha256": "425e5bfe08b82aa165ec13a1c874c4b16fc27190e4a471a6a93f07bfeb8edb5c"
     },
     "pt": {
-      "keys": 1195,
-      "sha256": "8272dcb9a336d1ebfa00c3d15ecddf39821cecffd4c76f6ea0b88b7780f1b995"
+      "keys": 1198,
+      "sha256": "6f6ca6f00122630126fdac1c4b7a23ea4f3e60733a4533ff2f842730a208bf75"
     },
     "ja": {
-      "keys": 1195,
-      "sha256": "2e814f2fa58b9ab7bf4cbda8a6452991615cad9e24ee64e2024598b87b63d72a"
+      "keys": 1198,
+      "sha256": "d09f94564ce38f57b987fd10387fd9c5b808fd94ab53eca4957c72657edec038"
     },
     "zh": {
-      "keys": 1195,
-      "sha256": "5a351b6c79b84012bdd611fc3e51b8a65207795e2f75b635181266d6b615ce2e"
+      "keys": 1198,
+      "sha256": "a99b2f7878672aecbeed740a204ccfa824bebec42096cbb0e50b2ee42fded07a"
     },
     "ko": {
-      "keys": 1195,
-      "sha256": "6c158db4d6e92cedf852a521e916ff7e58dc54056b01e62b1624291fac2700c9"
+      "keys": 1198,
+      "sha256": "79f2c6aeeb68b03777aca68695c52fe52b19c755324ee764a7c37b106189a9ef"
     },
     "ar": {
-      "keys": 1195,
-      "sha256": "064d0b7d93d89abb278a896c84ec8c6e2b53559b821424b7bc0b5be7f2391ea0"
+      "keys": 1198,
+      "sha256": "ba20855cc3e5315bda5e75fd8bb47652a110e66058737851701896249f29a295"
     }
   },
-  "generatedAt": "2026-11-21T07:11:02.121Z"
+  "generatedAt": "2026-11-21T08:48:23.058Z"
 }

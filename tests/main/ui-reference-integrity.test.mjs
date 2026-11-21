@@ -338,3 +338,78 @@ describe('F. Dokümanlarda anılan depo yolları gerçekten var', () => {
         expect(missing).toEqual([]);
     });
 });
+
+describe('G. Motorun desteklediği her koşul türü birincil formdan kurulabilir', () => {
+    /**
+     * Denetim kusuru: `directory_idle` motor, doğrulayıcı, şablon düzenleyici ve
+     * dokümanlarda tamamen çalışıyordu; ancak birincil Smart Finish formunda
+     * hiçbir <option> yoktu. Yani en çok kullanılan ekrandan kurulamayan,
+     * yalnızca hazır şablonla erişilebilen bir özellikti. Ayrıca böyle bir
+     * görevi düzenlerken `reflectConditionToForm` select'i sessizce yanlış
+     * değerde bırakıyordu (directory_idle → ilk seçenek).
+     *
+     * Tek doğruluk kaynağı `SUPPORTED_CONDITION_TYPES`'tır.
+     */
+    const model = read('src/main/services/models/AutomationTask.js');
+    const enumBlock = model.match(/CONDITION_TYPE\s*=\s*\{([\s\S]*?)\}/);
+    const enumMap = {};
+    for (const e of enumBlock[1].matchAll(/([A-Z_]+)\s*:\s*'([a-z_]+)'/g)) enumMap[e[1]] = e[2];
+
+    const supported = (() => {
+        const set = model.match(/SUPPORTED_CONDITION_TYPES\s*=\s*new Set\(\[([\s\S]*?)\]\)/);
+        return [...set[1].matchAll(/CONDITION_TYPE\.([A-Z_]+)/g)]
+            .map((x) => enumMap[x[1]])
+            .filter(Boolean);
+    })();
+
+    /** Bir <select id="..."> içindeki option değerleri. */
+    const optionsOf = (id) => {
+        const i = html.indexOf(`id="${id}"`);
+        const s = html.lastIndexOf('<select', i);
+        const e = html.indexOf('</select>', i);
+        return [...html.slice(s, e).matchAll(/<option[^>]*value="([a-z_]+)"/g)].map((m) => m[1]);
+    };
+
+    it('birincil Smart Finish formu tüm desteklenen türleri sunar', () => {
+        expect(supported.length).toBe(8);
+        const offered = optionsOf('sf-condition-type');
+        const missing = supported.filter((t) => !offered.includes(t));
+        expect(missing, `birincil formda seçilemeyen: ${missing.join(', ')}`).toEqual([]);
+    });
+
+    it('şablon düzenleyici de tüm desteklenen türleri sunar', () => {
+        const offered = optionsOf('tpl-edit-cond-type');
+        expect(supported.filter((t) => !offered.includes(t))).toEqual([]);
+    });
+
+    it('her tür için form yapılandırması, okuyucu ve açıklayıcı vardır', () => {
+        const cfgBlock = app.match(/SF_TYPE_CONFIG\s*=\s*\{([\s\S]*?)\n    \};/);
+        const cfgTypes = [...cfgBlock[1].matchAll(/^\s{8}([a-z_]+):\s*\{/gm)].map((x) => x[1]);
+
+        const descBlock = app.slice(app.indexOf('function describeCondition'), app.indexOf('function renderSfChips'));
+        const descTypes = [...descBlock.matchAll(/case '([a-z_]+)'/g)].map((x) => x[1]);
+
+        const readBlock = app.slice(app.indexOf('function readConditionFromForm'), app.indexOf('function describeCondition'));
+        const readTypes = [...readBlock.matchAll(/case '([a-z_]+)'/g)].map((x) => x[1]);
+
+        expect(supported.filter((t) => !cfgTypes.includes(t)), 'form yapılandırması eksik').toEqual([]);
+        expect(supported.filter((t) => !descTypes.includes(t)), 'describeCondition eksik').toEqual([]);
+        expect(supported.filter((t) => !readTypes.includes(t)), 'readConditionFromForm eksik').toEqual([]);
+    });
+
+    it('her türü tanımlayan bir etiket tüm 17 dilde çevrilidir', () => {
+        // Her <option> bir data-i18n anahtarı taşır; anahtar her dilde dolu olmalı.
+        const i = html.indexOf('id="sf-condition-type"');
+        const s = html.lastIndexOf('<select', i);
+        const e = html.indexOf('</select>', i);
+        const keys = [...html.slice(s, e).matchAll(/data-i18n="([^"]+)"/g)].map((m) => m[1]);
+
+        const problems = [];
+        for (const { lang, dict } of LOCALES) {
+            for (const k of keys) {
+                if (typeof dict[k] !== 'string' || !dict[k].trim()) problems.push(`${lang}:${k}`);
+            }
+        }
+        expect(problems).toEqual([]);
+    });
+});
