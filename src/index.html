@@ -2921,6 +2921,20 @@
                     data-i18n-placeholder="sfConditionValuePlaceholder"
                     class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-sm">
             </div>
+            <!-- P1-6 (dördüncü tur): `thresholdIops` motor tarafından okunuyor
+                 ve SMART_FINISH.md'de belgeleniyor, ama birincil formda
+                 seçilemiyordu: disk için yalnızca Kbps üretilebiliyordu.
+                 Motorun IOPS yolu ulaşılamaz bir yetenekti. -->
+            <div id="sf-disk-unit-row" class="hidden">
+                <label for="sf-disk-unit"
+                    class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5"
+                    data-i18n="sfDiskUnitLabel">Ölçü Birimi</label>
+                <select id="sf-disk-unit"
+                    class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-sm">
+                    <option value="kbps" data-i18n="sfUnitKbps">Kbps (verim)</option>
+                    <option value="iops" data-i18n="sfUnitIops">IOPS (işlem/sn)</option>
+                </select>
+            </div>
             <div id="sf-extra-row" class="hidden">
                 <label id="sf-extra-label" for="sf-extra"
                     class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5"

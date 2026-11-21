@@ -24,10 +24,10 @@ sayaç sıfırlanır.
 | `cpu_usage` | `thresholdPercent` (vars. 10) | CPU eşiğin altına indiğinde |
 | `user_idle` | `idleSeconds` | Klavye/fare hareketsizken |
 | `network_speed` | `thresholdKbps` (vars. 50) | Ağ trafiği eşiğin altına indiğinde |
-| `disk_activity` | `thresholdKbps` (vars. 100) / `thresholdIops` | Disk etkinliği eşiğin altına indiğinde |
-| `file_stable` | `filePath`, `stabilitySeconds` | Dosya boyutu/mtime sabitlendiğinde |
-| `directory_idle` | `dirPath` | Klasördeki değişiklik durduğunda |
-| `battery_level` | `thresholdPercent` | Pil eşiğe ulaştığında |
+| `disk_activity` | `thresholdKbps` (vars. 100) veya `thresholdIops` | Disk etkinliği eşiğin altına indiğinde |
+| `file_stable` | `filePath`, `stableSeconds` | Dosya boyutu/mtime sabitlendiğinde |
+| `directory_idle` | `dirPath`, `stableSeconds` | Klasördeki değişiklik durduğunda |
+| `battery_level` | `belowPercent` / `abovePercent` | Pil eşiğe ulaştığında |
 
 Desteklenmeyen bir koşul tipi `createTask`'ta **reddedilir**
 (`UNSUPPORTED_CONDITION`); sessiz "bilinmeyen koşul" akışı yoktur. Eski
@@ -42,7 +42,12 @@ Desteklenmeyen bir koşul tipi `createTask`'ta **reddedilir**
 Ölçülen değer `si.fsStats()` üzerinden **KB/s**'dir (`diskKbps`).
 
 - Şablonlar `thresholdKbps` gönderir → KB/sn karşılaştırılır.
-- Geriye uyum için açıkça `thresholdIops` verilirse IOPS yolu kullanılır.
+- Smart Finish formunda **Ölçü Birimi** seçicisi vardır: `Kbps (verim)` veya
+  `IOPS (işlem/sn)`. IOPS seçilirse koşul `thresholdIops` olarak yazılır ve
+  motor IOPS yoluyla değerlendirir. Böylece motorun iki birimi de arayüzden
+  üretilebilir (belgelenmiş ama ulaşılamaz bir yetenek bırakılmaz).
+- `thresholdKbps`, `thresholdIops`, `stableSeconds`, `maxDepth` ve
+  `maxEntries` `validate.js`'te aralık denetiminden geçer.
 - Ölçüm yapılamıyorsa sonuç **fail-closed**: `satisfied: false`. "Ölçemedim,
   öyleyse bitti" varsayımı yapılmaz.
 

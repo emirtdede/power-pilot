@@ -214,6 +214,52 @@ describe('C. Koşul tipi paritesi', () => {
         });
         expect(missing, `okuyucusu olmayan koşul tipi: ${missing.join(', ')}`).toEqual([]);
     });
+
+    /**
+     * P1-6 (dördüncü tur): MOTORUN OKUDUĞU HER ALAN KURUCUDAN YAZILABİLMELİ.
+     *
+     * `thresholdIops` motor tarafından okunuyor ve SMART_FINISH.md'de
+     * belgeleniyordu, ama arayüz yalnızca `thresholdKbps` üretiyordu: motorun
+     * IOPS yolu kullanıcı için ulaşılamazdı. Aynı sınıf kusur (motor var,
+     * kapı yok). Bu kapı, motorun koşul nesnesinden okuduğu her alanın
+     * renderer formunda karşılığı olduğunu doğrular.
+     *
+     * İstisna: `maxDepth`/`maxEntries` kullanıcı yeteneği değil, tarama
+     * performans sınırlarıdır; motorda güvenli varsayılanları vardır ve
+     * SMART_FINISH.md'de kullanıcıya sunulmazlar.
+     */
+    it('motorun okuduğu her koşul alanı formdan yazılabilir', () => {
+        const engine = read('src/main/services/SmartFinishEngine.js');
+        const app = read('src/renderer/app.js');
+
+        const INTERNAL_DEFAULTS = new Set(['maxDepth', 'maxEntries', 'type']);
+        const fields = new Set();
+        for (const m of engine.matchAll(/\b(?:cond|condition|c)\.([a-zA-Z_][a-zA-Z0-9_]*)/g)) fields.add(m[1]);
+
+        const missing = [...fields]
+            .filter((f) => !INTERNAL_DEFAULTS.has(f))
+            .filter((f) => !new RegExp(`\\b${f}\\b`).test(app));
+
+        expect(missing, `formdan yazılamayan koşul alanı: ${missing.join(', ')}`).toEqual([]);
+    });
+
+    it('doğrulayıcı motorun okuduğu eşik alanlarını doğrular', () => {
+        const validate = read('src/main/ipc/validate.js');
+        // Doğrulanmayan bir alan sessizce "asla karşılanmaz"a dönüşebilir.
+        for (const field of ['thresholdKbps', 'thresholdIops', 'maxDepth', 'maxEntries', 'idleSeconds', 'stableSeconds']) {
+            expect(validate, `doğrulanmayan alan: ${field}`).toContain(field);
+        }
+    });
+
+    it('disk birimi seçicisi bağlıdır (ölü kontrol değil)', () => {
+        const app = read('src/renderer/app.js');
+        expect(html, '#sf-disk-unit seçicisi yok').toContain('id="sf-disk-unit"');
+        expect(html).toContain('id="sf-disk-unit-row"');
+        // Görünürlük tür değişiminde ayarlanmalı.
+        expect(app, 'görünürlük bağlanmamış').toMatch(/sf-disk-unit-row/);
+        // Okuma yolu IOPS dalını üretmeli.
+        expect(app).toMatch(/thresholdIops/);
+    });
 });
 
 describe('D. Güç eylemi paritesi', () => {

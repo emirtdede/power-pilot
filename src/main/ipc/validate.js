@@ -137,6 +137,24 @@ function validateCondition(cond) {
             return fail('thresholdKbps 0..1000000 olmalı.', 'INVALID_CONDITION');
         }
     }
+    // P1-6 (dördüncü tur): `thresholdIops` motor tarafından OKUNUYOR
+    // (SmartFinishEngine disk_activity IOPS yolu) ve SMART_FINISH.md'de
+    // belgeleniyor, ama burada hiç doğrulanmıyordu. Doğrulama olmadan
+    // `thresholdIops: "çok"` gibi bir değer sessizce "asla karşılanmaz"
+    // koşuluna dönüşüyordu.
+    if (cond.thresholdIops !== undefined) {
+        if (typeof cond.thresholdIops !== 'number' || !Number.isFinite(cond.thresholdIops)
+            || cond.thresholdIops < 0 || cond.thresholdIops > 1000000) {
+            return fail('thresholdIops 0..1000000 olmalı.', 'INVALID_CONDITION');
+        }
+    }
+    // Dizin taraması sınırları (motor varsayılanları: 2 / 5000).
+    if (cond.maxDepth !== undefined && (!Number.isInteger(cond.maxDepth) || cond.maxDepth < 1 || cond.maxDepth > 16)) {
+        return fail('maxDepth 1..16 olmalı.', 'INVALID_CONDITION');
+    }
+    if (cond.maxEntries !== undefined && (!Number.isInteger(cond.maxEntries) || cond.maxEntries < 1 || cond.maxEntries > 1000000)) {
+        return fail('maxEntries 1..1000000 olmalı.', 'INVALID_CONDITION');
+    }
     if (type === 'battery_level') {
         for (const key of ['belowPercent', 'abovePercent']) {
             if (cond[key] !== undefined && (typeof cond[key] !== 'number' || !Number.isFinite(cond[key]) || cond[key] < 0 || cond[key] > 100)) {
@@ -150,6 +168,15 @@ function validateCondition(cond) {
     if (cond.stabilitySeconds !== undefined) {
         if (!Number.isInteger(cond.stabilitySeconds) || cond.stabilitySeconds < 0 || cond.stabilitySeconds > 3600) {
             return fail('stabilitySeconds 0..3600 aralığında olmalı.', 'INVALID_CONDITION');
+        }
+    }
+    // P1-6 (dördüncü tur): `stableSeconds` (koşul bazlı kararlılık süresi)
+    // motor tarafından okunuyor ve form/şablonlar TARAFINDAN YAZILIYOR, ama
+    // hiç doğrulanmıyordu — yalnızca grup düzeyindeki `stabilitySeconds`
+    // denetleniyordu. Negatif/metin bir değer sessizce bozuk koşul üretirdi.
+    if (cond.stableSeconds !== undefined) {
+        if (!Number.isInteger(cond.stableSeconds) || cond.stableSeconds < 0 || cond.stableSeconds > 3600) {
+            return fail('stableSeconds 0..3600 aralığında olmalı.', 'INVALID_CONDITION');
         }
     }
     return { ok: true };

@@ -1759,6 +1759,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         oncloseWrap.classList.toggle('hidden', cfg.extra !== 'onclose');
         oncloseWrap.classList.toggle('flex', cfg.extra === 'onclose');
         extraInput.classList.toggle('hidden', cfg.extra === 'onclose' || cfg.extra === 'direction');
+        // Disk etkinliği Kbps veya IOPS olarak ifade edilebilir; motor ikisini
+        // ayrı yollarla değerlendirir (thresholdKbps / thresholdIops).
+        const diskUnitRow = document.getElementById('sf-disk-unit-row');
+        if (diskUnitRow) diskUnitRow.classList.toggle('hidden', type !== 'disk_activity');
         if (cfg.extra === 'seconds') {
             extraLabel.innerText = t('sfStableSeconds');
             if (!extraInput.value) extraInput.value = '60';
@@ -1781,9 +1785,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!Number.isFinite(num) || num <= 0) return { error: t('errorPositiveSeconds') };
                 return { cond: { type, idleSeconds: Math.floor(num) } };
             case 'network_speed':
-            case 'disk_activity':
                 if (!Number.isFinite(num) || num < 0) return { error: t('errorKbps') };
                 return { cond: { type, thresholdKbps: Math.floor(num) } };
+            case 'disk_activity': {
+                if (!Number.isFinite(num) || num < 0) return { error: t('errorKbps') };
+                const unitEl = document.getElementById('sf-disk-unit');
+                const useIops = unitEl && unitEl.value === 'iops';
+                return {
+                    cond: useIops
+                        ? { type, thresholdIops: Math.floor(num) }
+                        : { type, thresholdKbps: Math.floor(num) }
+                };
+            }
             case 'battery_level': {
                 if (!Number.isFinite(num) || num < 0 || num > 100) return { error: t('errorBatteryRange') };
                 const dir = document.getElementById('sf-direction').value;
@@ -1808,7 +1821,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             case 'cpu_usage': return t('sfConditionCpu', { percent: c.thresholdPercent });
             case 'user_idle': return t('sfConditionIdle', { seconds: c.idleSeconds });
             case 'network_speed': return t('sfConditionNetwork', { kbps: c.thresholdKbps });
-            case 'disk_activity': return t('sfConditionDisk', { kbps: c.thresholdKbps });
+            case 'disk_activity': return c.thresholdIops != null
+                ? t('sfConditionDiskIops', { iops: c.thresholdIops })
+                : t('sfConditionDisk', { kbps: c.thresholdKbps });
             case 'battery_level': return c.belowPercent != null ? t('sfConditionBatteryBelow', { percent: c.belowPercent }) : t('sfConditionBatteryAbove', { percent: c.abovePercent });
             case 'file_stable': return t('sfConditionFileStable', { seconds: c.stableSeconds });
             case 'directory_idle': return t('sfConditionDirStable', { seconds: c.stableSeconds });
@@ -1843,7 +1858,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('sf-onclose').checked = c.triggerOnClose !== false;
         } else if (c.type === 'cpu_usage') v.value = c.thresholdPercent ?? '';
         else if (c.type === 'user_idle') v.value = c.idleSeconds ?? '';
-        else if (c.type === 'network_speed' || c.type === 'disk_activity') v.value = c.thresholdKbps ?? '';
+        else if (c.type === 'network_speed') v.value = c.thresholdKbps ?? '';
+        else if (c.type === 'disk_activity') {
+            const usesIops = c.thresholdIops != null;
+            v.value = usesIops ? c.thresholdIops : (c.thresholdKbps ?? '');
+            const unitSel = document.getElementById('sf-disk-unit');
+            if (unitSel) unitSel.value = usesIops ? 'iops' : 'kbps';
+        }
         else if (c.type === 'battery_level') {
             if (c.belowPercent != null) { v.value = c.belowPercent; document.getElementById('sf-direction').value = 'below'; }
             else { v.value = c.abovePercent ?? ''; document.getElementById('sf-direction').value = 'above'; }
