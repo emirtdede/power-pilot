@@ -149,6 +149,73 @@ describe('E. mTLS istemci doğrulaması tamamlanabilir', () => {
     });
 });
 
+describe('G. Form alanları erişilebilir biçimde etiketlidir', () => {
+    // Denetim ikinci turda 13 alanın ekran okuyucu adı olmadığını buldu:
+    // kullanıcı yalnızca placeholder'a bakabiliyordu, bu da WCAG 3.3.2 ihlali.
+    const inputs = [];
+    const inputRe = /<input\b[^>]*>/g;
+    let m;
+    while ((m = inputRe.exec(html))) {
+        const tag = m[0];
+        const id = (tag.match(/\bid="([^"]+)"/) || [])[1];
+        if (!id) continue;
+        const type = (tag.match(/\btype="([^"]+)"/) || [])[1] || 'text';
+        if (!['text', 'number', 'time', 'password', 'search', 'email', 'url', 'tel'].includes(type)) continue;
+        inputs.push({ id, type, index: m.index, tag });
+    }
+
+    /** İçinde bulunduğu `<label>...</label>` bloğunu arar (örtük etiketleme). */
+    function insideLabel(idx) {
+        let pos = idx;
+        while (pos > 0) {
+            const open = html.lastIndexOf('<label', pos);
+            if (open === -1) return false;
+            const openEnd = html.indexOf('>', open);
+            const close = html.indexOf('</label>', openEnd);
+            if (close === -1) return false;
+            if (openEnd < idx && close > idx) return true;
+            pos = open - 1;
+        }
+        return false;
+    }
+
+    it('her metin/sayı/parola alanının bir adı vardır', () => {
+        const unlabelled = inputs.filter((i) => {
+            const hasAria = /\baria-label(?:ledby)?=|\btitle=/.test(i.tag);
+            const hasFor = new RegExp('<label[^>]*\\bfor="' + i.id + '"').test(html);
+            return !hasAria && !hasFor && !insideLabel(i.index);
+        }).map((i) => i.id);
+        expect(unlabelled, `etiketlenmemiş alanlar: ${unlabelled.join(', ')}`).toEqual([]);
+    });
+
+    it('denetimde bulunan 13 alan hâlâ etiketlidir', () => {
+        // Regresyon listesi: bu alanların etiketi sessizce kaldırılmamalı.
+        const audited = [
+            'pin-input', 'sf-extra', 'sf-template-name', 'wh-name', 'wh-url',
+            'wh-secret', 'wh-user', 'wol-device-name', 'wol-mac', 'wol-ip',
+            'wz-watt', 'wz-bill', 'pin-modal-input'
+        ];
+        for (const id of audited) {
+            const hasAria = new RegExp(`id="${id}"[^>]*aria-label`).test(html);
+            const hasFor = new RegExp(`<label[^>]*\\bfor="${id}"`).test(html);
+            expect(hasAria || hasFor, `${id} etiketsiz`).toBe(true);
+        }
+    });
+
+    it('yeni eklenen aria etiketleri çeviri kataloğunda karşılık bulur', () => {
+        const keys = ['pinInputAriaLabel', 'sfTemplateNameAriaLabel', 'webhookNameAriaLabel',
+            'webhookUrlAriaLabel', 'webhookAuthAriaLabel', 'webhookSecretAriaLabel',
+            'webhookUserAriaLabel', 'wolNameAriaLabel', 'wolMacAriaLabel', 'wolBroadcastAriaLabel'];
+        const tr = JSON.parse(read('src/renderer/locales/tr.json'));
+        const en = JSON.parse(read('src/renderer/locales/en.json'));
+        for (const key of keys) {
+            expect(html, `${key} bağlantısı`).toContain(`data-i18n-aria-label="${key}"`);
+            expect(typeof tr[key], `tr.${key}`).toBe('string');
+            expect(typeof en[key], `en.${key}`).toBe('string');
+        }
+    });
+});
+
 describe('F. Genel ulaşılabilirlik sözleşmesi', () => {
     it('her yeni ayarın hem kontrolü hem kalıcı yazıcısı vardır', () => {
         const pairs = [

@@ -2063,6 +2063,7 @@
                                 </div>
                                 <div class="flex flex-wrap gap-2">
                                     <input id="pin-input" type="password" inputmode="numeric" maxlength="8"
+                                        aria-label="İptal PIN'i" data-i18n-aria-label="pinInputAriaLabel"
                                         placeholder="4-8 hane" data-i18n-placeholder="pinInputPlaceholder"
                                         class="flex-1 min-w-[140px] bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-sm font-mono" />
                                     <button type="button" id="btn-pin-set" data-i18n="pinSetButton"
@@ -2916,7 +2917,7 @@
                     class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-sm">
             </div>
             <div id="sf-extra-row" class="hidden">
-                <label id="sf-extra-label"
+                <label id="sf-extra-label" for="sf-extra"
                     class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5"
                     data-i18n="sfExtraLabel">Ek Değer</label>
                 <div class="flex flex-wrap gap-2 items-center">
@@ -3033,6 +3034,7 @@
                     data-i18n="sfCreateTask">Smart Finish Görevi Oluştur</button>
                 <div class="flex flex-wrap gap-2">
                     <input id="sf-template-name" type="text" maxlength="80" placeholder="Şablon adı (örn: Gece render)"
+                        aria-label="Smart Finish şablon adı" data-i18n-aria-label="sfTemplateNameAriaLabel"
                         data-i18n-placeholder="sfTemplateNamePlaceholder"
                         class="flex-1 min-w-[180px] bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-sm" />
                     <button type="button" id="btn-save-sf-template" class="pp-btn-secondary text-xs whitespace-nowrap"
@@ -3542,16 +3544,16 @@
                             <p class="text-xs text-slate-600 dark:text-slate-400 mb-3" data-i18n="webhookSubtitle">Olay olunca HTTPS adresinize bildirim gider (SSRF korumalı). Gizli anahtarlar bir kez yazılır, bir daha gösterilmez.</p>
                             <div id="webhook-list" class="space-y-2 mb-3"></div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <input id="wh-name" type="text" placeholder="Ad (örn: n8n)" data-i18n-placeholder="webhookNamePlaceholder" class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs" />
-                                <input id="wh-url" type="text" placeholder="https://..." class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs font-mono" />
-                                <select id="wh-auth" class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs">
+                                <input id="wh-name" type="text" aria-label="Webhook adı" data-i18n-aria-label="webhookNameAriaLabel" placeholder="Ad (örn: n8n)" data-i18n-placeholder="webhookNamePlaceholder" class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs" />
+                                <input id="wh-url" type="text" aria-label="Webhook HTTPS adresi" data-i18n-aria-label="webhookUrlAriaLabel" placeholder="https://..." class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs font-mono" />
+                                <select id="wh-auth" aria-label="Webhook kimlik doğrulama" data-i18n-aria-label="webhookAuthAriaLabel" class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs">
                                     <option value="none" data-i18n="webhookAuthNone">Kimliksiz</option>
                                     <option value="bearer">Bearer Token</option>
                                     <option value="basic">Basic Auth</option>
                                     <option value="hmac" data-i18n="webhookHmac">HMAC İmza</option>
                                 </select>
-                                <input id="wh-secret" type="password" placeholder="Gizli değer" data-i18n-placeholder="webhookSecretPlaceholder" class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs font-mono" />
-                                <input id="wh-user" type="text" placeholder="Basic kullanıcı adı" data-i18n-placeholder="webhookBasicUserPlaceholder" class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs hidden" />
+                                <input id="wh-secret" type="password" aria-label="Webhook gizli değeri" data-i18n-aria-label="webhookSecretAriaLabel" placeholder="Gizli değer" data-i18n-placeholder="webhookSecretPlaceholder" class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs font-mono" />
+                                <input id="wh-user" type="text" aria-label="Basic kullanıcı adı" data-i18n-aria-label="webhookUserAriaLabel" placeholder="Basic kullanıcı adı" data-i18n-placeholder="webhookBasicUserPlaceholder" class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs hidden" />
                                 <label class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 cursor-pointer">
                                     <input id="wh-enabled" type="checkbox" checked class="w-4 h-4" /> <span data-i18n="webhookEnabled">Etkin</span>
                                 </label>
@@ -3618,9 +3620,9 @@
                                 <p class="text-xs text-slate-600 dark:text-slate-400" data-i18n="intWolSubtitle">Yerel ağdaki kapalı cihazlara Magic Packet gönderin veya sık kullandığınız cihazları kaydedin.</p>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                <input id="wol-device-name" type="text" placeholder="Cihaz adı (örn: Ofis PC)" data-i18n-placeholder="wolNamePlaceholder" class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs" />
-                                <input id="wol-mac" type="text" placeholder="MAC Adresi (AA:BB:CC:DD:EE:FF)" data-i18n-placeholder="wolMacPlaceholder" class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs font-mono" />
-                                <input id="wol-ip" type="text" placeholder="Broadcast IP (255.255.255.255)" data-i18n-placeholder="wolBroadcastPlaceholder" value="255.255.255.255" class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs font-mono" />
+                                <input id="wol-device-name" type="text" aria-label="WoL cihaz adı" data-i18n-aria-label="wolNameAriaLabel" placeholder="Cihaz adı (örn: Ofis PC)" data-i18n-placeholder="wolNamePlaceholder" class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs" />
+                                <input id="wol-mac" type="text" aria-label="MAC adresi" data-i18n-aria-label="wolMacAriaLabel" placeholder="MAC Adresi (AA:BB:CC:DD:EE:FF)" data-i18n-placeholder="wolMacPlaceholder" class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs font-mono" />
+                                <input id="wol-ip" type="text" aria-label="Broadcast IP adresi" data-i18n-aria-label="wolBroadcastAriaLabel" placeholder="Broadcast IP (255.255.255.255)" data-i18n-placeholder="wolBroadcastPlaceholder" value="255.255.255.255" class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs font-mono" />
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <button type="button" id="btn-send-wol" class="pp-btn-primary text-xs" data-i18n="wolSend">Magic Packet Gönder</button>
@@ -3860,12 +3862,12 @@
                     data-i18n="wizardDetecting">
                     Cihaz algılanıyor...
                 </div>
-                <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-400"
+                <label for="wz-watt" class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-400"
                     data-i18n="wizardWattLabel">Güç tüketimi (Watt, boş bırakılabilir)</label>
                 <input id="wz-watt" type="number" min="5" max="2000" placeholder="Örn: 65"
                     data-i18n-placeholder="wattPlaceholder"
                     class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-sm" />
-                <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-400"
+                <label for="wz-bill" class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-400"
                     data-i18n="wizardBillLabel">Elektrik bedeli (birim/kWh, boş bırakılabilir)</label>
                 <input id="wz-bill" type="text" inputmode="decimal" placeholder="Örn: 3,24"
                     data-i18n-placeholder="pricePlaceholder"
@@ -4168,6 +4170,7 @@
             <div class="pp-modal-body space-y-3">
                 <p id="pin-modal-text" data-i18n="pinPromptCancel">Devam etmek için iptal PIN’ini girin.</p>
                 <input id="pin-modal-input" type="password" inputmode="numeric" maxlength="8"
+                    aria-label="İptal PIN'i" data-i18n-aria-label="pinInputAriaLabel"
                     class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-sm font-mono text-center tracking-[0.5em]" />
                 <p id="pin-modal-error" class="text-xs text-red-600 dark:text-red-400 min-h-[1rem] font-medium"></p>
             </div>

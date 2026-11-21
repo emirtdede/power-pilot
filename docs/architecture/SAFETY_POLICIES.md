@@ -22,8 +22,11 @@ Motorun tek giriş noktası `SafetyPolicyEngine.evaluate(task)`'tır ve
 
 ### Korunan uygulamalar
 
-- Liste `settings.protectedApps` içinde tutulur, Ayarlar → Güvenlik ekranından
-  düzenlenir. Boş/bozuk değerde güvenli varsayılana döner.
+- Liste `settings.protectedApps` içinde tutulur; **Ayarlar → Otomasyon → Güvenlik
+  Politikası** kartından (virgülle ayrılmış `.exe` adları) düzenlenir. Boş/bozuk
+  değerde güvenli varsayılana döner. Aynı kartta `forceCloseApps` ve
+  `remoteApprovalRequired` da bulunur; bu üç ayar arka uçta gerçek davranışa
+  sahiptir, salt kozmetik değildir.
 - Girdiler `.exe` biçimine ve kanonik ada normalize edilir; yol veya komut
   içeren girdiler sessizce atılır (enjeksiyon yüzeyi yok).
 - **Görev muafiyeti:** bir görev `process_running` koşuluyla `steam.exe`'yi
