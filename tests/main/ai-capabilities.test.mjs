@@ -3,11 +3,16 @@
  * Tamamen yerel ve deterministik (LLM çağrısı gerektirmez).
  */
 import { describe, it, expect } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import templateAgent from '../../src/main/services/agents/templateAgent.js';
 import connectionAgent from '../../src/main/services/agents/connectionAgent.js';
 import docsQaAgent from '../../src/main/services/agents/docsQaAgent.js';
 import { searchDocs, listAllDocChunks } from '../../src/main/services/DocsKnowledgeBase.js';
 import TemplateService from '../../src/main/services/TemplateService.js';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
 describe('templateAgent (WP-8)', () => {
     it('TR doğal dilinden geçerli koşullu şablon üretir', async () => {
@@ -133,3 +138,80 @@ describe('DocsKnowledgeBase & docsQaAgent (WP-8 Yerel RAG)', () => {
         expect(res.docSectionId).toBeTruthy();
     });
 });
+
+/**
+ * Bilgi tabanı GERÇEĞİ anlatmalı.
+ *
+ * Denetim kusuru (beşinci tur): uygulama içi dokümanlar (Docs ekranı + AI RAG
+ * korpusu) var olmayan yetenekleri anlatıyordu:
+ *   - MCP: schedule_smart_finish, cancel_task, snooze_task, list_templates,
+ *     get_stats adlı 5 araç "sunuluyor" deniyordu; sunucuda yoklar. Gerçekte
+ *     olan 5 araç da (cancel_timer, power_action, audit_verify, inventory,
+ *     pending_orders) hiç anılmıyordu.
+ *   - REST: tasks/smart-finish, DELETE tasks/:id, tasks/:id/snooze, history,
+ *     stats uçları anılıyordu; hiçbiri yok. Gerçek uçların çoğu yoktu.
+ *   - CLI: src/cli/index.js, `schedule --in/--at`, snooze, pause/resume,
+ *     history, stats anılıyordu; dosya adı ve komutların hiçbiri yok.
+ *
+ * Bu, "placebo" kusurun doküman tarafıdır: kullanıcı belgelenmiş bir yeteneği
+ * arar, bulamaz. Kullanıcı en çok bu metinlere güvendiği için kapı şart.
+ */
+describe('Doküman gerçeği — belgelenen her yetenek kodda var', () => {
+    const docs = readDoc('src/main/services/DocsKnowledgeBase.js');
+    const mcp = readDoc('src/mcp/server.js');
+    const api = readDoc('src/main/services/LocalApiService.js');
+    const cli = readDoc('src/cli/commands.js');
+
+    it('dokümanda anılan her MCP aracı sunucuda kayıtlı', () => {
+        const section = docs.slice(docs.indexOf("id: 'mcp-server-guide'"), docs.indexOf("id: 'rest-api-endpoints'"));
+        const cited = new Set([...section.matchAll(/powerpilot_[a-z_]+/g)].map((m) => m[0]));
+        const real = new Set([...mcp.matchAll(/case '(powerpilot_[a-z_]+)'/g)].map((m) => m[1]));
+
+        const ghosts = [...cited].filter((t) => !real.has(t));
+        expect(ghosts, `dokümanda var, sunucuda yok: ${ghosts.join(', ')}`).toEqual([]);
+    });
+
+    it('sunucudaki her MCP aracı dokümanda anılır (belgesiz yetenek yok)', () => {
+        const section = docs.slice(docs.indexOf("id: 'mcp-server-guide'"), docs.indexOf("id: 'rest-api-endpoints'"));
+        const cited = new Set([...section.matchAll(/powerpilot_[a-z_]+/g)].map((m) => m[0]));
+        const real = new Set([...mcp.matchAll(/case '(powerpilot_[a-z_]+)'/g)].map((m) => m[1]));
+
+        const undocumented = [...real].filter((t) => !cited.has(t));
+        expect(undocumented, `sunucuda var, dokümanda yok: ${undocumented.join(', ')}`).toEqual([]);
+    });
+
+    it('dokümanda anılan her REST yolu gerçekten yönlendiriliyor', () => {
+        const real = new Set();
+        for (const m of api.matchAll(/path === '(\/api\/v1\/[a-z/-]+)'/g)) real.add(m[1]);
+        for (const m of api.matchAll(/'(\/api\/v1\/power\/[a-z]+)'\s*:/g)) real.add(m[1]);
+        real.add('/api/v1/tasks/:id/cancel');
+
+        const normalize = (p) => p.replace(/:[a-zA-Z]+/g, ':id').replace(/\/$/, '');
+        const known = new Set([...real].map(normalize));
+
+        const cited = new Set([...docs.matchAll(/\/api\/v1\/[a-z\-/:]+/g)].map((m) => m[0]));
+        const ghosts = [...cited].filter((p) => !known.has(normalize(p)));
+        expect(ghosts, `dokümanda var, API'de yok: ${ghosts.join(', ')}`).toEqual([]);
+    });
+
+    it('dokümanda anılan CLI dosyası ve komutları gerçek', () => {
+        // src/cli/index.js diye bir dosya hiç olmadı.
+        expect(fs.existsSync(path.join(root, 'src/cli/index.js')), 'docs src/cli/index.js diyor').toBe(false);
+        for (const m of docs.matchAll(/(src\/cli\/[a-z]+\.js)/g)) {
+            expect(fs.existsSync(path.join(root, m[1])), `dokümanda anılan dosya yok: ${m[1]}`).toBe(true);
+        }
+
+        // Dokümanda geçen `node src/cli/powerpilot.js <cmd>` komutları katalogda olmalı.
+        const cmds = new Set([...cli.matchAll(/^\s{4}'?([a-z][a-z-]+)'?\s*:\s*\{/gm)].map((m) => m[1]));
+        const power = new Set([...(cli.match(/const POWER_ACTIONS = \[([^\]]+)\]/) || [])[1]?.matchAll(/'([a-z]+)'/g) || []].map((x) => x[1]));
+        const known = new Set([...cmds, ...power]);
+
+        const citedCmds = new Set([...docs.matchAll(/node src\/cli\/powerpilot\.js ([a-z][a-z-]+)/g)].map((m) => m[1]));
+        const ghosts = [...citedCmds].filter((c) => !known.has(c));
+        expect(ghosts, `dokümanda var, CLI'da yok: ${ghosts.join(', ')}`).toEqual([]);
+    });
+});
+
+function readDoc(p) {
+    return fs.readFileSync(path.join(root, p), 'utf8');
+}
