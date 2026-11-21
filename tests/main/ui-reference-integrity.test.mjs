@@ -235,3 +235,67 @@ describe('D. Doküman bağlantıları çözümlenir (kırık bağlantı yok)', (
         expect(broken).toEqual([]);
     });
 });
+
+describe('E. Dokümanlardaki sayısal iddialar koddan türetilir', () => {
+    // Denetim kusuru: README "150 suite / 1.724 test / 18 E2E spec" ve mağaza
+    // kontrol listesi "Sürüm 1.1.0" diyordu; gerçek değerler 158 / 1.812 / 26
+    // ve 1.0.0. Elle bakılan sayılar kaçınılmaz olarak bayatlar.
+    const pkg = JSON.parse(read('package.json'));
+
+    function walk(dir, out = [], test = (name) => name.endsWith('.md')) {
+        if (!fs.existsSync(dir)) return out;
+        for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+            if (['node_modules', '.git', 'dist', 'release', 'out', 'coverage'].includes(e.name)) continue;
+            const p = path.join(dir, e.name);
+            if (e.isDirectory()) walk(p, out, test);
+            else if (test(e.name)) out.push(p);
+        }
+        return out;
+    }
+
+    it('README birim test paketi sayısı gerçek dosya sayısıyla uyuşur', () => {
+        const actual = walk(path.join(root, 'tests'), [], (n) => /\.test\.(mjs|js|ts)$/.test(n)).length;
+        const readme = read('README.md');
+        // README'de "N unit test suites" / "N suites" iddiası varsa doğru olmalı.
+        for (const m of readme.matchAll(/(\d+)\s+(?:unit test )?suites?\b/gi)) {
+            expect(Number(m[1]), `README suite iddiası (gerçek: ${actual})`).toBe(actual);
+        }
+        expect(readme).not.toMatch(/\(\s*\d[\d,]*\s+tests?\s*\)/i);
+    });
+
+    it('README E2E spec sayısı gerçek dosya sayısıyla uyuşur', () => {
+        const actual = walk(path.join(root, 'tests/e2e'), [], (n) => /\.spec\.(js|mjs|ts)$/.test(n)).length;
+        const readme = read('README.md');
+        for (const m of readme.matchAll(/(\d+)\s+Electron E2E test specs?/gi)) {
+            expect(Number(m[1]), `README E2E iddiası (gerçek: ${actual})`).toBe(actual);
+        }
+    });
+
+    it('mağaza kontrol listesi gerçek sürümü anar', () => {
+        const sc = read('docs/store/STORE_CHECKLIST.md');
+        for (const m of sc.matchAll(/\*\*Sürüm:\*\*\s*`(\d+\.\d+\.\d+)`/g)) {
+            expect(m[1], 'mağaza kontrol listesi sürümü').toBe(pkg.version);
+        }
+    });
+
+    it('güncel dokümanlarda "N dil / N anahtar" iddiası doğru', () => {
+        const tr = JSON.parse(read('src/renderer/locales/tr.json'));
+        const keys = Object.keys(tr).length;
+        const langs = fs.readdirSync(path.join(root, 'src/renderer/locales'))
+            .filter((f) => f.endsWith('.json') && f !== 'manifest.json').length;
+
+        // CHANGELOG tarihsel kayıttır: eski sayıları korumak zorundadır.
+        const files = [...walk(path.join(root, 'docs')), path.join(root, 'README.md')];
+        const problems = [];
+        for (const file of files) {
+            const rel = file.replace(root, '').replace(/\\/g, '/');
+            fs.readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
+                for (const m of line.matchAll(/(\d+)\s*(?:dil|lang|locale)[^.\n]{0,30}?(\d{2,5})\s*(?:anahtar|key)/gi)) {
+                    const l = Number(m[1]), k = Number(m[2]);
+                    if (l !== langs || k !== keys) problems.push(`${rel}:${i + 1}: "${m[0].trim()}" (gerçek ${langs}/${keys})`);
+                }
+            });
+        }
+        expect(problems).toEqual([]);
+    });
+});

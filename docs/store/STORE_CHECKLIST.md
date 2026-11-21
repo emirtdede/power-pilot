@@ -32,7 +32,7 @@
   HTTPS zaman damgasını desteklemiyor ("A required function is not present").
   Paket üretimi ve manifest doğrulaması başarılı; yalnızca imzalama adımı
   gerçek mağaza sertifikası + güncel signtool ile yapılır.
-- [ ] **Sürüm:** `1.1.0`, CHANGELOG, 17 dilde Store açıklaması,
+- [ ] **Sürüm:** `1.0.0`, CHANGELOG, 17 dilde Store açıklaması,
   PIN'siz demo modu notu (sertifikasyon 10.3.1).
 - [x] **Partner Center URL'leri:** `store-listing.json` içindeki
   `privacyPolicyUrl` / `supportUrl` / `eulaUrl` / `contactUrl` canlı
