@@ -388,6 +388,15 @@ const SETTINGS_SCHEMA = {
     localApiPfxPassphrase: { str: [1, 1024], nullable: true },
     consoleClientKeyPem: { str: [1, 65536], nullable: true },
     consoleClientPfxPassphrase: { str: [1, 1024], nullable: true },
+    // P1-6: ajan→konsol mTLS materyali. `TlsConfig.buildClientOptions` bu
+    // alanları okuyor; şemada yoklarsa yazma `UNKNOWN_SETTING` ile reddedilir
+    // ve konsol istemci sertifikası hiçbir zaman yapılandırılamazdı.
+    consoleClientCertPem: { str: [1, 65536], nullable: true },
+    consoleClientCertFile: { str: [1, 512], nullable: true },
+    consoleClientKeyFile: { str: [1, 512], nullable: true },
+    consoleClientPfxFile: { str: [1, 512], nullable: true },
+    consoleClientCaFile: { str: [1, 512], nullable: true },
+    consoleClientCaPem: { str: [1, 65536], nullable: true },
     deviceRole: ['workstation', 'server'], // FAZ D: sunucu profilinde uyku/kapatma yasak
     upsEnabled: 'boolean', // FAZ D
     // O-16: NUT protokolüne satır enjeksiyonunu önleyen katı desenler.

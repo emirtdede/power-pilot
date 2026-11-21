@@ -2438,7 +2438,12 @@ async function applySettingsPatch(newSettings, current, auditAction) {
     const needsRestart = rest.localApiEnabled !== undefined || rest.localApiPort !== undefined || rest.lanModeEnabled !== undefined
         || rest.localApiTlsEnabled !== undefined || rest.localApiRequireClientCert !== undefined
         || rest.localApiTlsStrict !== undefined
-        || secretFields.includes('localApiKeyPem') || secretFields.includes('localApiPfxPassphrase');
+        || rest.consoleUrl !== undefined || rest.consoleClientCertFile !== undefined
+        || rest.consoleClientKeyFile !== undefined || rest.consoleClientPfxFile !== undefined
+        || rest.consoleClientCaFile !== undefined
+        || secretFields.includes('localApiKeyPem') || secretFields.includes('localApiPfxPassphrase')
+        || secretFields.includes('consoleClientCertPem') || secretFields.includes('consoleClientKeyPem')
+        || secretFields.includes('consoleClientPfxPassphrase');
     const before = { ...current };
     const previousSecrets = {};
     for (const field of secretFields) previousSecrets[field] = current[field] || null;

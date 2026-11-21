@@ -3749,6 +3749,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (entUrl) entUrl.value = s.consoleUrl || '';
             if (entAgent) entAgent.value = s.agentId || '';
             if (entRole) entRole.value = s.deviceRole || 'workstation';
+            // P1-6: ajan→konsol mTLS materyali (dosya yolları düz metin değildir).
+            const entTlsFields = [
+                ['ent-client-cert-file', 'consoleClientCertFile'],
+                ['ent-client-key-file', 'consoleClientKeyFile'],
+                ['ent-client-pfx-file', 'consoleClientPfxFile'],
+                ['ent-client-ca-file', 'consoleClientCaFile']
+            ];
+            for (const [id, key] of entTlsFields) {
+                const el = document.getElementById(id);
+                if (el) el.value = s[key] || '';
+            }
+            // PFX parolası bir sırdır: renderer'a hiç gönderilmez (RENDERER_SECRET_FIELDS).
+            const entPfxPass = document.getElementById('ent-client-pfx-passphrase');
+            if (entPfxPass) {
+                entPfxPass.value = '';
+                const hasStored = !!(s.secretPresence && s.secretPresence.consoleClientPfxPassphrase);
+                entPfxPass.placeholder = hasStored ? t('apiPfxPassphraseStored') : '••••';
+            }
 
             // P0/BLOCKER-001: güç isteği ölçümü yükseltme gerektiriyorsa
             // uyarı satırı görünür olur (kapı atlandığı gizlenmez).
@@ -4089,8 +4107,25 @@ document.addEventListener('DOMContentLoaded', async () => {
                 agentId: agentId || null,
                 deviceRole,
                 consoleUrl: url || null,
+                // P1-6: ajan→konsol mTLS materyali.
+                consoleClientCertFile: (document.getElementById('ent-client-cert-file')?.value || '').trim() || null,
+                consoleClientKeyFile: (document.getElementById('ent-client-key-file')?.value || '').trim() || null,
+                consoleClientPfxFile: (document.getElementById('ent-client-pfx-file')?.value || '').trim() || null,
+                consoleClientCaFile: (document.getElementById('ent-client-ca-file')?.value || '').trim() || null,
                 ...(agentKey ? { consoleAgentKey: agentKey } : {})
             };
+            // Sır alanı YALNIZCA kullanıcı yazdıysa gönderilir; aksi halde kayıtlı
+            // parola silinirdi (alan renderer'a hiç gelmez, hep boş görünür).
+            const entPfxPass = (document.getElementById('ent-client-pfx-passphrase')?.value || '');
+            if (entPfxPass.length > 0) patch.consoleClientPfxPassphrase = entPfxPass;
+            // Sertifika + anahtar ya da PFX: biri tam olmalı, yarım materyal sessizce
+            // kabul edilmemeli (TLS el sıkışması sonradan anlaşılmaz biçimde düşerdi).
+            const hasCertPair = !!patch.consoleClientCertFile && !!patch.consoleClientKeyFile;
+            const hasPfx = !!patch.consoleClientPfxFile;
+            if ((patch.consoleClientCertFile || patch.consoleClientKeyFile) && !hasCertPair && !hasPfx) {
+                showToast(t('errorTlsMaterialRequired'), 'error');
+                return;
+            }
             const run = (pin) => window.electronAPI.saveSettingsAtomic({ settings: patch, pin });
             const res = await run();
             if (isPinChallenge(res)) {

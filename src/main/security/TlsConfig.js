@@ -94,7 +94,13 @@ function buildConsoleServerOptions(settings = {}) {
  * @returns {object}
  */
 function buildClientOptions(settings = {}) {
-    const ca = readMaterial(settings.consoleCaPem || settings.localApiCaPem, settings.consoleCaFile || settings.localApiCaFile);
+    // P1-6: `consoleClientCaFile` ajan→konsol mTLS için ayrı CA yoludur;
+    // eskiden yalnızca sunucu tarafı `consoleCaFile` okunuyordu, bu yüzden
+    // istemciye özel CA ayarı sessizce yok sayılırdı.
+    const ca = readMaterial(
+        settings.consoleClientCaPem || settings.consoleCaPem || settings.localApiCaPem,
+        settings.consoleClientCaFile || settings.consoleCaFile || settings.localApiCaFile
+    );
     const cert = readMaterial(settings.consoleClientCertPem, settings.consoleClientCertFile);
     const key = readMaterial(settings.consoleClientKeyPem, settings.consoleClientKeyFile);
     const pfx = readMaterial(null, settings.consoleClientPfxFile);

@@ -149,6 +149,55 @@ describe('E. mTLS istemci doğrulaması tamamlanabilir', () => {
     });
 });
 
+describe('H. Ajan→konsol mTLS materyali tamamlanabilir', () => {
+    // Denetim: `TlsConfig.buildClientOptions` `consoleClientCertFile`,
+    // `consoleClientKeyFile`, `consoleClientPfxFile` ve `consoleClientKeyPem`
+    // okuyordu; hiçbiri depo varsayılanlarında ya da şemada yoktu. Sonuç:
+    // konsol istemci sertifikası istediğinde ajan hiçbir zaman sunamıyordu
+    // (`UNKNOWN_SETTING` ile reddediliyordu) — yarım kalmış mTLS.
+    const storage = read('src/main/services/StorageService.js');
+    const validate = read('src/main/ipc/validate.js');
+    const tls = read('src/main/security/TlsConfig.js');
+
+    const keys = ['consoleClientCertPem', 'consoleClientCertFile', 'consoleClientKeyPem',
+        'consoleClientKeyFile', 'consoleClientPfxFile', 'consoleClientCaFile', 'consoleClientCaPem'];
+
+    it('her anahtar depo varsayılanlarında tanımlıdır', () => {
+        for (const key of keys) {
+            expect(storage, `${key} varsayılanı`).toMatch(new RegExp('\\b' + key + ':\\s*null'));
+        }
+    });
+
+    it('her anahtar şemada kabul edilir', () => {
+        for (const key of keys) {
+            expect(validate, `${key} şeması`).toMatch(new RegExp('\\b' + key + ':\\s*\\{'));
+        }
+    });
+
+    it('TLS katmanı bu anahtarları gerçekten okur', () => {
+        expect(tls).toMatch(/settings\.consoleClientCertPem, settings\.consoleClientCertFile/);
+        expect(tls).toMatch(/settings\.consoleClientKeyPem, settings\.consoleClientKeyFile/);
+        expect(tls).toMatch(/settings\.consoleClientPfxFile/);
+        // İstemciye özel CA, sunucu CA'sından önce gelir.
+        expect(tls).toMatch(/settings\.consoleClientCaFile \|\| settings\.consoleCaFile/);
+    });
+
+    it('arayüzde dört alan vardır ve kaydetme yüküne dahildir', () => {
+        for (const id of ['ent-client-cert-file', 'ent-client-key-file', 'ent-client-pfx-file', 'ent-client-ca-file']) {
+            expect(hasControl(id, 'text'), `${id} alanı`).toBe(true);
+        }
+        expect(app).toMatch(/consoleClientCertFile: \(document\.getElementById\('ent-client-cert-file'\)/);
+        expect(app).toMatch(/consoleClientKeyFile: \(document\.getElementById\('ent-client-key-file'\)/);
+        expect(app).toMatch(/consoleClientPfxFile: \(document\.getElementById\('ent-client-pfx-file'\)/);
+        expect(app).toMatch(/consoleClientCaFile: \(document\.getElementById\('ent-client-ca-file'\)/);
+    });
+
+    it('PFX parolası yalnızca kullanıcı yazdıysa gönderilir', () => {
+        // Sır alanı renderer'a hiç gelmez; boşken `null` göndermek kayıtlıyı silerdi.
+        expect(app).toMatch(/if \(entPfxPass\.length > 0\) patch\.consoleClientPfxPassphrase = entPfxPass;/);
+    });
+});
+
 describe('G. Form alanları erişilebilir biçimde etiketlidir', () => {
     // Denetim ikinci turda 13 alanın ekran okuyucu adı olmadığını buldu:
     // kullanıcı yalnızca placeholder'a bakabiliyordu, bu da WCAG 3.3.2 ihlali.

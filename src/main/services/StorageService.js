@@ -140,6 +140,16 @@ class StorageService {
                 agentId: null,
                 consoleUrl: null,
                 consoleAgentKey: null,
+                // P1-6: ajan→konsol mTLS materyali. `TlsConfig.buildClientOptions`
+                // bu alanları okuyordu ama hiçbiri depoda yoktu; konsol istemci
+                // sertifikası istediğinde ajan hiçbir zaman sunamıyordu.
+                consoleClientCertPem: null,
+                consoleClientCertFile: null,
+                consoleClientKeyPem: null,
+                consoleClientKeyFile: null,
+                consoleClientPfxFile: null,
+                consoleClientCaFile: null,
+                consoleClientCaPem: null,
                 deviceRole: 'workstation',
                 upsEnabled: false,
                 upsHost: '127.0.0.1',
@@ -853,7 +863,12 @@ class StorageService {
             if (s[k] !== null && typeof s[k] !== 'string') s[k] = null;
             if (s[k] === undefined) s[k] = null;
         }
-        for (const k of ['localApiCertPem', 'localApiKeyPem', 'localApiCaPem', 'consolePublicKeyPem', 'agentId', 'consoleUrl', 'consoleAgentKey']) {
+        // P1-6: ajan→konsol mTLS dosya yolları.
+        for (const k of ['consoleClientCertFile', 'consoleClientKeyFile', 'consoleClientPfxFile', 'consoleClientCaFile']) {
+            if (s[k] !== null && typeof s[k] !== 'string') s[k] = null;
+            if (s[k] === undefined) s[k] = null;
+        }
+        for (const k of ['localApiCertPem', 'localApiKeyPem', 'localApiCaPem', 'consolePublicKeyPem', 'agentId', 'consoleUrl', 'consoleAgentKey', 'consoleClientCertPem', 'consoleClientKeyPem', 'consoleClientCaPem']) {
             if (s[k] === undefined) s[k] = null;
         }
         if (s.consoleAgentKey !== null && typeof s.consoleAgentKey !== 'string') s.consoleAgentKey = null;
