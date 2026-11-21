@@ -360,3 +360,128 @@ describe('D. Güç eylemi paritesi', () => {
         expect(problems).toEqual([]);
     });
 });
+
+/**
+ * E. IPC kanal paritesi.
+ *
+ * Ölçülen durum: main.js 84 `ipcHandle` + 10 `ipcOn` kaydeder, preload.js 84
+ * `invoke` + 10 `send` yapar — birebir simetrik. Bu simetrinin KORUNMASI
+ * gerekir: preload'da çağrılan ama karşılığı olmayan bir kanal, çağrı anında
+ * sessizce reddedilen (veya hiç yanıt vermeyen) bir buton demektir; tersi ise
+ * ulaşılamayan bir yetenektir.
+ *
+ * `window-minimize` gibi kanallar preload'da `ipcRenderer.send` ile gider;
+ * bu yüzden invoke ve send birlikte değerlendirilir.
+ */
+describe('E. IPC kanal paritesi', () => {
+    const grab = (src, re) => [...src.matchAll(re)].map((m) => m[1]);
+
+    const registeredChannels = () => new Set([
+        ...grab(read('main.js'), /ipcHandle\(\s*'([^']+)'/g),
+        ...grab(read('main.js'), /ipcOn\(\s*'([^']+)'/g)
+    ]);
+
+    const preloadChannels = () => new Set([
+        ...grab(read('preload.js'), /ipcRenderer\.invoke\(\s*'([^']+)'/g),
+        ...grab(read('preload.js'), /ipcRenderer\.send\(\s*'([^']+)'/g)
+    ]);
+
+    it('preload her çağrısı için kayıtlı bir handler bulur', () => {
+        const registered = registeredChannels();
+        const missing = [...preloadChannels()].filter((c) => !registered.has(c));
+        expect(missing, `preload çağırıyor, handler yok: ${missing.join(', ')}`).toEqual([]);
+    });
+
+    it('her kayıtlı handler preload üzerinden erişilebilir (ulaşılamaz yetenek yok)', () => {
+        const consumed = preloadChannels();
+        const orphan = [...registeredChannels()].filter((c) => !consumed.has(c));
+        expect(orphan, `handler var, preload sunmuyor: ${orphan.join(', ')}`).toEqual([]);
+    });
+
+    it('IPC kanal tabanı korunur (kazara silme yok)', () => {
+        const count = registeredChannels().size;
+        // Kanal sayısı düşerse bir yetenek kaldırılmış demektir. Taban,
+        // kazara silmeyi yakalar; yeni yetenek eklemek serbesttir.
+        expect(count, 'IPC kanal sayısı beklenenden az').toBeGreaterThanOrEqual(94);
+    });
+});
+
+/**
+ * F. Olay paritesi (main → renderer).
+ *
+ * Ölçülen durum: main 8 kanal gönderir (`timer-tick`, `warning-*`,
+ * `task-executed|failed`, ...), preload 12 kanal dinler. Fazlalık YOKTUR;
+ * `task-executed|failed` bir ternary ile, `warning-*` ise `forwardWarning`
+ * yardımcısıyla gönderilir. Bu kapı, dinlenen ama hiç gönderilmeyen bir kanalı
+ * (sonsuza dek boş bekleyen dinleyici) yakalar.
+ */
+describe('F. Olay paritesi', () => {
+    const grab = (src, re) => [...src.matchAll(re)].map((m) => m[1]);
+
+    /**
+     * main.js'in gönderdiği kanallar.
+     *
+     * Satır bazlı çıkarım şart: `.send(` çağrısının ilk argümanı bir ternary
+     * olabilir (`payload.success ? 'task-executed' : 'task-failed'`). Satır
+     * sınırını aşan bir regex, başka bir `? ... : ...` ifadesine kayar ve
+     * olmayan bir kanal uydurur — bu kapının ilk sürümü tam olarak bunu yaptı
+     * (`wakeMode === 'skip' ? 'skip' : 'run'` satırını yakaladı).
+     */
+    const mainSentChannels = () => {
+        const out = new Set();
+        for (const line of read('main.js').split('\n')) {
+            const idx = line.indexOf('.send(');
+            if (idx < 0) continue;
+            for (const m of line.slice(idx).matchAll(/'([a-z][a-z0-9-]+)'/g)) out.add(m[1]);
+        }
+        // `forwardWarning('x')` yardımcısı `channel` değişkeniyle gönderir;
+        // gerçek kanal adları çağrı yerlerinde sabittir.
+        for (const c of grab(read('main.js'), /forwardWarning\(\s*'([^']+)'\s*\)/g)) out.add(c);
+        return out;
+    };
+
+    /**
+     * preload'un dinlediği kanallar.
+     *
+     * Doğrudan `ipcRenderer.on('x')` çağrıları yetmez: `onWarningEnded`
+     * üç kanalı bir dizi üzerinden abone eder
+     * (`const channels = [...]; channels.forEach((c) => ipcRenderer.on(c, h))`).
+     * Dizi tabanlı abonelikleri de sayarız; yoksa var olan bir kanal
+     * "hiç gönderilmiyor" sanılır.
+     */
+    const preloadSubscriptions = () => {
+        const preload = read('preload.js');
+        const out = new Set(grab(preload, /ipcRenderer\.on\(\s*'([^']+)'/g));
+        for (const m of preload.matchAll(/const\s+(\w+)\s*=\s*\[([^\]]*)\];/g)) {
+            const [name, body] = [m[1], m[2]];
+            // Dizi, ipcRenderer.on'a aktarılıyor mu?
+            const piped = new RegExp(`\\b${name}\\b[^\\n]*ipcRenderer\\.on|ipcRenderer\\.on\\([^)]*\\b${name}\\b`).test(preload);
+            if (!piped) continue;
+            for (const c of body.matchAll(/'([a-z][a-z0-9-]+)'/g)) out.add(c[1]);
+        }
+        return out;
+    };
+
+    it('preload yalnızca gerçekten gönderilen kanalları dinler', () => {
+        const sent = mainSentChannels();
+        const orphan = [...preloadSubscriptions()].filter((c) => !sent.has(c));
+        expect(orphan, `dinleniyor ama hiç gönderilmiyor: ${orphan.join(', ')}`).toEqual([]);
+    });
+
+    it('main hiçbir kanalı preload sunmadan göndermez', () => {
+        const sent = mainSentChannels();
+        const subs = preloadSubscriptions();
+        const unhandled = [...sent].filter((c) => !subs.has(c));
+        expect(unhandled, `gönderiliyor ama preload dinlemiyor: ${unhandled.join(', ')}`).toEqual([]);
+    });
+
+    it('dizi tabanlı abonelik gerçekten bağlı (regresyon)', () => {
+        // Bu test kırılırsa `onWarningEnded` sessizce hiçbir kanal dinlemiyor
+        // olabilir; yukarıdaki parite testleri bunu tek başına yakalayamaz.
+        const preload = read('preload.js');
+        for (const ch of ['warning-cancelled', 'warning-snoozed', 'warning-finished']) {
+            expect(preload, `abone olunmayan kanal: ${ch}`).toContain(`'${ch}'`);
+        }
+        expect(preload).toMatch(/onWarningEnded/);
+    });
+});
