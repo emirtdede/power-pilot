@@ -141,7 +141,7 @@ describe('t() parametre sözleşmesi', () => {
             const file = path.join(root, rel);
             if (!fs.existsSync(file)) continue;
             const text = fs.readFileSync(file, 'utf8');
-            // t('anahtar', { ... }) — süslü parantez gövdesi iç içe olmayacak kadar basit.
+            // t('anahtar', { ... }): süslü parantez gövdesi iç içe olmayacak kadar basit.
             for (const m of text.matchAll(/\bt\(\s*'([A-Za-z0-9_]+)'\s*,\s*\{([^{}]*)\}\s*\)/g)) {
                 const key = m[1];
                 const body = m[2];
