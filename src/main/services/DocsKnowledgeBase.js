@@ -185,8 +185,8 @@ const DOC_CHUNKS = Object.freeze([
         titleTr: 'Webhooks, n8n Entegrasyonu ve HMAC-SHA256 İmza Doğrulama',
         titleEn: 'Webhooks, n8n Integration & HMAC-SHA256 Verification',
         tags: ['webhook', 'n8n', 'zapier', 'make', 'hmac', 'bearer', 'basic', 'ssrf', 'https'],
-        bodyTr: 'Webhook motoru yalnızca HTTPS adreslerine izin verir ve SSRF koruması (özel/loopback/link-local IP engeli + DNS pinning) uygular. Desteklenen olaylar: task_created, task_blocked, task_warning_started, task_cancelled, task_snoozed, power_action_started. Kimlik doğrulama: Bearer Token, Basic Auth veya X-PowerPilot-Signature (sha256 HMAC, "<timestamp>.<body>") imzası. Başarısız 5xx/429 teslimatlar üstel geri çekilmeyle 3 kez yeniden denenir.',
-        bodyEn: 'Webhooks enforce HTTPS-only URLs with SSRF protection (blocking private/loopback ranges + DNS pinning). Supported events: task_created, task_blocked, task_warning_started, task_cancelled, task_snoozed, power_action_started. Supports Bearer Token, Basic Auth, and HMAC-SHA256 signing via X-PowerPilot-Signature over "<timestamp>.<body>".',
+        bodyTr: 'Webhook motoru yalnızca HTTPS adreslerine izin verir ve SSRF koruması (özel/loopback/link-local IP engeli + DNS pinning) uygular. Desteklenen yedi olay: task_created, task_blocked, task_warning_started, task_cancelled, task_snoozed, power_action_started, task_cancel_too_late (iptal, işletim sistemi komutu başladıktan sonra geldiğinde yayınlanır). Kimlik doğrulama: Bearer Token, Basic Auth veya X-PowerPilot-Signature (sha256 HMAC, "<timestamp>.<body>") imzası. Başarısız 5xx/429 teslimatlar üstel geri çekilmeyle 3 kez yeniden denenir.',
+        bodyEn: 'Webhooks enforce HTTPS-only URLs with SSRF protection (blocking private/loopback ranges + DNS pinning). Seven events are supported: task_created, task_blocked, task_warning_started, task_cancelled, task_snoozed, power_action_started, and task_cancel_too_late (emitted when a cancel arrives after the OS command has already started). Supports Bearer Token, Basic Auth, and HMAC-SHA256 signing via X-PowerPilot-Signature over "<timestamp>.<body>".',
         command: null
     },
     {

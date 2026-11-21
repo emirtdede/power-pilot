@@ -210,6 +210,26 @@ describe('Doküman gerçeği — belgelenen her yetenek kodda var', () => {
         const ghosts = [...citedCmds].filter((c) => !known.has(c));
         expect(ghosts, `dokümanda var, CLI'da yok: ${ghosts.join(', ')}`).toEqual([]);
     });
+
+    it('webhook olay listesi hem dokümanda hem doğrulayıcıda aynı', () => {
+        // Denetim kusuru (altıncı tur): `task_cancel_too_late` olayı motorda
+        // gerçekten üretiliyor ve doğrulayıcıda kabul ediliyordu, ama uygulama
+        // içi doküman hâlâ altı olay sayıyordu. Kullanıcı yedinci olayı
+        // belgelenmiş sanıp arar ya da belgede olmadığı için hiç kullanmaz.
+        const validate = readDoc('src/main/ipc/validate.js');
+        const eventBlock = (validate.match(/const WEBHOOK_EVENTS = new Set\(\[([\s\S]*?)\]\)/) || [])[1] || '';
+        const real = new Set([...eventBlock.matchAll(/'([a-z_]+)'/g)].map((m) => m[1]));
+        expect(real.size, 'doğrulayıcıda webhook olayı bulunamadı').toBeGreaterThan(0);
+
+        const section = docs.slice(docs.indexOf("id: 'webhooks-n8n'"), docs.indexOf("id: 'wol-ups-enterprise'"));
+        const cited = new Set([...section.matchAll(/\btask_[a-z_]+|[a-z_]+_started\b/g)].map((m) => m[0]));
+
+        const missing = [...real].filter((e) => !cited.has(e));
+        expect(missing, `doğrulayıcıda var, dokümanda yok: ${missing.join(', ')}`).toEqual([]);
+
+        const ghosts = [...cited].filter((e) => !real.has(e));
+        expect(ghosts, `dokümanda var, doğrulayıcıda yok: ${ghosts.join(', ')}`).toEqual([]);
+    });
 });
 
 function readDoc(p) {
