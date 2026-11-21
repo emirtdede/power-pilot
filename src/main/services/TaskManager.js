@@ -80,7 +80,10 @@ class TaskManager {
         if (!task || task.enabled === false) return { ok: false, code: 'NOT_FOUND' };
         if (this.pausedAll) return { ok: false, code: 'PAUSED' };
         if (this.claims.size > 0) return { ok: false, code: 'ALREADY_RUNNING' };
-        const runnable = [TASK_STATUS.SCHEDULED, TASK_STATUS.MONITORING, TASK_STATUS.EXPIRED];
+        const runnable = [TASK_STATUS.SCHEDULED, TASK_STATUS.MONITORING, TASK_STATUS.EXPIRED,
+            // P1-6 (üçüncü tur): ertelenmiş/bekleyen görevler de çalıştırılabilir
+            // olmalı; aksi halde vadesi dolan ertelenmiş görev sessizce atlanırdı.
+            TASK_STATUS.SNOOZED, TASK_STATUS.WAITING];
         if (!runnable.includes(task.status)) return { ok: false, code: 'NOT_RUNNABLE' };
         const token = crypto.randomUUID();
         this.claims.set(taskId, {
@@ -268,7 +271,10 @@ class TaskManager {
 
         for (const task of this.tasks) {
             if (!task || task.enabled === false) continue;
-            if (task.status !== TASK_STATUS.SCHEDULED) continue;
+            // P1-6 (üçüncü tur): ertelenmiş görev de uyku sonrası yeniden
+            // değerlendirilmelidir; aksi halde uyku sırasında süresi dolan
+            // ertelenmiş görev sessizce asılı kalırdı.
+            if (task.status !== TASK_STATUS.SCHEDULED && task.status !== TASK_STATUS.SNOOZED) continue;
             const conds = (task.conditionGroup && task.conditionGroup.conditions) || [];
             if (conds.length > 0) continue; // koşullu görevler Smart Finish ile izlenir
             const target = Number(task.trigger && task.trigger.targetTime);
@@ -347,19 +353,36 @@ class TaskManager {
                 // Time-based trigger check — YALNIZCA koşulsuz görevler.
                 // ADR-09/K-04: koşullu görevde targetTime yoktur; erteleme notBefore'tadır.
                 const hasConditions = !!(task.conditionGroup && Array.isArray(task.conditionGroup.conditions) && task.conditionGroup.conditions.length > 0);
-                if (!hasConditions && task.trigger.targetTime && now >= task.trigger.targetTime && task.status === TASK_STATUS.SCHEDULED) {
+                // P1-6 (üçüncü tur): `snoozed` de zamanlanmış sayılır. Erteleme
+                // artık görünür bir durumdur; süre dolunca görev yine çalışır.
+                if (!hasConditions && task.trigger.targetTime && now >= task.trigger.targetTime &&
+                    (task.status === TASK_STATUS.SCHEDULED || task.status === TASK_STATUS.SNOOZED)) {
                     readyToExecute.push(task);
                     return;
                 }
 
                 // WBS-0.1: Condition-based (Smart Finish) trigger check.
                 // MONITORING veya koşullu SCHEDULED görevler her döngüde değerlendirilir.
-                if (hasConditions && (task.status === TASK_STATUS.MONITORING || task.status === TASK_STATUS.SCHEDULED)) {
+                // P1-6: `waiting` = koşullu görevin erteleme penceresi; süre
+                // dolunca MONITORING'e döner ve değerlendirme sürer.
+                if (hasConditions && (task.status === TASK_STATUS.MONITORING
+                    || task.status === TASK_STATUS.SCHEDULED
+                    || task.status === TASK_STATUS.WAITING)) {
                     // WP-06.T5: notBefore geçilmeden koşul değerlendirilmez.
                     const notBefore = Number(task.trigger.notBefore);
                     if (Number.isFinite(notBefore) && notBefore > 0 && now < notBefore) {
                         task.lastProgressMessage = `Erteleme: ${Math.ceil((notBefore - now) / 1000)} sn kaldı`;
+                        if (task.status !== TASK_STATUS.WAITING) {
+                            task.status = TASK_STATUS.WAITING;
+                            this.persistChanges();
+                        }
                         return;
+                    }
+                    // Erteleme penceresi doldu: görev yeniden izlemeye döner.
+                    if (task.status === TASK_STATUS.WAITING) {
+                        task.status = TASK_STATUS.MONITORING;
+                        task.lastProgressMessage = null;
+                        this.persistChanges();
                     }
                     if (!this.smartFinishEngine) return;
                     // WBS-11.5: Açılış koruması — sessizlik-tipi koşullarda ilk 120sn atlanır.
@@ -1178,14 +1201,19 @@ class TaskManager {
         return { ok: true, code: 'REMOVED' };
     }
 
-    /** Terminal (artık çalışmayacak) durumlar. */
+    /**
+     * Terminal (artık çalışmayacak) durumlar.
+     *
+     * P1-6 (üçüncü tur): `disabled` artık terminal DEĞİLDİR — duraklatılmış
+     * görevi temsil eder ve `resumeTask` ile sürdürülebilir. Terminal sayılsaydı
+     * "Bitenleri temizle" duraklatılmış görevleri sessizce silerdi.
+     */
     static isTerminalStatus(status) {
         return status === TASK_STATUS.COMPLETED
             || status === TASK_STATUS.CANCELLED
             || status === TASK_STATUS.BLOCKED
             || status === TASK_STATUS.FAILED
-            || status === TASK_STATUS.EXPIRED
-            || status === TASK_STATUS.DISABLED;
+            || status === TASK_STATUS.EXPIRED;
     }
 
     /** Terminal durumdaki tüm görevleri kaldırır. */
@@ -1222,15 +1250,22 @@ class TaskManager {
             ? task.conditionGroup.conditions
             : [];
         task.snoozeConfig = { ...cfg, currentCount: current + 1 };
+        // P1-6 (üçüncü tur): erteleme artık GÖRÜNÜR bir durumdur.
+        // Eskiden `snoozed`/`waiting` durumları yalnızca enum'da ve 17 dilde
+        // çeviride vardı; hiçbir kod yolu bunları atamıyordu, bu yüzden
+        // ertelenen görev listede "Zamanlandı" görünüyordu. Belgede
+        // (AUTOMATION_ENGINE.md) tanımlı yaşam döngüsüyle artık uyuşuyor.
         if (conditions.length > 0) {
             task.trigger.notBefore = Date.now() + safeMinutes * 60000;
             task.trigger.targetTime = null;
-            task.status = TASK_STATUS.MONITORING;
+            // Koşullu görev: koşul izleme yerine erteleme penceresi.
+            task.status = TASK_STATUS.WAITING;
         } else {
             const base = Math.max(Number(task.trigger.targetTime) || 0, Date.now());
             task.trigger.targetTime = base + safeMinutes * 60000;
             task.trigger.notBefore = null;
-            task.status = TASK_STATUS.SCHEDULED;
+            // Koşulsuz görev: zamanlayıcı korunur, durum erteleme olarak görünür.
+            task.status = TASK_STATUS.SNOOZED;
         }
         task.updatedAt = new Date().toISOString();
         return { ok: true, minutes: safeMinutes };
@@ -1475,10 +1510,13 @@ class TaskManager {
     getActiveTasks() {
         // Y-03: EXECUTING de aktiftir; kapanış guard'ı ve mini pencere
         // güç işlemi sürerken pencereyi kapatmamalı.
+        // P1-6 (üçüncü tur): SNOOZED/WAITING artık gerçek durumlar; ikisi de
+        // aktif görevdir (mini pencere ve kapanış guard'ı onları görmeli).
         return this.tasks.filter(t => t.enabled && (
             t.status === TASK_STATUS.SCHEDULED ||
             t.status === TASK_STATUS.MONITORING ||
             t.status === TASK_STATUS.WAITING ||
+            t.status === TASK_STATUS.SNOOZED ||
             t.status === TASK_STATUS.WARNING ||
             t.status === TASK_STATUS.EXECUTING
         ));

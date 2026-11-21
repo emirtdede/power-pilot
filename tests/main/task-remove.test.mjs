@@ -88,10 +88,13 @@ describe('TaskManager.removeTask — biten görevleri kaldırma', () => {
     });
 
     it('tüm terminal durumlar kaldırılabilir', () => {
-        for (const status of ['completed', 'cancelled', 'blocked', 'failed', 'expired', 'disabled']) {
+        for (const status of ['completed', 'cancelled', 'blocked', 'failed', 'expired']) {
             expect(TaskManager.isTerminalStatus(status), `${status} terminal olmalı`).toBe(true);
         }
-        for (const status of ['scheduled', 'monitoring', 'executing', 'warning', 'waiting', 'snoozed', 'draft']) {
+        // P1-6 (üçüncü tur): `disabled` artık DURAKLATILMIŞ görevi temsil eder
+        // ve sürdürülebilir; terminal sayılsaydı "Bitenleri temizle" onu
+        // sessizce silerdi. `waiting`/`snoozed` de gerçek, geçici durumlardır.
+        for (const status of ['scheduled', 'monitoring', 'executing', 'warning', 'waiting', 'snoozed', 'draft', 'disabled']) {
             expect(TaskManager.isTerminalStatus(status), `${status} terminal OLMAMALI`).toBe(false);
         }
     });

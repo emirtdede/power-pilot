@@ -107,7 +107,10 @@ describe('WP-02 executionClaims sözleşmesi', () => {
         await running;
 
         expect(result).toMatchObject({ ok: true, code: 'SNOOZED_ACTIVE', minutes: 7 });
-        expect(task.status).toBe('scheduled');
+        // P1-6 (üçüncü tur): erteleme artık gerçek ve GÖRÜNÜR bir durumdur.
+        // Eskiden `snoozed` durumu hiç atanmadığı için görev "scheduled"
+        // görünüyordu; artık listede "Ertelendi" olarak görünür.
+        expect(task.status).toBe('snoozed');
         expect(task.trigger.targetTime).toBeGreaterThanOrEqual(before + 7 * 60000 - 1000);
         expect(warning.getActiveState()).toBeNull();
         expect(power.execute).not.toHaveBeenCalled();

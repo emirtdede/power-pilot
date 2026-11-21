@@ -189,11 +189,16 @@ class TaskSchedulerBridge {
     /**
      * ADR-09: yalnızca koşulsuz `scheduled` görevler Windows'a yazılır.
      * `monitoring`, `waiting`, `snoozed` ve koşul grubu olan görevler yazılmaz.
+     *
+     * P1-6 (üçüncü tur): `snoozed` zamanlanmış bir görevdir (hedef ileri
+     * alınmıştır) ve uygulama kapalıyken de tetiklenmelidir; bu yüzden
+     * `scheduled` ile aynı şekilde Windows'a yazılır. `waiting` koşullu
+     * ertelemedir, yazılmaz.
      */
     shouldSync(task) {
         if (!this.isSupported()) return false;
         if (!task || task.enabled === false) return false;
-        if (task.status !== 'scheduled') return false;
+        if (task.status !== 'scheduled' && task.status !== 'snoozed') return false;
         if (!TaskSchedulerBridge.isValidTaskId(task.id)) return false;
         const conditions = task.conditionGroup && Array.isArray(task.conditionGroup.conditions)
             ? task.conditionGroup.conditions

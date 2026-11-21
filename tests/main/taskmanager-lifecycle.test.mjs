@@ -334,7 +334,8 @@ describe('TaskManager — yürütme akışı', () => {
         const { t } = await runTask({
             warning: { showWarning: vi.fn(async () => ({ proceed: false, snoozed: true, minutes: 5 })) }
         }, { warningConfig: { enabled: true, durationSeconds: 1 } });
-        expect(t.status).toBe(TASK_STATUS.SCHEDULED);
+        // P1-6 (üçüncü tur): erteleme artık görünür `snoozed` durumudur.
+        expect(t.status).toBe(TASK_STATUS.SNOOZED);
         expect(t.snoozeConfig.currentCount).toBe(1);
         expect(t.trigger.targetTime).toBeGreaterThan(Date.now());
     });
@@ -509,7 +510,8 @@ describe('TaskManager — iptal / erteleme / duraklatma', () => {
         expect(r).toMatchObject({ ok: true, minutes: 15 });
         expect(cond.trigger.notBefore).toBeGreaterThan(Date.now());
         expect(cond.trigger.targetTime).toBeNull();
-        expect(cond.status).toBe(TASK_STATUS.MONITORING);
+        // P1-6 (üçüncü tur): koşullu erteleme artık görünür `waiting` durumudur.
+        expect(cond.status).toBe(TASK_STATUS.WAITING);
     });
 
     it('snoozeTask: doğrulama, aktif uyarı, çalışan görev, persist hatası', () => {

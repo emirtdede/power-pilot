@@ -59,7 +59,8 @@ describe('TaskManager zamanlayıcı (TS-0.2)', () => {
         const res = tm.snoozeTask(task.id, 10);
         expect(res.ok).toBe(true);
         expect(task.trigger.targetTime).toBe(before + 10 * 60 * 1000);
-        expect(task.status).toBe('scheduled');
+        // P1-6 (üçüncü tur): erteleme artık görünür `snoozed` durumudur.
+        expect(task.status).toBe('snoozed');
     });
 
     it('gelecekteki görev evaluateTasks ile çalışmaz', async () => {

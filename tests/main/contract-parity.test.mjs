@@ -120,4 +120,40 @@ describe('B. Görev durumu paritesi', () => {
         }
         expect(problems).toEqual([]);
     });
+
+    /**
+     * P1-6 (üçüncü tur): HAYALET DURUM KAPISI.
+     *
+     * Denetim kusuru: `waiting`, `snoozed` ve `disabled` TASK_STATUS içinde
+     * ilan ediliyor, `docs/architecture/AUTOMATION_ENGINE.md` yaşam
+     * döngüsünde belgeleniyor ve 17 dilde çevirileri vardı — ama HİÇBİR kod
+     * yolu onları atamıyordu. Kullanıcı ertelediği görevi "Zamanlandı" olarak
+     * görüyordu; görev duraklatmanın hiçbir yolu yoktu.
+     *
+     * Bu kapı, ilan edilen her durumun motorda GERÇEKTEN atandığını doğrular.
+     */
+    it('her ilan edilen durum motorda gerçekten atanır (hayalet durum yok)', () => {
+        const manager = read('src/main/services/TaskManager.js')
+            + read('src/main/services/models/AutomationTask.js');
+
+        // Model varsayılanı + TaskManager atamaları.
+        const missing = statuses().filter((s) => {
+            const upper = s.toUpperCase();
+            if (new RegExp(`TASK_STATUS\\.${upper}\\b`).test(manager)) return false;
+            // Model varsayılanı: `data.status || TASK_STATUS.DRAFT`
+            return !(s === 'draft');
+        });
+        expect(missing, `ilan edilmiş ama hiç atanmayan durum: ${missing.join(', ')}`).toEqual([]);
+    });
+
+    it('terminal olmayan durumlar sürdürülebilir/çalıştırılabilir kalır', () => {
+        // `disabled` duraklatılmış görevdir; terminal sayılırsa "Bitenleri
+        // temizle" onu sessizce siler.
+        const manager = read('src/main/services/TaskManager.js');
+        const block = manager.slice(manager.indexOf('static isTerminalStatus'));
+        const body = block.slice(0, block.indexOf('}'));
+        expect(body).not.toMatch(/TASK_STATUS\.DISABLED/);
+        expect(body).not.toMatch(/TASK_STATUS\.SNOOZED/);
+        expect(body).not.toMatch(/TASK_STATUS\.WAITING/);
+    });
 });
