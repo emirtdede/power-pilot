@@ -45,11 +45,11 @@ function explainBlocked(reason, language = 'tr') {
         return isTr
             ? {
                 explanation: 'Tam ekran bir uygulama (sunum/video/oyun) aktif olduğu için görev bekletildi.',
-                whatToDo: 'Tam ekran oturumu sonlandığında tekrar deneyin veya Ayarlar → Güvenlik içinden tam ekran korumasını düzenleyin.'
+                whatToDo: 'Tam ekran oturumu sonlandığında tekrar deneyin veya Ayarlar → Otomasyon içinden tam ekran korumasını düzenleyin.'
             }
             : {
                 explanation: 'Execution was blocked while a fullscreen session (video, game, or presentation) was active.',
-                whatToDo: 'Retry after exiting fullscreen or adjust Fullscreen Protection under Settings → Safety.'
+                whatToDo: 'Retry after exiting fullscreen or adjust Fullscreen Protection under Settings → Automation.'
             };
     }
     return isTr
