@@ -13,7 +13,7 @@ Bu belge, Power Pilot uygulamasını kendi bilgisayarınızda çalışan **n8n**
 ## 2. Kurulum Adımları
 
 1. **Yerel API'yi Etkinleştirin**:
-   - Power Pilot Ayarlar > Entegrasyonlar bölümüne gidin.
+   - Power Pilot **Ayarlar → Entegrasyonlar → Yerel REST API** bölümüne gidin.
    - "Yerel API" anahtarını açın.
    - "Yeni API Anahtarı Oluştur" butonuna basın.
    - Üretilen `pp_key_...` anahtarını kopyalayın (Bu anahtar sadece bir kez gösterilir).

@@ -60,7 +60,7 @@ function serverOptionsFrom({ cert, key, pfx, passphrase, ca, requireClient, stri
 function buildServerOptions(settings = {}) {
     if (settings.localApiTlsEnabled !== true) return null;
     return serverOptionsFrom({
-        pfx: readMaterial(null, settings.localApiPfxFile || settings.localApiPfxPath),
+        pfx: readMaterial(null, settings.localApiPfxFile),
         passphrase: settings.localApiPfxPassphrase,
         cert: readMaterial(settings.localApiCertPem, settings.localApiCertFile),
         key: readMaterial(settings.localApiKeyPem, settings.localApiKeyFile),

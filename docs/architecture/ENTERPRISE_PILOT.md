@@ -23,7 +23,7 @@ dalgalı (varsayılan 20'li dalga, 5sn aralık) gönderilir.
    (`node -e "console.log(require('crypto').randomBytes(24).toString('hex'))"`),
    ortam değişkeni yapıp `node src/console/run.js` ile başlatın.
 2. `GET /api/v1/console-key` (admin) → `publicKey`'i alın.
-3. Her PC'de Power Pilot Ayarlar → Konsol: URL (`http://srv:8443`),
+3. Her PC'de Power Pilot **Ayarlar → Entegrasyonlar → Kurumsal Konsol**: URL (`http://srv:8443`),
    `consolePublicKeyPem` (konsol anahtarı) + `consoleAgentKey` (ajan heartbeat
    sırrı — ham değer yalnızca ajanda durur, konsolda hash'i tutulur).
    (Denetim notu: ajan sırrı sunmak zorunda olduğundan ham tutulur;

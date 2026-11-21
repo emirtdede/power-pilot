@@ -112,7 +112,7 @@ saklanır:
 | API anahtarları / sırlar (DPAPI şifreli) | Yerel API ve webhook'lar (açarsanız) | İptal edene kadar |
 | Opsiyonel AI modelleri (Qwen / Whisper) | Cihazda ses/metin anlama | Silene kadar |
 
-Tamamını istediğiniz an **Ayarlar → Gizlilik → Verilerimi sil** ile
+Tamamını istediğiniz an **Ayarlar → Sıfırlama ve Gizlilik → Verilerimi sil** ile
 silebilirsiniz. Uygulamayı kaldırmak bu klasörü otomatik silmez; temiz kaldırma
 için önce bu düğmeyi kullanın.
 

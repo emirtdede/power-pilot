@@ -575,8 +575,8 @@ function validateSettings(patch, currentSettings = {}, schema = SETTINGS_SCHEMA)
             return fail('LAN modu TLS olmadan etkinleştirilemez.', 'LAN_REQUIRES_TLS');
         }
         {
-            const hasCert = !!(effective.localApiCertPem || effective.localApiCertFile || effective.localApiPfxFile || effective.localApiPfxPath);
-            const hasKey = !!(effective.localApiKeyPem || effective.localApiKeyFile || effective.localApiPfxFile || effective.localApiPfxPath);
+            const hasCert = !!(effective.localApiCertPem || effective.localApiCertFile || effective.localApiPfxFile);
+            const hasKey = !!(effective.localApiKeyPem || effective.localApiKeyFile || effective.localApiPfxFile);
             if (!hasCert || !hasKey) {
                 return fail('LAN + TLS için sertifika ve özel anahtar gerekli.', 'TLS_MATERIAL_REQUIRED');
             }

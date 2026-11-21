@@ -33,7 +33,7 @@ Dışa aktarım sırasında kalan sır varsa komut **hata verir ve dosya yazmaz*
    - Konsol ajan anahtarı (`consoleAgentKey`) ve konsol URL'si,
    - TLS sertifika/anahtar dosyaları veya PFX + parola,
    - webhook kimlik bilgileri,
-   - iptal PIN'i (Ayarlar → Güvenlik).
+   - iptal PIN'i (Ayarlar → Sıfırlama ve Gizlilik).
 4. `node scripts/secure-dir.ps1` ile veri dizini ACL'ini sıkılaştırın.
 
 ## Eski (düz metin) yedekler
