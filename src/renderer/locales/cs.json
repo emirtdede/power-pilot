@@ -423,6 +423,7 @@
   "eulaTitle": "Podmínky použití (EULA)",
   "event_power_action_started": "Síla akce zahájena",
   "event_task_blocked": "Úkol zablokován",
+  "event_task_cancel_too_late": "Zrušení příliš pozdě",
   "event_task_cancelled": "Úkol zrušen",
   "event_task_created": "Úkol vytvořen",
   "event_task_snoozed": "Úkol odložen",

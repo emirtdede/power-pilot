@@ -423,6 +423,7 @@
   "eulaTitle": "利用規約 (EULA)",
   "event_power_action_started": "パワーアクション開始",
   "event_task_blocked": "タスクがブロックされました",
+  "event_task_cancel_too_late": "キャンセルが遅すぎます",
   "event_task_cancelled": "タスクがキャンセルされました",
   "event_task_created": "タスクが作成されました",
   "event_task_snoozed": "タスクがスヌーズされました",

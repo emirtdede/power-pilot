@@ -423,6 +423,7 @@
   "eulaTitle": "Termos de Uso (EULA)",
   "event_power_action_started": "Ação de poder iniciada",
   "event_task_blocked": "Tarefa bloqueada",
+  "event_task_cancel_too_late": "Cancelamento tardio",
   "event_task_cancelled": "Tarefa cancelada",
   "event_task_created": "Tarefa criada",
   "event_task_snoozed": "Tarefa adiada",

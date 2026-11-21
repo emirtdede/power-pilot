@@ -423,6 +423,7 @@
   "eulaTitle": "شروط الاستخدام (EULA)",
   "event_power_action_started": "بدأ عمل السلطة",
   "event_task_blocked": "تم حظر المهمة",
+  "event_task_cancel_too_late": "الإلغاء متأخر جدًا",
   "event_task_cancelled": "تم إلغاء المهمة",
   "event_task_created": "تم إنشاء المهمة",
   "event_task_snoozed": "تم تأجيل المهمة",

@@ -423,6 +423,7 @@
   "eulaTitle": "Gebruiksvoorwaarden (EULA)",
   "event_power_action_started": "Machtsactie is begonnen",
   "event_task_blocked": "Taak geblokkeerd",
+  "event_task_cancel_too_late": "Annuleren te laat",
   "event_task_cancelled": "Taak geannuleerd",
   "event_task_created": "Taak gemaakt",
   "event_task_snoozed": "Taak gesnoozed",

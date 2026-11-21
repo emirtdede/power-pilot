@@ -423,6 +423,7 @@
   "eulaTitle": "Nutzungsbedingungen (EULA)",
   "event_power_action_started": "Power-Aktion gestartet",
   "event_task_blocked": "Aufgabe blockiert",
+  "event_task_cancel_too_late": "Abbruch zu spät",
   "event_task_cancelled": "Aufgabe abgebrochen",
   "event_task_created": "Aufgabe erstellt",
   "event_task_snoozed": "Die Aufgabe wurde in den Ruhezustand versetzt",

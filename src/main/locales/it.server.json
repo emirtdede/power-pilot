@@ -423,6 +423,7 @@
   "eulaTitle": "Termini di servizio (EULA)",
   "event_power_action_started": "È iniziata l'azione di potere",
   "event_task_blocked": "Attività bloccata",
+  "event_task_cancel_too_late": "Annullamento troppo tardi",
   "event_task_cancelled": "Attività annullata",
   "event_task_created": "Attività creata",
   "event_task_snoozed": "Attività posticipata",

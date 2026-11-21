@@ -423,6 +423,7 @@
   "eulaTitle": "Betingelser for brug (EULA)",
   "event_power_action_started": "Power action startede",
   "event_task_blocked": "Opgave blokeret",
+  "event_task_cancel_too_late": "Annullering for sen",
   "event_task_cancelled": "Opgave annulleret",
   "event_task_created": "Opgave oprettet",
   "event_task_snoozed": "Opgave udsat",

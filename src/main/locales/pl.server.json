@@ -423,6 +423,7 @@
   "eulaTitle": "Warunki korzystania (EULA)",
   "event_power_action_started": "Rozpoczęła się akcja mocy",
   "event_task_blocked": "Zadanie zablokowane",
+  "event_task_cancel_too_late": "Anulowanie zbyt późne",
   "event_task_cancelled": "Zadanie anulowane",
   "event_task_created": "Zadanie utworzone",
   "event_task_snoozed": "Zadanie zostało odłożone",

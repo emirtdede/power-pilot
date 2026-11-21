@@ -4168,7 +4168,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Webhook yönetimi (WBS-5.2) — secret'lar yalnızca bellekte tutulur, ekrana basılmaz.
-    const WEBHOOK_EVENTS = ['task_created', 'task_blocked', 'task_warning_started', 'task_cancelled', 'task_snoozed', 'power_action_started'];
+    const WEBHOOK_EVENTS = ['task_created', 'task_blocked', 'task_warning_started', 'task_cancelled', 'task_snoozed', 'power_action_started', 'task_cancel_too_late'];
     let webhookDraft = [];
 
     function renderWebhookList() {

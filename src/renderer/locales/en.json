@@ -423,6 +423,7 @@
   "eulaTitle": "Terms of Use (EULA)",
   "event_power_action_started": "Power action started",
   "event_task_blocked": "Task blocked",
+  "event_task_cancel_too_late": "Cancel too late",
   "event_task_cancelled": "Task cancelled",
   "event_task_created": "Task created",
   "event_task_snoozed": "Task snoozed",

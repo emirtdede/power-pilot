@@ -423,6 +423,7 @@
   "eulaTitle": "이용 약관 (EULA)",
   "event_power_action_started": "전원 동작이 시작되었습니다.",
   "event_task_blocked": "작업이 차단되었습니다.",
+  "event_task_cancel_too_late": "취소가 너무 늦음",
   "event_task_cancelled": "작업이 취소되었습니다.",
   "event_task_created": "작업이 생성되었습니다.",
   "event_task_snoozed": "작업이 일시중지되었습니다.",

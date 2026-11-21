@@ -38,7 +38,11 @@ const TASK_ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
 const MAX_WEBHOOKS = 20;
 const WEBHOOK_EVENTS = new Set([
     'task_created', 'task_blocked', 'task_warning_started',
-    'task_cancelled', 'task_snoozed', 'power_action_started'
+    'task_cancelled', 'task_snoozed', 'power_action_started',
+    // P1-6 (üçüncü tur): TaskManager bu olayı GERÇEKTEN üretiyordu
+    // (iptal, OS komutu başladıktan sonra geldiğinde) ama listede olmadığı
+    // için hiçbir webhook ona abone olamıyordu — üretilen ama dinlenemeyen olay.
+    'task_cancel_too_late'
 ]);
 const MAC_RE = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$|^([0-9A-Fa-f]{12})$/;
 // IPv4 + basit hostname (WOL broadcast adresi için).

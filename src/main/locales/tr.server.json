@@ -423,6 +423,7 @@
   "eulaTitle": "Kullanım Koşulları (EULA)",
   "event_power_action_started": "Güç eylemi başlatıldı",
   "event_task_blocked": "Görev engellendi",
+  "event_task_cancel_too_late": "İptal çok geç kaldı",
   "event_task_cancelled": "Görev iptal edildi",
   "event_task_created": "Görev oluşturuldu",
   "event_task_snoozed": "Görev ertelendi",

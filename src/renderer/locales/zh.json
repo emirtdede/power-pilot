@@ -423,6 +423,7 @@
   "eulaTitle": "使用条款 (EULA)",
   "event_power_action_started": "电源动作开始",
   "event_task_blocked": "任务被阻止",
+  "event_task_cancel_too_late": "取消失败（已开始）",
   "event_task_cancelled": "任务已取消",
   "event_task_created": "任务已创建",
   "event_task_snoozed": "任务已延后",
