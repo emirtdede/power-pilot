@@ -862,6 +862,10 @@ async function initServices() {
         }
     };
     const isDesktopNotifyAllowed = (settings) => {
+        // P1-6 (beşinci tur): `notifications` ayarı depoda ve şemada vardı ama
+        // HİÇBİR mantık okumuyordu; kullanıcı "Bildirimleri Göster"i kapatsa
+        // bile masaüstü balonları gelmeye devam ediyordu. Artık ana anahtar.
+        if (settings && settings.notifications === false) return false;
         if (settings && settings.quietHoursEnabled === true && isQuietHoursNow(settings)) return false;
         return true;
     };
@@ -3107,7 +3111,18 @@ ipcOn('setting-autostart', (event, enable) => {
         return;
     }
     const exePath = Portable.portableExePath(process.env, fs.existsSync) || app.getPath('exe');
-    app.setLoginItemSettings({ openAtLogin: enable, path: exePath });
+    try {
+        app.setLoginItemSettings({ openAtLogin: enable, path: exePath });
+        // P1-6 (beşinci tur): `autostart` ayarı depoda ve şemada vardı ama
+        // hiçbir mantık okumuyor/yazmıyordu — yalnızca localStorage'da bir
+        // bayrak ve bir OS çağrısı vardı. Sonuç: uygulama ayarı bilmiyordu,
+        // başlangıçta Windows'taki gerçek durumla uzlaştıramıyordu. Artık
+        // gerçek OS durumu geri okunup ayara yazılır.
+        const effective = app.getLoginItemSettings({ path: exePath }).openAtLogin;
+        storageService.updateSettings({ autostart: effective });
+    } catch (err) {
+        log.warn('[IPC] setting-autostart uygulanamadı:', err && err.message);
+    }
 });
 
 ipcHandle('open-startup-settings', () => {

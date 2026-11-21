@@ -1515,7 +1515,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     if (elNotifications) {
         elNotifications.addEventListener('change', () => {
-            try { localStorage.setItem('notifications', String(elNotifications.checked)); } catch (_) { }
+            const enabled = elNotifications.checked;
+            try { localStorage.setItem('notifications', String(enabled)); } catch (_) { }
+            // P1-6 (beşinci tur): arka uç artık `notifications` ayarını okuyor
+            // (masaüstü balonları). Yalnızca localStorage'a yazmak, arka uçtaki
+            // anahtarı hiç güncellemezdi; kullanıcı kapatsa da balonlar gelirdi.
+            if (window.electronAPI && typeof window.electronAPI.saveSettingsAtomic === 'function') {
+                window.electronAPI.saveSettingsAtomic({ settings: { notifications: enabled } }).catch(() => { });
+            }
         });
     }
     if (elSoundMode) {
@@ -1623,12 +1630,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function loadSettings() {
-        const autostart = localStorage.getItem('autostart') === 'true';
+        // P1-6 (beşinci tur): `autostart` ve `notifications` artık arka uç
+        // ayarlarından da okunabildiği için `let`.
+        let autostart = localStorage.getItem('autostart') === 'true';
         const voice = localStorage.getItem('voice') === 'true';
         let theme = localStorage.getItem('theme') || 'dark';
         let themeId = VALID_THEME_IDS.includes(localStorage.getItem('themeId')) ? localStorage.getItem('themeId') : 'obsidian';
         let appIcon = VALID_APP_ICONS.includes(localStorage.getItem('appIcon')) ? localStorage.getItem('appIcon') : 'monochrome-dark';
-        const notifications = localStorage.getItem('notifications') !== 'false';
+        let notifications = localStorage.getItem('notifications') !== 'false';
         const soundMode = getSoundMode();
 
         // L-01: dil ve otonomi için tek doğruluk kaynağı sunucu ayarları.
@@ -1649,6 +1658,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (serverSettings && typeof serverSettings === 'object') {
             if (typeof serverSettings.language === 'string' && serverSettings.language) {
                 language = serverSettings.language;
+            }
+            // P1-6 (beşinci tur): `autostart` artık arka uçta tutulur (gerçek
+            // Windows login-item durumundan okunur). localStorage tek başına
+            // kaynak olamaz: kullanıcı ayarı Windows'tan değiştirse arayüz yalan
+            // söylerdi. Sunucu değeri varsa o kazanır.
+            if (typeof serverSettings.notifications === 'boolean') {
+                notifications = serverSettings.notifications;
+            }
+            if (typeof serverSettings.autostart === 'boolean') {
+                autostart = serverSettings.autostart;
             }
             if (!localStorage.getItem('theme') && (serverSettings.theme === 'light' || serverSettings.theme === 'dark')) {
                 theme = serverSettings.theme;
