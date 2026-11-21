@@ -163,6 +163,80 @@ describe('her varsayılan ayar en az bir mantık tarafından okunur', () => {
         expect(main).toMatch(/getLoginItemSettings\([^)]*\)\.openAtLogin/);
         expect(main).toMatch(/updateSettings\(\{ autostart: effective \}\)/);
         // Ve renderer sunucu değerini kaynak kabul etmeli.
-        expect(app).toMatch(/serverSettings\.autostart === 'boolean'|typeof serverSettings\.autostart === 'boolean'/);
+        expect(app).toMatch(/typeof serverSettings\.autostart === 'boolean'/);
+    });
+});
+
+/**
+ * ŞEMA ↔ VARSAYILAN SÖZLEŞMESİ.
+ *
+ * Depoda bir varsayılan anahtar varsa, onu ya kullanıcı yazabilmeli (normal
+ * veya PIN'li güvenlik şemasında) ya da sunucu kendisi üretmeli/tutmalı.
+ * Bu sözleşmenin üçüncü hâli — ne yazılabilir ne sunucu-sahipli — sessiz bir
+ * "depoda var, kimse dokunamaz" alanı demektir: kullanıcı arayüzde görür,
+ * değiştirir, hiçbir şey olmaz.
+ *
+ * `SERVER_OWNED` listesi bilinçli bir envanterdir. Yeni bir sunucu-üretimli
+ * alan eklenirse buraya da eklenmeli; aksi hâlde kapı düşer ve karar gözden
+ * geçirilir.
+ */
+describe('varsayılan ayarlar şema veya sunucu sahipliğinde', () => {
+    function blockAt(src, idx) {
+        let depth = 0;
+        let start = -1;
+        let end = -1;
+        for (let i = idx; i < src.length; i++) { if (src[i] === '{') { start = i; break; } }
+        if (start < 0) return '';
+        for (let i = start; i < src.length; i++) {
+            if (src[i] === '{') depth += 1;
+            else if (src[i] === '}') { depth -= 1; if (depth === 0) { end = i; break; } }
+        }
+        return src.slice(start, end + 1);
+    }
+
+    function topKeys(block, indent) {
+        return new Set([...block.matchAll(new RegExp(`^\\s{${indent}}([A-Za-z][A-Za-z0-9_]*)\\s*:`, 'gm'))].map((m) => m[1]));
+    }
+
+    const storage = read('src/main/services/StorageService.js');
+    const validate = read('src/main/ipc/validate.js');
+    const defaults = topKeys(blockAt(storage, storage.indexOf('settings: {', storage.indexOf('getDefaultData()'))), 16);
+    const regular = topKeys(blockAt(validate, validate.search(/SETTINGS_SCHEMA\s*=\s*\{/)), 4);
+    const security = topKeys(blockAt(validate, validate.search(/SECURITY_SETTINGS_SCHEMA\s*=\s*\{/)), 4);
+
+    const SERVER_OWNED = new Set([
+        'cancelPinHash', 'cancelPinSalt', 'localApiKeyHash', 'localApiKeyMasked',
+        'localApiKeyCreatedAt', 'localApiKeyRole', 'localApiKeyFile', 'localApiKeyPem',
+        'localApiCertFile', 'localApiCertPem', 'localApiCaFile', 'localApiCaPem',
+        'localApiPfxFile', 'localApiPfxPassphrase',
+        'consoleAgentKey', 'consolePublicKeyPem',
+        'consoleClientCertFile', 'consoleClientCertPem', 'consoleClientKeyFile',
+        'consoleClientKeyPem', 'consoleClientPfxFile', 'consoleClientPfxPassphrase',
+        'consoleClientCaFile', 'consoleClientCaPem',
+        'hiddenBuiltInTemplates', 'templateOverrides',
+        'lanModeWarning', 'maintenanceWindowWarning'
+    ]);
+
+    it('her varsayılan ya yazılabilir ya sunucu sahipliğinde', () => {
+        const writable = new Set([...regular, ...security]);
+        const orphan = [...defaults].filter((k) => !writable.has(k) && !SERVER_OWNED.has(k));
+        expect(orphan, `ne yazılabilir ne sunucu-sahipli: ${orphan.join(', ')}`).toEqual([]);
+    });
+
+    it('sunucu-sahipli envanterde bayat kayıt yok (secrets hariç)', () => {
+        // Sırlar SecretStore'da tutulur, depo varsayılanında bulunmaz — meşru.
+        const SECRETS = new Set(['localApiPfxPassphrase', 'consoleClientPfxPassphrase', 'consoleAgentKey',
+            'localApiKeyPem', 'consoleClientKeyPem', 'consolePublicKeyPem']);
+        const stale = [...SERVER_OWNED].filter((k) => !defaults.has(k) && !SECRETS.has(k));
+        expect(stale, `varsayılanda olmayan sunucu-sahipli kayıt: ${stale.join(', ')}`).toEqual([]);
+    });
+
+    it('şemadaki her anahtarın bir varsayılanı veya sır kaydı var', () => {
+        // Şemada olup varsayılanda olmayan bir anahtar, kaydedilir ama ilk
+        // açılışta `undefined` okunur. Sırlar ve türetilmiş alanlar hariç
+        // hepsi varsayılanda bulunmalı.
+        const EXEMPT = new Set(['aiSilencedUntil', 'localApiPfxPassphrase', 'consoleClientPfxPassphrase']);
+        const missing = [...regular, ...security].filter((k) => !defaults.has(k) && !EXEMPT.has(k));
+        expect(missing, `varsayılanı olmayan şema anahtarı: ${missing.join(', ')}`).toEqual([]);
     });
 });
