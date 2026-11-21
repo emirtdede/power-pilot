@@ -162,7 +162,7 @@ For developers, AI coding agents, and enterprise teams, Power Pilot ships with a
 
 ### Build, Test & Release
 - **electron-builder 26.15** — custom Windows 11 NSIS installer/uninstaller, Portable build, and APPX packaging
-- **Vitest + Playwright 1.64** — 158 unit test suites and 26 Electron E2E test specs
+- **Vitest + Playwright 1.64** - 159 unit test suites and 26 Electron E2E test specs
 - **GitHub Actions** — CI (`main` and `development` branches), dependency audit, SBOM, signing, and release gates
 
 ---
@@ -361,7 +361,7 @@ npm start
 ### Tests & Release Gates
 
 ```bash
-npm test                 # Vitest unit tests (158 suites)
+npm test                 # Vitest unit tests (159 suites)
 npm run test:security    # Static security & CSP checks
 npm run test:e2e         # Playwright Electron E2E suite
 npm run coverage         # Coverage report (release gate)

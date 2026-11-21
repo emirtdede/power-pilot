@@ -68,6 +68,38 @@ const TRIGGER_TYPE = {
     COMPOSITE: 'composite'                // Multi-condition AND/OR
 };
 
+// TaskManager'ın GERÇEKTEN zamanlayabildiği trigger türleri. Zamanlayıcı
+// yalnızca bu iki türü targetTime'a çevirir (bkz. createTask + evaluateTasks).
+//
+// Denetim kusuru: enum 13 tür ilan ediyordu ve doğrulayıcı hepsini kabul
+// ediyordu; ama `TaskManager` yalnızca duration/scheduled_time dağıtıyordu.
+// Diğer 10 türle gelen görev `draft` durumunda kalıyor, hiçbir zaman
+// tetiklenmiyor ve hiçbir hata da üretmiyordu — sessiz no-op.
+const DISPATCHABLE_TRIGGER_TYPES = new Set([
+    TRIGGER_TYPE.DURATION,
+    TRIGGER_TYPE.SCHEDULED_TIME
+]);
+
+// Koşul-güdümlü trigger türleri: tek başına zamanlanamazlar, eşlik eden bir
+// `conditionGroup` ile Smart Finish motoruna devredilirler. Koşul grubu yoksa
+// görev ANLAMSIZDIR; sessizce draft'ta bırakmak yerine reddedilir.
+const CONDITION_DRIVEN_TRIGGER_TYPES = new Set([
+    TRIGGER_TYPE.PROCESS_CLOSE,
+    TRIGGER_TYPE.CPU_THRESHOLD,
+    TRIGGER_TYPE.NETWORK_THRESHOLD,
+    TRIGGER_TYPE.DISK_THRESHOLD,
+    TRIGGER_TYPE.FILE_EVENT,
+    TRIGGER_TYPE.DIRECTORY_EVENT,
+    TRIGGER_TYPE.USER_IDLE,
+    TRIGGER_TYPE.BATTERY_EVENT,
+    TRIGGER_TYPE.API_CALL,
+    TRIGGER_TYPE.COMPOSITE
+]);
+
+// `recurring` bir trigger türü DEĞİLDİR: tekrarlama `task.recurrence` ile ve
+// trigger.type='scheduled_time' olarak ifade edilir. Eski enum bu adı da
+// taşıdığı için burada açıkça "desteklenmiyor" sayılır.
+
 const CONDITION_TYPE = {
     PROCESS_RUNNING: 'process_running',
     CPU_USAGE: 'cpu_usage',
@@ -329,5 +361,7 @@ module.exports = {
     CONDITION_TYPE,
     LOGIC_OPERATOR,
     EXECUTION_RESULT_CODE,
-    SUPPORTED_CONDITION_TYPES
+    SUPPORTED_CONDITION_TYPES,
+    DISPATCHABLE_TRIGGER_TYPES,
+    CONDITION_DRIVEN_TRIGGER_TYPES
 };

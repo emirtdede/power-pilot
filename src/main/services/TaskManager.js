@@ -4,7 +4,7 @@
  * conflict resolutions, and application restart recoveries.
  */
 
-const { AutomationTask, TASK_STATUS, TASK_SOURCE, TRIGGER_TYPE, CONDITION_TYPE, EXECUTION_RESULT_CODE, SUPPORTED_CONDITION_TYPES } = require('./models/AutomationTask');
+const { AutomationTask, TASK_STATUS, TASK_SOURCE, TRIGGER_TYPE, CONDITION_TYPE, EXECUTION_RESULT_CODE, SUPPORTED_CONDITION_TYPES, DISPATCHABLE_TRIGGER_TYPES, CONDITION_DRIVEN_TRIGGER_TYPES } = require('./models/AutomationTask');
 const { PowerService } = require('./PowerService');
 const { TerminalActionVerifier } = require('./TerminalActionVerifier');
 const crypto = require('crypto');
@@ -860,6 +860,73 @@ class TaskManager {
         });
     }
 
+    /**
+     * P1-6 (üçüncü tur): "kabul edildi ama hiç çalışmaz" görev üretimini engeller.
+     *
+     * Denetim kanıtı: doğrulayıcı 13 trigger türünü kabul ediyordu ama
+     * `evaluateTasks` yalnızca `duration` ve `scheduled_time` türlerini
+     * `targetTime` üzerinden dağıtıyor. Diğer 10 türle oluşturulan görev
+     * `draft` durumunda kalıyor, hiç tetiklenmiyor ve hata da üretmiyordu.
+     *
+     * Kurallar (hepsi fail-closed):
+     *  - `duration`  → geçerli `durationMs` zorunlu.
+     *  - `scheduled_time` → hedef zaman zorunlu (tekrarlayan görevde sunucu
+     *    tarafından `calculateNextRecurrence` ile üretilir, o yüzden muaf).
+     *  - koşul-güdümlü türler (`composite`, `cpu_threshold`, ...) → en az bir
+     *    koşul zorunlu; koşul yoksa görev anlamsızdır.
+     *  - `recurring` → trigger türü değildir; `scheduled_time` + `recurrence`
+     *    kullanılmalıdır.
+     *  - Bilinmeyen tür → reddedilir.
+     *
+     * @param {object} taskData
+     * @param {Array} conditions
+     */
+    assertTriggerIsExecutable(taskData, conditions) {
+        const trigger = taskData && taskData.trigger;
+        // Trigger hiç verilmezse model varsayılanı (duration, 1 saat) uygulanır.
+        if (!trigger || typeof trigger !== 'object') return;
+        const type = trigger.type;
+        if (type === undefined) return;
+
+        const reject = (code, message) => {
+            const err = new Error(message);
+            err.code = code;
+            throw err;
+        };
+
+        if (DISPATCHABLE_TRIGGER_TYPES.has(type)) {
+            if (type === TRIGGER_TYPE.DURATION) {
+                if (!Number.isInteger(trigger.durationMs) || trigger.durationMs <= 0) {
+                    reject('INVALID_TRIGGER', 'Süre tetikleyicisi pozitif durationMs gerektirir.');
+                }
+                return;
+            }
+            // scheduled_time: tekrarlayan görevde hedef sunucuda hesaplanır.
+            const recurring = !!(taskData.recurrence && taskData.recurrence.enabled);
+            if (!Number.isInteger(trigger.targetTime) || trigger.targetTime <= 0) {
+                if (!recurring) {
+                    reject('INVALID_TRIGGER', 'Zamanlanmış tetikleyici geçerli targetTime gerektirir.');
+                }
+            }
+            return;
+        }
+
+        if (CONDITION_DRIVEN_TRIGGER_TYPES.has(type)) {
+            if (!Array.isArray(conditions) || conditions.length === 0) {
+                reject('UNSUPPORTED_TRIGGER',
+                    `"${type}" tetikleyicisi en az bir koşul gerektirir; koşulsuz görev hiçbir zaman çalışmaz.`);
+            }
+            return;
+        }
+
+        if (type === TRIGGER_TYPE.RECURRING) {
+            reject('UNSUPPORTED_TRIGGER',
+                '"recurring" bir tetikleyici türü değildir; trigger.type="scheduled_time" + recurrence kullanın.');
+        }
+
+        reject('UNSUPPORTED_TRIGGER', `Desteklenmeyen tetikleyici türü: ${type}`);
+    }
+
     createTask(taskData) {
         // Y-10: aynı konsol siparişi (nonce) iki kez görev üretmez.
         if (taskData && typeof taskData.consoleOrderId === 'string' && taskData.consoleOrderId) {
@@ -875,6 +942,14 @@ class TaskManager {
                 throw err;
             }
         }
+        // P1-6 (üçüncü tur): SESSİZ NO-OP KAPISI.
+        //
+        // Zamanlayıcı yalnızca iki türü targetTime'a çevirebiliyor. Eskiden
+        // doğrulayıcı 13 türü kabul ediyordu; diğer 10 türle gelen görev
+        // `draft` durumunda kalıp hiç tetiklenmiyor, hata da üretmiyordu.
+        // Kullanıcı görevi oluşturuyor ("kaydedildi"), ömrü boyunca hiçbir şey
+        // olmuyor. Artık bu durum sessizce kabul edilmez.
+        this.assertTriggerIsExecutable(taskData, conditions);
         // WP-07.T3: eski `file_stable` klasör görevleri `directory_idle`'a çevrilir.
         // Klasör mtime'ı indirme sırasında sabit kalabildiği için erken kapanma olurdu.
         const normalizedData = taskData && taskData.conditionGroup

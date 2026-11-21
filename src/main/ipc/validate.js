@@ -21,6 +21,16 @@ const TRIGGER_TYPE_VALUES = new Set([
     'network_threshold', 'disk_threshold', 'file_event', 'directory_event',
     'user_idle', 'battery_event', 'api_call', 'composite'
 ]);
+// P1-6 (üçüncü tur): TaskManager yalnızca bu iki türü zamanlayabilir.
+// Diğerleri gelecekte modelde ilan edilmiş ama HİÇ dağıtılmayan türlerdi:
+// görev `draft` kalıyor, tetiklenmiyor, hata da üretmiyordu (sessiz no-op).
+const DISPATCHABLE_TRIGGER_TYPES = new Set(['duration', 'scheduled_time']);
+// Koşul güdümlü türler yalnızca bir conditionGroup ile anlamlıdır.
+const CONDITION_DRIVEN_TRIGGER_TYPES = new Set([
+    'process_close', 'cpu_threshold', 'network_threshold', 'disk_threshold',
+    'file_event', 'directory_event', 'user_idle', 'battery_event', 'api_call',
+    'composite'
+]);
 const RECURRENCE_FREQUENCIES = new Set(['none', 'daily', 'weekly', 'weekdays', 'weekends', 'custom']);
 // WP-05.T1 / ADR-08: kimlik yalnızca sunucuda üretilir. İstemciden gelen değer
 // bu desene uymuyorsa reddedilir; desene uysa bile createTask onu yok sayar.
@@ -244,6 +254,28 @@ function validateTaskData(data) {
     // ADR-09 invariant: koşullu görev targetTime taşımaz.
     if (cg && Array.isArray(cg.conditions) && cg.conditions.length > 0 && trig && trig.targetTime) {
         return fail('Koşullu görev targetTime taşıyamaz; notBefore kullanın.', 'INVALID_TRIGGER');
+    }
+    // P1-6 (üçüncü tur): "kabul edilir ama hiç çalışmaz" görevi reddet.
+    if (trig && trig.type !== undefined) {
+        const condCount = (cg && Array.isArray(cg.conditions)) ? cg.conditions.length : 0;
+        const recurring = !!(data.recurrence && data.recurrence.enabled === true);
+        if (DISPATCHABLE_TRIGGER_TYPES.has(trig.type)) {
+            if (trig.type === 'duration' && trig.durationMs === undefined) {
+                return fail('Süre tetikleyicisi durationMs gerektirir.', 'INVALID_DURATION');
+            }
+            if (trig.type === 'scheduled_time' && !recurring &&
+                (trig.targetTime === undefined || trig.targetTime === null)) {
+                return fail('Zamanlanmış tetikleyici targetTime gerektirir.', 'INVALID_TRIGGER');
+            }
+        } else if (CONDITION_DRIVEN_TRIGGER_TYPES.has(trig.type)) {
+            if (condCount === 0) {
+                return fail(`"${trig.type}" tetikleyicisi en az bir koşul gerektirir.`, 'UNSUPPORTED_TRIGGER');
+            }
+        } else if (trig.type === 'recurring') {
+            return fail('"recurring" bir tetikleyici türü değildir; scheduled_time + recurrence kullanın.', 'UNSUPPORTED_TRIGGER');
+        } else {
+            return fail(`Desteklenmeyen tetikleyici türü: ${trig.type}`, 'UNSUPPORTED_TRIGGER');
+        }
     }
     const wc = data.warningConfig;
     if (wc !== undefined) {

@@ -386,7 +386,15 @@ describe('validateTaskData', () => {
         expect(validateTaskData({ ...base, trigger: { durationMs: 0 } }).code).toBe('INVALID_DURATION');
         expect(validateTaskData({ ...base, trigger: { durationMs: 1.2 } }).code).toBe('INVALID_DURATION');
         expect(validateTaskData({ ...base, trigger: { targetTime: -1 } }).code).toBe('INVALID_TRIGGER');
-        expect(validateTaskData({ ...base, trigger: { targetTime: null, type: 'scheduled_time' } }).ok).toBe(true);
+        // P1-6 (üçüncü tur): hedefsiz `scheduled_time` hiç tetiklenmeyen bir
+        // görev üretir; artık sessizce kabul edilmez. Tekrarlayan görevde hedef
+        // sunucuda `calculateNextRecurrence` ile hesaplandığı için muaftır.
+        expect(validateTaskData({ ...base, trigger: { targetTime: null, type: 'scheduled_time' } }).code).toBe('INVALID_TRIGGER');
+        expect(validateTaskData({
+            ...base,
+            trigger: { targetTime: null, type: 'scheduled_time' },
+            recurrence: { enabled: true, frequency: 'daily', timeOfDay: '09:00' }
+        }).ok).toBe(true);
         expect(validateTaskData({ ...base, trigger: { notBefore: 0 } }).code).toBe('INVALID_TRIGGER');
         expect(validateTaskData({ ...base, trigger: { notBefore: 123 } }).ok).toBe(true);
     });
