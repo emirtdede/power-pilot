@@ -157,3 +157,61 @@ describe('B. Görev durumu paritesi', () => {
         expect(body).not.toMatch(/TASK_STATUS\.WAITING/);
     });
 });
+
+describe('C. Koşul tipi paritesi', () => {
+    /**
+     * P1-6 (üçüncü tur): `CONDITION_TYPE` içinde `file_exists`, `file_size` ve
+     * `power_source` ilan ediliyordu; ama `SUPPORTED_CONDITION_TYPES`'ta
+     * kayıtları, `SmartFinishEngine`'de okuyucuları, iki UI seçicisinde
+     * seçenekleri ve dokümanda tanımları yoktu. Enum'da duran bu üç değer
+     * "destekleniyor" izlenimi veriyordu.
+     */
+    const model = () => read('src/main/services/models/AutomationTask.js');
+
+    const conditionEnum = () => {
+        const m = model().match(/const CONDITION_TYPE\s*=\s*\{([\s\S]*?)\n\};/);
+        return m ? [...m[1].matchAll(/([A-Z_]+)\s*:\s*'([a-z_]+)'/g)].map((x) => ({ key: x[1], val: x[2] })) : [];
+    };
+
+    /** key -> value (enum tanımından). */
+    const conditionValueOf = (key) => {
+        const hit = conditionEnum().find((c) => c.key === key);
+        return hit ? hit.val : null;
+    };
+
+    const supportedConditions = () => {
+        const m = model().match(/SUPPORTED_CONDITION_TYPES\s*=\s*new Set\(\[([\s\S]*?)\]\)/);
+        return m ? [...m[1].matchAll(/CONDITION_TYPE\.([A-Z_]+)/g)].map((x) => x[1]) : [];
+    };
+
+    it('her ilan edilen koşul tipi desteklenen kümede yer alır', () => {
+        const supported = new Set(supportedConditions());
+        const missing = conditionEnum().filter((c) => !supported.has(c.key)).map((c) => c.val);
+        expect(missing, `enum'da var ama desteklenmiyor: ${missing.join(', ')}`).toEqual([]);
+    });
+
+    it('desteklenen her koşul tipi UI seçicilerinde sunulur', () => {
+        const html = read('src/index.html');
+        const app = read('src/renderer/app.js');
+        const missing = supportedConditions().filter((k) => {
+            const v = conditionValueOf(k);
+            if (!v) return true;
+            // İki seçici: sf-condition-type ve tpl-edit-cond-type
+            const inSelect = new RegExp(`<option[^>]*value="${v}"`).test(html);
+            const inRenderer = app.includes(`'${v}'`);
+            return !(inSelect && inRenderer);
+        });
+        expect(missing, `UI'da sunulmayan koşul tipi: ${missing.join(', ')}`).toEqual([]);
+    });
+
+    it('her desteklenen koşul tipinin SmartFinishEngine okuyucusu var', () => {
+        const engine = read('src/main/services/SmartFinishEngine.js');
+        const missing = supportedConditions().filter((k) => {
+            const v = conditionValueOf(k);
+            if (!v) return true;
+            // case CONDITION_TYPE.X veya type === 'x'
+            return !(new RegExp(`CONDITION_TYPE\\.${k}\\b`).test(engine) || engine.includes(`'${v}'`));
+        });
+        expect(missing, `okuyucusu olmayan koşul tipi: ${missing.join(', ')}`).toEqual([]);
+    });
+});

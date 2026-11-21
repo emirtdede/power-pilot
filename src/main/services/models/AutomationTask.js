@@ -105,13 +105,16 @@ const CONDITION_TYPE = {
     CPU_USAGE: 'cpu_usage',
     NETWORK_SPEED: 'network_speed',
     DISK_ACTIVITY: 'disk_activity',
-    FILE_EXISTS: 'file_exists',
     FILE_STABLE: 'file_stable',
-    FILE_SIZE: 'file_size',
     DIRECTORY_IDLE: 'directory_idle',
     USER_IDLE: 'user_idle',
-    POWER_SOURCE: 'power_source',
     BATTERY_LEVEL: 'battery_level'
+    // P1-6 (üçüncü tur): `file_exists`, `file_size` ve `power_source` buradan
+    // KALDIRILDI. Enum'da ilan ediliyorlardı ama SmartFinishEngine'de okuyucusu,
+    // `SUPPORTED_CONDITION_TYPES`'ta kaydı, iki UI seçicisinde seçeneği ve
+    // dokümanda tanımı yoktu. İlan edilen ama hiçbir yerde çalışmayan değer,
+    // kullanıcıya "destekleniyor" izlenimi veren bir hayaletti; motor bunları
+    // `UNSUPPORTED_CONDITION` ile açıkça reddediyor.
 };
 
 const LOGIC_OPERATOR = {
