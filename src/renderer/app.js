@@ -6223,7 +6223,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                         themeId: 'obsidian',
                         appIcon: 'monochrome-dark',
                         wakeMode: 'run',
-                        wakeToleranceMinutes: 10
+                        wakeToleranceMinutes: 10,
+                        // P1-6 (beşinci tur): `notifications` artık arka uçta
+                        // GERÇEK bir anahtar (masaüstü balonlarını kapatır).
+                        // Sıfırlama yalnızca onay kutusunu ve localStorage'ı
+                        // geri alıyordu; arka uç değeri eski (kapalı) kalıyor,
+                        // kullanıcı "varsayılana döndür" dedikten sonra bile
+                        // bildirim almıyordu.
+                        notifications: true
                     };
                     if (window.electronAPI && window.electronAPI.saveSettingsAtomic) {
                         const res = await window.electronAPI.saveSettingsAtomic({ settings: patch });

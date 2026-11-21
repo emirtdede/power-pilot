@@ -240,3 +240,35 @@ describe('varsayılan ayarlar şema veya sunucu sahipliğinde', () => {
         expect(missing, `varsayılanı olmayan şema anahtarı: ${missing.join(', ')}`).toEqual([]);
     });
 });
+
+/**
+ * SIFIRLAMA YOLU da gerçek olmalı.
+ *
+ * Denetim (beşinci tur): `notifications` ve `autostart` arka uçta gerçek
+ * olduktan sonra "Ayarları Varsayılana Döndür" akışı yalnızca onay kutularını
+ * ve localStorage'ı geri alıyordu. Arka uçtaki değer eski (kapalı) kalıyordu:
+ * kullanıcı sıfırlama yapıp "Bildirimleri Göster" açık görse bile masaüstü
+ * balonlarını almıyordu. Bu, düzeltmenin kendi ürettiği ters-plaseboydu.
+ */
+describe('varsayılana döndürme arka uç anahtarlarını da yazar', () => {
+    it('reset patch\'i notifications anahtarını içerir', () => {
+        const app = read('src/renderer/app.js');
+        const start = app.indexOf('settingsResetConfirmMsg');
+        expect(start, 'sıfırlama onay metni bulunamadı').toBeGreaterThan(-1);
+        // Sıfırlama patch bloğunu onay işleyicisinden itibaren 2000 karakterde ara.
+        const region = app.slice(start, start + 2000);
+        const patchBlock = (region.match(/const patch = \{[\s\S]*?\};/) || [])[0] || '';
+        expect(patchBlock, 'sıfırlama patch bloğu bulunamadı').not.toBe('');
+        expect(patchBlock, 'notifications sıfırlama yamasında yok').toMatch(/notifications:\s*true/);
+    });
+
+    it('autostart sıfırlaması arka ucu da günceller', () => {
+        const app = read('src/renderer/app.js');
+        const start = app.indexOf('settingsResetConfirmMsg');
+        // Onay işleyicisinin tamamı: patch bloğu + localStorage + OS çağrısı.
+        // (Ölçülen uzaklık ~3.4k karakter; pencere onu kapsamalı.)
+        const region = app.slice(start, start + 6000);
+        // setAutostart → arka uçta OS durumunu okuyup `autostart` ayarına yazar.
+        expect(region, 'sıfırlama setAutostart çağırmıyor').toMatch(/setAutostart\(false\)/);
+    });
+});
