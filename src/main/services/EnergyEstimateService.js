@@ -129,6 +129,24 @@ class EnergyEstimateService {
         const costSaved = hasWatt && hasPrice ? kwhSaved * costPerKwh : null;
         const estimatedCo2Kg = kwhSaved == null ? null : (kwhSaved * CO2_KG_PER_KWH);
 
+        // P1-6: `priceEffectiveFrom` önceden yalnızca saklanıyor, doğrulanıyor ama
+        // hiçbir yerde okunmuyordu (ölü veri = plasebo). Artık tarifenin ne zaman
+        // geçerli olduğu hesaplanır ve eskimiş tarife kullanıcıya bildirilir.
+        const priceEffectiveFrom = typeof settings.priceEffectiveFrom === 'string'
+            && /^\d{4}-(0[1-9]|1[0-2])$/.test(settings.priceEffectiveFrom)
+            ? settings.priceEffectiveFrom
+            : null;
+        let priceAgeMonths = null;
+        if (priceEffectiveFrom) {
+            const [py, pm] = priceEffectiveFrom.split('-').map((v) => parseInt(v, 10));
+            const nowDate = new Date(nowMs);
+            priceAgeMonths = (nowDate.getFullYear() - py) * 12 + (nowDate.getMonth() + 1 - pm);
+            if (!Number.isFinite(priceAgeMonths) || priceAgeMonths < 0) priceAgeMonths = null;
+        }
+        // 12 aydan eski tarife "eskimiş" sayılır (elektrik fiyatları yılda en az
+        // bir kez değişir; daha eski bir değer maliyet hesabını yanıltır).
+        const priceStale = hasPrice && priceAgeMonths !== null && priceAgeMonths >= 12;
+
         // Eylem dağılımı
         const actionCounts = { shutdown: 0, restart: 0, sleep: 0, hibernate: 0, lock: 0, signout: 0 };
         for (const h of successExecutions) {
@@ -272,6 +290,9 @@ class EnergyEstimateService {
                 wattSource: settings.wattSource || 'unset',
                 electricityCostPerKwh: hasPrice ? costPerKwh : null,
                 priceSource: settings.priceSource || 'unset',
+                priceEffectiveFrom,
+                priceAgeMonths,
+                priceStale,
                 currency,
                 assumedOffHours: assumed
             },

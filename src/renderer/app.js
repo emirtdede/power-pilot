@@ -68,6 +68,41 @@ function getCurrentLanguage() {
     return currentLanguage;
 }
 
+/**
+ * Saat biçimi tercihi (`clockFormat`: '24h' | '12h').
+ *
+ * P1-6 sınıfı kusur: Bu ayar kaydediliyor ve arayüzde gösteriliyordu ama HİÇBİR
+ * saat render'ı okumuyordu (plasebo). Artık tüm duvar-saati gösterimleri bu
+ * yardımcıdan geçer.
+ * @returns {'24h'|'12h'}
+ */
+function getClockFormat() {
+    try {
+        const v = localStorage.getItem('pp-clock-format');
+        return v === '12h' ? '12h' : '24h';
+    } catch (_) {
+        return '24h';
+    }
+}
+
+/**
+ * Bir Date'i aktif dil + saat biçimi tercihine göre biçimlendirir.
+ * @param {Date|number|string} value
+ * @param {{seconds?: boolean}} [opts]
+ * @returns {string}
+ */
+function formatClock(value, opts = {}) {
+    const d = value instanceof Date ? value : new Date(value);
+    if (!Number.isFinite(d.getTime())) return '';
+    const withSeconds = opts.seconds === true;
+    return d.toLocaleTimeString(getCurrentLanguage(), {
+        hour: '2-digit',
+        minute: '2-digit',
+        ...(withSeconds ? { second: '2-digit' } : {}),
+        hour12: getClockFormat() === '12h'
+    });
+}
+
 // WP-10.T8: CSP ihlali sessizce yutulmaz; ana süreç loglar.
 document.addEventListener('securitypolicyviolation', (event) => {
     if (window.electronAPI && typeof window.electronAPI.reportCspViolation === 'function') {
@@ -916,6 +951,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         const mode = localStorage.getItem('soundMode');
         return (mode === 'always' || mode === 'never') ? mode : 'auto';
     }
+    /**
+     * Sessiz saat penceresi içinde miyiz?
+     *
+     * İki ayrı tüketici vardır ve bilinçli olarak AYRI tutulur:
+     *  1. Bu işlev — `soundMode: 'auto'` iken arayüz bip'ini susturur. Bu,
+     *     kullanıcının saat alanlarıyla doğrudan kurduğu davranıştır; ayrıca
+     *     bir anahtara bağlanması eski (ve belgelenmiş) davranışı bozardı.
+     *  2. Arka uç `quietHoursEnabled` — pencereyi zorla öne getirmeyi ve
+     *     masaüstü bildirimlerini susturur (bkz. `main.js` `isQuietHoursNow`).
+     * @param {Date} [now]
+     * @returns {boolean}
+     */
     function isQuietHours(now = new Date()) {
         const startStr = (elQuietStart && elQuietStart.value) || localStorage.getItem('pp-quiet-start') || '22:00';
         const endStr = (elQuietEnd && elQuietEnd.value) || localStorage.getItem('pp-quiet-end') || '08:00';
@@ -1555,7 +1602,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         disableControl(document.getElementById('api-ips'));
         const lan = document.getElementById('api-lan');
         if (lan) lan.checked = false;
-        for (const id of ['api-tls', 'api-tls-strict', 'api-client-cert', 'api-cert-file', 'api-key-file', 'api-client-fingerprints']) {
+        for (const id of ['api-tls', 'api-tls-strict', 'api-client-cert', 'api-cert-file', 'api-key-file', 'api-pfx-file', 'api-pfx-passphrase', 'api-ca-file', 'api-client-fingerprints']) {
             disableControl(document.getElementById(id));
         }
         const lanNote = document.getElementById('api-lan-note');
@@ -2147,7 +2194,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (trig.type === 'scheduled_time' && trig.targetTime) {
                 return t('scheduledTaskName', {
                     action: getActionString(task.action),
-                    time: new Date(trig.targetTime).toLocaleTimeString(getCurrentLanguage())
+                    time: formatClock(trig.targetTime)
                 });
             }
             if (task.conditionGroup) return t('smartFinishTaskName');
@@ -3104,7 +3151,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         badge.textContent = h.outcome || '';
                         badgeCell.appendChild(badge);
                         row.append(
-                            cell(new Date(h.timestamp).toLocaleTimeString(getCurrentLanguage()), 'p-3 text-xs text-slate-600 dark:text-slate-400'),
+                            cell(formatClock(h.timestamp), 'p-3 text-xs text-slate-600 dark:text-slate-400'),
                             cell(`AI:${h.agentId || '?'}`, 'p-3 text-xs font-bold'),
                             cell(h.intent || '', 'p-3 text-xs'),
                             cell('ai_assistant', 'p-3 text-xs text-slate-600 dark:text-slate-400'),
@@ -3120,7 +3167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     badge.textContent = resultLabel(h.resultCode);
                     resultCell.appendChild(badge);
                     row.append(
-                        cell(new Date(h.timestamp).toLocaleTimeString(getCurrentLanguage()), 'p-3 text-xs text-slate-600 dark:text-slate-400'),
+                        cell(formatClock(h.timestamp), 'p-3 text-xs text-slate-600 dark:text-slate-400'),
                         cell(localizedTaskName(h.taskName, h.action), 'p-3 text-xs font-bold'),
                         cell(getActionString(h.action), 'p-3 text-xs'),
                         cell(sourceLabel(h.source), 'p-3 text-xs text-slate-600 dark:text-slate-400'),
@@ -3427,7 +3474,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (profSummary && stats.profile) {
                     const w = stats.profile.deviceWattage != null ? `${stats.profile.deviceWattage}W` : '—W';
                     const p = stats.profile.electricityCostPerKwh != null ? `${stats.profile.electricityCostPerKwh} ${stats.profile.currency}/kWh` : '—/kWh';
-                    profSummary.textContent = `${w} · ${p}`;
+                    // P1-6: `priceEffectiveFrom` artık gerçekten okunur — 12 aydan
+                    // eski tarife sessizce kullanılmaz, kullanıcıya işaretlenir.
+                    const stale = stats.profile.priceStale === true
+                        ? ` · ${t('statPriceStale', { months: stats.profile.priceAgeMonths })}`
+                        : '';
+                    profSummary.textContent = `${w} · ${p}${stale}`;
+                    // Sınıflar değiştirilir (eklenmez): aksi halde slate ve amber
+                    // aynı anda bulunur ve hangisinin kazandığı CSS sırasına kalır.
+                    const isStale = stats.profile.priceStale === true;
+                    profSummary.classList.toggle('text-slate-600', !isStale);
+                    profSummary.classList.toggle('dark:text-slate-400', !isStale);
+                    profSummary.classList.toggle('text-amber-700', isStale);
+                    profSummary.classList.toggle('dark:text-amber-400', isStale);
                 }
 
                 renderDailyStatsChart(stats.dailySeries);
@@ -3444,6 +3503,28 @@ document.addEventListener('DOMContentLoaded', async () => {
                         showToast(t('energyLinesIncomplete'), 'info');
                     }
                 }
+            } else {
+                // P1-6: `statsEnabled=false` iken görünüm eski sayıları göstermeye
+                // devam ediyordu (sessiz no-op). Artık tüm alanlar sıfırlanır.
+                const zero = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+                ['stat-hours', 'stat-kwh', 'stat-cost', 'stat-co2'].forEach((id) => zero(id, '—'));
+                zero('stat-success-rate', '—');
+                zero('stat-success-count', '0');
+                zero('stat-blocked-count', '0');
+                zero('stat-cancelled-count', '0');
+                zero('stat-streak-days', '0');
+                zero('stat-longest-off', '0 h');
+                const chipW = document.getElementById('chip-watt');
+                const chipP = document.getElementById('chip-price');
+                if (chipW) chipW.classList.add('hidden');
+                if (chipP) chipP.classList.add('hidden');
+                const profSummary = document.getElementById('stat-profile-summary');
+                if (profSummary) profSummary.textContent = t('statsDisabledNote');
+                renderDailyStatsChart([]);
+                renderBreakdownBars('stats-action-breakdown', [], (it) => getActionString(it.action));
+                renderBreakdownBars('stats-source-breakdown', [], (it) => sourceLabel(it.source));
+                renderHourlyHeatmap([]);
+                renderRecentSessionsTable([]);
             }
         }
     }
@@ -3611,12 +3692,35 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('api-port').value = s.localApiPort || 18456;
             document.getElementById('api-lan').checked = s.lanModeEnabled === true;
             document.getElementById('api-ips').value = (s.lanAllowedIps || ['127.0.0.1']).join(', ');
+            // P1-6: LAN modu güvenlik nedeniyle kapatıldıysa nedeni gösterilir.
+            const lanWarnBox = document.getElementById('api-lan-warning');
+            const lanWarnText = document.getElementById('api-lan-warning-text');
+            if (lanWarnBox) {
+                const msg = typeof s.lanModeWarning === 'string' ? s.lanModeWarning.trim() : '';
+                lanWarnBox.classList.toggle('hidden', msg === '');
+                if (lanWarnText) lanWarnText.textContent = msg;
+            }
             document.getElementById('api-block-remote').checked = s.blockRemoteShutdownWhenActive !== false;
             document.getElementById('api-tls').checked = s.localApiTlsEnabled === true;
             document.getElementById('api-tls-strict').checked = s.localApiTlsStrict === true;
             document.getElementById('api-client-cert').checked = s.localApiRequireClientCert === true;
             document.getElementById('api-cert-file').value = s.localApiCertFile || '';
             document.getElementById('api-key-file').value = s.localApiKeyFile || '';
+            // P1-6: mTLS'de istemci sertifikasını doğrulayan CA yolu.
+            const apiCaEl = document.getElementById('api-ca-file');
+            if (apiCaEl) apiCaEl.value = s.localApiCaFile || '';
+            // P1-6: PFX/PKCS#12 paketi de geçerli TLS materyalidir.
+            const apiPfxEl = document.getElementById('api-pfx-file');
+            if (apiPfxEl) apiPfxEl.value = s.localApiPfxFile || '';
+            // Parola renderer'a HİÇ gelmez (RENDERER_SECRET_FIELDS). Yalnızca
+            // "kayıtlı bir parola var mı" bilgisi `secretPresence` ile gelir;
+            // alan boş bırakılır, placeholder durumu anlatır.
+            const apiPfxPassEl = document.getElementById('api-pfx-passphrase');
+            if (apiPfxPassEl) {
+                apiPfxPassEl.value = '';
+                const hasStored = !!(s.secretPresence && s.secretPresence.localApiPfxPassphrase);
+                apiPfxPassEl.placeholder = hasStored ? t('apiPfxPassphraseStored') : '••••';
+            }
             document.getElementById('api-client-fingerprints').value = (s.localApiClientFingerprints || []).join(', ');
             if (s.localApiKeyMasked) {
                 document.getElementById('display-api-key').innerText = s.localApiKeyMasked;
@@ -3692,11 +3796,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             const requireClientCert = document.getElementById('api-client-cert').checked;
             const certFile = document.getElementById('api-cert-file').value.trim() || null;
             const keyFile = document.getElementById('api-key-file').value.trim() || null;
+            const caFileEl = document.getElementById('api-ca-file');
+            const caFile = caFileEl ? (caFileEl.value.trim() || null) : null;
+            // P1-6: Arka uç PFX/PKCS#12 paketini de geçerli TLS materyali sayar
+            // (`validate.js`: hasCert/hasKey ikisi de pfx ile sağlanabilir).
+            const pfxFileEl = document.getElementById('api-pfx-file');
+            const pfxFile = pfxFileEl ? (pfxFileEl.value.trim() || null) : null;
+            const pfxPassEl = document.getElementById('api-pfx-passphrase');
+            // Sır alanı renderer'a HİÇ gönderilmez (RENDERER_SECRET_FIELDS), bu
+            // yüzden alan her zaman boş başlar. Boşken `null` göndermek kayıtlı
+            // parolayı SİLERDİ; bu yüzden yalnızca kullanıcı yazdıysa dahil edilir.
+            const pfxPassphrase = (pfxPassEl && pfxPassEl.value.length > 0) ? pfxPassEl.value : undefined;
             const fingerprints = document.getElementById('api-client-fingerprints').value
                 .split(',')
                 .map((value) => value.trim().replace(/:/g, '').toLowerCase())
                 .filter(Boolean);
-            if (tls && (!certFile || !keyFile)) {
+            // Sertifika+anahtar VEYA PFX paketi gerekir (arka uçla aynı sözleşme).
+            const hasPemMaterial = !!(certFile && keyFile);
+            const hasPfxMaterial = !!pfxFile;
+            if (tls && !hasPemMaterial && !hasPfxMaterial) {
                 showToast(t('errorTlsMaterialRequired'), 'error');
                 return;
             }
@@ -3714,8 +3832,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 localApiRequireClientCert: requireClientCert,
                 localApiCertFile: certFile,
                 localApiKeyFile: keyFile,
+                localApiCaFile: caFile,
+                localApiPfxFile: pfxFile,
                 localApiKeyRole: keyRole
             };
+            // Sır alanı YALNIZCA kullanıcı yazdıysa gönderilir. `undefined` bile
+            // gönderilmemeli: Electron IPC yapısal klonlama kullanır ve
+            // `hasOwnProperty` doğru döner → ana süreç kayıtlı parolayı siler.
+            if (typeof pfxPassphrase === 'string' && pfxPassphrase.length > 0) {
+                combinedPatch.localApiPfxPassphrase = pfxPassphrase;
+            }
             if (window.electronAPI && window.electronAPI.saveSettingsAtomic) {
                 const run = (pin) => window.electronAPI.saveSettingsAtomic({ settings: combinedPatch, pin });
                 const res = await run();
@@ -3921,6 +4047,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         const auditBox = document.getElementById('ent-audit-summary');
         const storeNotice = document.getElementById('enterprise-store-notice');
         const wrap = document.getElementById('enterprise-controls-wrap');
+        // P1-6: ölü bakım penceresi uyarısı (depolama katmanı üretir, arayüz gösterir).
+        const mwBox = document.getElementById('mw-warning');
+        const mwText = document.getElementById('mw-warning-text');
+        if (mwBox && window.electronAPI && window.electronAPI.getSettings) {
+            try {
+                const s = await window.electronAPI.getSettings();
+                const msg = s && typeof s.maintenanceWindowWarning === 'string'
+                    ? s.maintenanceWindowWarning.trim() : '';
+                mwBox.classList.toggle('hidden', msg === '');
+                if (mwText) mwText.textContent = msg;
+            } catch (_) { /* ayar okunamazsa uyarı gösterilmez */ }
+        }
         try {
             if (window.electronAPI && window.electronAPI.getDistribution) {
                 const dist = await window.electronAPI.getDistribution();
@@ -5018,7 +5156,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Canlılık kanıtı: karttaki saat her saniye işler.
     function wizardTickClock() {
         const el = document.getElementById('wz-clock');
-        if (el) el.innerText = new Date().toLocaleTimeString(getCurrentLanguage());
+        if (el) el.innerText = formatClock(new Date());
     }
 
     async function wizardRefreshAi() {
@@ -5182,6 +5320,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     patch.electricityCostPerKwh = bill;
                     const isAutoBill = billEl && billEl.dataset.userEdited !== '1' && billEl.dataset.autoBill === String(bill);
                     patch.priceSource = isAutoBill ? 'default' : 'manual';
+                    // P1-6: tarifenin geçerlilik ayı kaydedilir (eskime tespiti için).
+                    const nowD = new Date();
+                    patch.priceEffectiveFrom = `${nowD.getFullYear()}-${String(nowD.getMonth() + 1).padStart(2, '0')}`;
                     if (billEl && billEl.dataset.autoCurrency) {
                         patch.currency = billEl.dataset.autoCurrency;
                     }
@@ -5703,10 +5844,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!origNull) {
                     patch.electricityCostPerKwh = null;
                     patch.priceSource = 'unset';
+                    patch.priceEffectiveFrom = null;
                 }
             } else if (price !== nrgOrigPrice) {
                 patch.electricityCostPerKwh = price;
                 patch.priceSource = 'manual';
+                // P1-6: geçerlilik ayı yazılır; `priceEffectiveFrom` aksi halde ölü veri kalırdı.
+                const nowD = new Date();
+                patch.priceEffectiveFrom = `${nowD.getFullYear()}-${String(nowD.getMonth() + 1).padStart(2, '0')}`;
             }
         }
         return { patch };
@@ -6383,12 +6528,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     const elPrewarnSeconds = document.getElementById('setting-prewarn-seconds');
     const elQuietStart = document.getElementById('setting-quiet-start');
     const elQuietEnd = document.getElementById('setting-quiet-end');
+    // P1-6: arka ucun sessiz saatleri uygulaması için tek anahtar.
+    const elQuietEnabled = document.getElementById('setting-quiet-enabled');
     const elFallbackAction = document.getElementById('setting-fallback-action');
     const elGraceSeconds = document.getElementById('setting-grace-seconds');
     const elProtectFullscreen = document.getElementById('setting-protect-fullscreen');
     const elProtectActiveIo = document.getElementById('setting-protect-active-io');
     const elPinLengthMode = document.getElementById('setting-pin-length-mode');
     const elAutoBackup = document.getElementById('setting-auto-backup');
+    // P1-6: arka uçta okunan ama arayüzde kontrolü olmayan ayarlar.
+    const elStatsEnabled = document.getElementById('setting-stats-enabled');
+    const elAssumedOffHours = document.getElementById('setting-assumed-off-hours');
+    const elBootGuardSeconds = document.getElementById('setting-boot-guard-seconds');
+    // P1-6: güvenlik politikası — arka uçta uygulanıyordu, arayüzde yoktu.
+    const elForceCloseApps = document.getElementById('setting-force-close-apps');
+    const elRemoteApproval = document.getElementById('setting-remote-approval');
+    const elProtectedApps = document.getElementById('setting-protected-apps');
+    const btnProtectedAppsReset = document.getElementById('btn-protected-apps-reset');
+    const DEFAULT_PROTECTED_APPS = [
+        'code.exe', 'devenv.exe', 'idea64.exe', 'photoshop.exe',
+        'premiere.exe', 'afterfx.exe', 'handbrake.exe', 'obs64.exe',
+        'blender.exe', 'zoom.exe', 'teams.exe', 'powerpnt.exe'
+    ];
 
     function applyExtendedUiPrefs() {
         const density = localStorage.getItem('pp-ui-density') || 'comfortable';
@@ -6473,12 +6634,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         syncVal(elPrewarnSeconds, 'pp-prewarn-seconds', s.prewarnSeconds);
         syncVal(elQuietStart, 'pp-quiet-start', s.quietStart);
         syncVal(elQuietEnd, 'pp-quiet-end', s.quietEnd);
+        // P1-6: sessiz saat anahtarı kalıcı ayardan yüklenir.
+        if (elQuietEnabled && typeof s.quietHoursEnabled === 'boolean') {
+            elQuietEnabled.checked = s.quietHoursEnabled;
+            try { localStorage.setItem('pp-quiet-enabled', String(s.quietHoursEnabled)); } catch (_) { }
+        }
         syncVal(elFallbackAction, 'pp-fallback-action', s.fallbackAction);
         syncVal(elGraceSeconds, 'pp-grace-seconds', s.graceSeconds);
         syncBool(elProtectFullscreen, 'pp-protect-fullscreen', s.protectFullscreen);
         syncBool(elProtectActiveIo, 'pp-protect-active-io', s.protectActiveIo);
         syncVal(elPinLengthMode, 'pp-pin-length-mode', s.pinLengthMode);
         syncBool(elAutoBackup, 'pp-auto-backup', s.autoBackupEnabled);
+        // P1-6: varsayılan `true` olduğu için `syncBool` yalnızca boolean'da çalışır.
+        if (elStatsEnabled && typeof s.statsEnabled === 'boolean') {
+            elStatsEnabled.checked = s.statsEnabled;
+            try { localStorage.setItem('pp-stats-enabled', String(s.statsEnabled)); } catch (_) { }
+        }
+        if (elAssumedOffHours) {
+            // `null` → alan boşaltılır; aksi halde önceki değer ekranda kalırdı.
+            elAssumedOffHours.value = typeof s.assumedOffHours === 'number' ? String(s.assumedOffHours) : '';
+        }
+        if (elBootGuardSeconds && Number.isInteger(s.bootGuardSeconds)) {
+            // Seçenek listesinde olmayan bir değer (ör. eski yapılandırmadan 180)
+            // sessizce boşaltılırdı; sonraki değişiklik `NaN` yazmaya çalışırdı.
+            const asStr = String(s.bootGuardSeconds);
+            if (!Array.from(elBootGuardSeconds.options).some((o) => o.value === asStr)) {
+                const opt = document.createElement('option');
+                opt.value = asStr;
+                opt.textContent = `${s.bootGuardSeconds} s`;
+                elBootGuardSeconds.appendChild(opt);
+            }
+            elBootGuardSeconds.value = asStr;
+            try { localStorage.setItem('pp-boot-guard-seconds', asStr); } catch (_) { }
+        }
+        // P1-6: güvenlik politikası ayarları sunucudan yüklenir.
+        if (elForceCloseApps) elForceCloseApps.checked = s.forceCloseApps === true;
+        if (elRemoteApproval) elRemoteApproval.checked = s.remoteApprovalRequired === true;
+        if (elProtectedApps) {
+            // `null`/boş → varsayılan liste gösterilir (arka uç da aynı varsayılana döner).
+            const list = Array.isArray(s.protectedApps) ? s.protectedApps : DEFAULT_PROTECTED_APPS;
+            elProtectedApps.value = list.join(', ');
+        }
 
         if (s.shortcuts && typeof s.shortcuts === 'object') {
             ['theme', 'quickstart', 'cancel', 'settings', 'docs'].forEach((k) => {
@@ -6519,7 +6715,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, 'defaultMinutes', toInt);
     bindLocalPref(elUiDensity, 'pp-ui-density', () => applyExtendedUiPrefs(), 'uiDensity');
     bindLocalPref(elReduceMotion, 'pp-reduce-motion', () => applyExtendedUiPrefs());
-    bindLocalPref(elClockFormat, 'pp-clock-format', null, 'clockFormat');
+    // Saat biçimi değişince görünür zaman damgaları yeniden çizilir (aksi halde
+    // ayar bir sonraki gezinmeye kadar etkisiz görünürdü).
+    bindLocalPref(elClockFormat, 'pp-clock-format', () => {
+        if (typeof loadHistory === 'function' && isVisible('view-history')) loadHistory();
+        if (typeof loadTasks === 'function' && isVisible('view-tasks')) loadTasks();
+        if (typeof wizardTickClock === 'function') wizardTickClock();
+    }, 'clockFormat');
     bindLocalPref(elToastPosition, 'pp-toast-position', () => applyExtendedUiPrefs(), 'toastPosition');
     bindLocalPref(elToastDuration, 'pp-toast-duration');
     bindLocalPref(elDesktopNotifyStart, 'pp-desktop-notify-start', null, 'desktopNotifyStart');
@@ -6528,12 +6730,58 @@ document.addEventListener('DOMContentLoaded', async () => {
     bindLocalPref(elPrewarnSeconds, 'pp-prewarn-seconds', null, 'prewarnSeconds', toInt);
     bindLocalPref(elQuietStart, 'pp-quiet-start', null, 'quietStart');
     bindLocalPref(elQuietEnd, 'pp-quiet-end', null, 'quietEnd');
+    // P1-6: bu anahtar olmadan arka uç sessiz saatleri hiç uygulamıyordu.
+    bindLocalPref(elQuietEnabled, 'pp-quiet-enabled', () => {
+        // `isQuietHours()` anahtarı anlık okur; ek yeniden çizim gerekmez.
+        // Sadece test bildirimi düğmesi durumu yansıtsın diye sessiz geçilir.
+    }, 'quietHoursEnabled');
+    // P1-6: güvenlik politikası — gerçek davranışı olan ayarlar.
+    bindLocalPref(elForceCloseApps, 'pp-force-close-apps', null, 'forceCloseApps');
+    bindLocalPref(elRemoteApproval, 'pp-remote-approval', null, 'remoteApprovalRequired');
+    // `protectedApps` bir listeydi; metin alanı virgülle ayrılmış .exe adları
+    // gönderir. Arka uç `.exe` olmayan girdileri zaten sessizce eler.
+    if (elProtectedApps) {
+        elProtectedApps.addEventListener('change', () => {
+            const list = String(elProtectedApps.value || '')
+                .split(',')
+                .map((v) => v.trim().toLowerCase())
+                .filter((v) => /^[a-z0-9._-]{1,64}\.exe$/i.test(v));
+            // Boş liste kullanıcının bilinçli seçimi değil, yazım hatası olabilir;
+            // bu yüzden boşsa varsayılana döneriz (arka uçla aynı sözleşme).
+            const payload = list.length > 0 ? list : DEFAULT_PROTECTED_APPS.slice();
+            try { localStorage.setItem('pp-protected-apps', JSON.stringify(payload)); } catch (_) { }
+            persistSingleSetting('protectedApps', payload);
+            elProtectedApps.value = payload.join(', ');
+        });
+    }
+    if (btnProtectedAppsReset) {
+        btnProtectedAppsReset.addEventListener('click', () => {
+            if (!elProtectedApps) return;
+            elProtectedApps.value = DEFAULT_PROTECTED_APPS.join(', ');
+            elProtectedApps.dispatchEvent(new Event('change'));
+            showToast(t('toastProtectedAppsReset'), 'success');
+        });
+    }
     bindLocalPref(elFallbackAction, 'pp-fallback-action', null, 'fallbackAction');
     bindLocalPref(elGraceSeconds, 'pp-grace-seconds', null, 'graceSeconds', toInt);
     bindLocalPref(elProtectFullscreen, 'pp-protect-fullscreen', null, 'protectFullscreen');
     bindLocalPref(elProtectActiveIo, 'pp-protect-active-io', null, 'protectActiveIo');
     bindLocalPref(elPinLengthMode, 'pp-pin-length-mode', () => applyExtendedUiPrefs(), 'pinLengthMode');
     bindLocalPref(elAutoBackup, 'pp-auto-backup', null, 'autoBackupEnabled');
+    // P1-6: bu üç ayar önceden yalnızca arka uçta okunuyordu.
+    bindLocalPref(elStatsEnabled, 'pp-stats-enabled', () => {
+        // Kapalıysa istatistik görünümü "kapalı" durumunu hemen yansıtır.
+        if (typeof loadStatistics === 'function' && isVisible('view-stats')) loadStatistics();
+    }, 'statsEnabled');
+    bindLocalPref(elBootGuardSeconds, 'pp-boot-guard-seconds', null, 'bootGuardSeconds', toInt);
+    bindLocalPref(elAssumedOffHours, 'pp-assumed-off-hours', () => {
+        if (typeof loadStatistics === 'function' && isVisible('view-stats')) loadStatistics();
+    }, 'assumedOffHours', (raw) => {
+        const s = String(raw == null ? '' : raw).trim();
+        if (s === '') return null;
+        const n = Number(s.replace(',', '.'));
+        return Number.isFinite(n) ? n : null;
+    });
     applyExtendedUiPrefs();
 
     // WP-9: Etkileşimli klavye kısayolu kaydedicisi (#shortcut-*)
