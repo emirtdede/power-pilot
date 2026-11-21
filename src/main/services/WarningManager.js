@@ -15,8 +15,16 @@ class WarningManager extends EventEmitter {
 
     /**
      * Shows a warning for an upcoming task.
-     * WBS-9.4 mod dalı: `full` modda (veya scheduler-ateşlemeli görevde) süre
-     * dolunca DEVAM edilir; `classic` modda süre dolunca DURDURULUR.
+     *
+     * Süre dolduğunda davranış (P0-2 düzeltmesi):
+     * Uyarı bir "son şans iptal penceresi"dir; kullanıcı bilinçli olarak
+     * iptal/ertele DEMEDİYSE sayaç bittiğinde eylem GERÇEKLEŞİR. Eski davranış
+     * (`classic` modda sayaç bitince görevi iptal etmek) kullanıcının kendi
+     * kurduğu "1 saat sonra kapat" zamanlayıcısını sabaha kadar açık bırakıyordu.
+     *
+     * Zorunlu onay isteyen kullanıcı `warningConfig.requireConfirmation: true`
+     * ile bunu açıkça seçer (o durumda sayaç bitince iptal edilir).
+     *
      * @param {AutomationTask} task
      * @returns {Promise<{proceed: boolean, snoozed?: boolean}>}
      */
@@ -27,8 +35,9 @@ class WarningManager extends EventEmitter {
             const rawSeconds = task.warningConfig && task.warningConfig.durationSeconds;
             // O-02: 0 geçerli bir değerdir ("hemen icra"); `|| 30` onu yutuyordu.
             const warningSec = Number.isInteger(rawSeconds) ? Math.min(Math.max(rawSeconds, 0), 3600) : 30;
-            const autoProceed = task.mode === 'full' || task._schedulerFired === true;
-            log.info(`[WarningManager] Starting ${warningSec}s warning for task "${task.name}" (mode=${task.mode || 'classic'}, autoProceed=${autoProceed})`);
+            const requireConfirmation = !!(task.warningConfig && task.warningConfig.requireConfirmation === true);
+            const autoProceed = !requireConfirmation;
+            log.info(`[WarningManager] Starting ${warningSec}s warning for task "${task.name}" (mode=${task.mode || 'classic'}, autoProceed=${autoProceed}, requireConfirmation=${requireConfirmation})`);
 
             let secondsLeft = warningSec;
             let timerInterval = null;

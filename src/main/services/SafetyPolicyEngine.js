@@ -29,6 +29,19 @@ const CAPABILITY_TTL_FAIL_MS = 60 * 1000;
 const CAPABILITY_PROBE_TIMEOUT_MS = 3000;
 const CAPABILITY_LOG_THROTTLE_MS = 60 * 60 * 1000;
 
+// P0-3: Korunan uygulama listesi artık KODA ÇAKILI DEĞİL, ayarlardan gelir.
+// Bu liste yalnızca varsayılandır; kullanıcı Ayarlar'dan ekleyip çıkarabilir.
+// Oyun başlatıcıları (steam/epic/discord) varsayılandan ÇIKARILDI: indirme
+// bitince kapatma şablonları bu süreçler çalışırken tetiklenir ve kendi
+// kendini engelliyordu.
+const DEFAULT_PROTECTED_APPS = Object.freeze([
+    'code.exe', 'devenv.exe', 'idea64.exe', 'photoshop.exe',
+    'premiere.exe', 'afterfx.exe', 'handbrake.exe', 'obs64.exe',
+    'blender.exe', 'zoom.exe', 'teams.exe', 'powerpnt.exe'
+]);
+
+const PROCESS_NAME_RE = /^[A-Za-z0-9._-]{1,64}\.exe$/i;
+
 class SafetyPolicyEngine {
     // execFn/uptimeFn: yalnızca test izolasyonu için. Açık DI.
     // options: processProvider/idleProvider/powerMonitor (WP-04/WP-05).
@@ -39,16 +52,70 @@ class SafetyPolicyEngine {
         this.processProvider = typeof options.processProvider === 'function' ? options.processProvider : null;
         this.idleProvider = typeof options.idleProvider === 'function' ? options.idleProvider : null;
         this.powerMonitor = options.powerMonitor || null;
-        this.protectedApps = [
-            'code.exe', 'devenv.exe', 'idea64.exe', 'photoshop.exe',
-            'premiere.exe', 'afterfx.exe', 'handbrake.exe', 'obs64.exe',
-            'blender.exe', 'steam.exe', 'epicgameslauncher.exe', 'discord.exe',
-            'zoom.exe', 'teams.exe', 'powerpnt.exe'
-        ];
+        // P0-3: varsayılan liste; gerçek liste `getProtectedAppSet()` ile ayarlardan okunur.
+        this.protectedApps = [...DEFAULT_PROTECTED_APPS];
         this.protectedAppSet = new Set(this.protectedApps.map(canonicalProcessName));
         // P0/BLOCKER-001: yetenek sondası durumu (tek uçuş + TTL).
         this._capability = { available: null, checkedAt: null, code: null, value: null, inFlight: null };
         this._capabilityLogAt = 0;
+    }
+
+    /**
+     * P0-3: Kullanıcının düzenleyebildiği korunan uygulama listesi.
+     * Ayar yoksa/bozuksa güvenli varsayılana döner; `.exe` olmayan ve
+     * yol içeren girdiler sessizce atılır (komut enjeksiyonu yok).
+     * @param {object} [settings]
+     * @returns {Set<string>} kanonik süreç adları
+     */
+    static resolveProtectedApps(settings) {
+        const raw = settings && Array.isArray(settings.protectedApps) ? settings.protectedApps : null;
+        const source = raw || DEFAULT_PROTECTED_APPS;
+        const out = new Set();
+        for (const item of source) {
+            if (typeof item !== 'string') continue;
+            const name = item.trim().toLowerCase();
+            if (!PROCESS_NAME_RE.test(name)) continue;
+            out.add(canonicalProcessName(name));
+        }
+        return out;
+    }
+
+    /**
+     * Görevin KENDİ izlediği süreç korunan-listede olsa bile muaftır.
+     * Örn. `tpl_steam_download` görevi `steam.exe` çalışırken kapatmayı
+     * hedefler; steam'i korunan saymak görevi kendi kendine engellemek olur.
+     * @param {AutomationTask} task
+     * @returns {Set<string>} muaf süreç adları
+     */
+    static taskWatchedProcesses(task) {
+        const exempt = new Set();
+        const group = task && task.conditionGroup;
+        const conditions = (group && Array.isArray(group.conditions)) ? group.conditions : [];
+        for (const cond of conditions) {
+            if (!cond || cond.type !== 'process_running') continue;
+            if (typeof cond.processName === 'string' && cond.processName.trim()) {
+                exempt.add(canonicalProcessName(cond.processName.trim()));
+            }
+        }
+        return exempt;
+    }
+
+    /**
+     * P1-6: görev düzeyi politika alanı kullanıcı tarafından AÇIKÇA seçildi mi?
+     *
+     * `AutomationTask` her zaman tam bir `safetyPolicy` nesnesi üretir (toJSON
+     * sözleşmesi). Bu yüzden "alan undefined mı?" kontrolü kalıcı ayarları
+     * gölgeliyordu. Karar `safetyPolicyExplicit` işaretinden verilir; işaret
+     * yoksa (eski kayıt) güvenli varsayılandan farklı değer gerçek tercihtir.
+     * @param {object} task
+     * @param {string} key
+     * @returns {boolean}
+     */
+    static isExplicitPolicy(task, key) {
+        if (!task || !task.safetyPolicy || task.safetyPolicy[key] === undefined) return false;
+        const explicit = task.safetyPolicyExplicit;
+        if (explicit && typeof explicit === 'object') return explicit[key] === true;
+        return task.safetyPolicy[key] !== SAFE_POLICY_DEFAULTS[key];
     }
 
     /**
@@ -79,11 +146,15 @@ class SafetyPolicyEngine {
         }
 
         // WP-9: Kullanıcı ayarlarından tam ekran ve aktif I/O / güç isteği korumasını uygula
-        // (yalnızca görev kendi safetyPolicy'sinde açıkça override etmediyse).
-        if (baseSettings && baseSettings.protectFullscreen === false && (!task || !task.safetyPolicy || task.safetyPolicy.checkFullscreen === undefined)) {
+        // (yalnızca görev kendi safetyPolicy'sinde AÇIKÇA override etmediyse).
+        // P1-6: `AutomationTask` her zaman tam politika nesnesi üretir; bu yüzden
+        // "undefined mı?" kontrolü hiçbir zaman doğru olmuyordu ve kalıcı ayarlar
+        // (protectFullscreen / protectActiveIo) hiç uygulanmıyordu. Karar explicit
+        // işaretten verilir.
+        if (baseSettings && baseSettings.protectFullscreen === false && !SafetyPolicyEngine.isExplicitPolicy(task, 'checkFullscreen')) {
             policy.checkFullscreen = false;
         }
-        if (baseSettings && baseSettings.protectActiveIo === false && (!task || !task.safetyPolicy || task.safetyPolicy.checkSystemLoad === undefined)) {
+        if (baseSettings && baseSettings.protectActiveIo === false && !SafetyPolicyEngine.isExplicitPolicy(task, 'checkSystemLoad')) {
             policy.checkSystemLoad = false;
         }
 
@@ -106,8 +177,14 @@ class SafetyPolicyEngine {
                 log.error('[SafetyPolicyEngine] Süreç listesi alınamadı:', procResult.error && procResult.error.message);
                 return deny('PROCESS_LIST_UNAVAILABLE', 'Çalışan süreçler doğrulanamadı; güç eylemi engellendi.');
             }
+            // P0-3: liste kullanıcı ayarlarından; görevin kendi izlediği süreç muaf.
+            const protectedSet = SafetyPolicyEngine.resolveProtectedApps(baseSettings);
+            const exemptSet = SafetyPolicyEngine.taskWatchedProcesses(task);
             const runningProcs = procResult.value;
-            const foundProtected = (runningProcs || []).filter(p => this.protectedAppSet.has(canonicalProcessName(p)));
+            const foundProtected = (runningProcs || []).filter((p) => {
+                const canon = canonicalProcessName(p);
+                return protectedSet.has(canon) && !exemptSet.has(canon);
+            });
 
             if (foundProtected.length > 0) {
                 log.info(`[SafetyPolicyEngine] Action blocked due to protected apps: ${foundProtected.join(', ')}`);

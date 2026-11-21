@@ -52,8 +52,9 @@ module.exports = {
                         command: 'node',
                         args: ['src/mcp/server.js'],
                         env: {
-                            POWER_PILOT_API_PORT: String(port),
-                            POWER_PILOT_API_KEY: '<API_KEY>'
+                            // P0-4: kanonik adlar — CLI/MCP bunları okur.
+                            POWERPILOT_API_PORT: String(port),
+                            POWERPILOT_API_KEY: '<API_KEY>'
                         }
                     }
                 }

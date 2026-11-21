@@ -80,7 +80,7 @@ describe('TaskManager zamanlayıcı (TS-0.2)', () => {
         task.trigger.targetTime = Date.now() - 10;
         tm.evaluateTasks();
         await flush(); await flush();
-        expect(d.power.execute).toHaveBeenCalledWith('shutdown');
+        expect(d.power.execute).toHaveBeenCalledWith('shutdown', expect.anything());
         expect(task.status).toBe('completed');
     });
 
@@ -224,7 +224,7 @@ describe('TaskManager Smart Finish kablolama (WBS-0.1)', () => {
         engine.stabilityTrackers.set(task.id, Date.now() - 1000);
         tm.evaluateTasks(); // 2. döngü: satisfied → çalışır
         await flush(); await flush();
-        expect(d.power.execute).toHaveBeenCalledWith('shutdown');
+        expect(d.power.execute).toHaveBeenCalledWith('shutdown', expect.anything());
     });
 
     it('stale metrikle Smart Finish tetiklenmez', async () => {

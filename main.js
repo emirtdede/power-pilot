@@ -321,6 +321,7 @@ const { ConsoleClient } = require('./src/main/services/ConsoleClient');
 const { OrderExecutor } = require('./src/main/services/OrderExecutor');
 const { SignedOrderService } = require('./src/main/services/SignedOrderService');
 const { UpsMonitor } = require('./src/main/services/UpsMonitor');
+const { UpsSupervisor } = require('./src/main/services/UpsSupervisor');
 
 let mainWindow;
 let miniWindow = null;
@@ -347,11 +348,74 @@ let isMiniWindowDismissed = false;
 let storageService, historyService, warningManager, safetyPolicyEngine, metricCollector, smartFinishEngine, taskManager, webhookService, localApiService, templateService, energyService, deviceService, aiBackend, modelManager, aiService, sttService, agentOrchestrator, deviceProfiler, sttModelManager;
 // FAZ B: kurumsal servis örnekleri
 let inventoryService, exemptionService, orderQueue, auditLog, consoleClient, orderExecutor, upsMonitor;
+let upsSupervisor = null;
+let upsSupervisorTimer = null;
 let consoleSyncTimer = null;
 let headlessHandle = null;
 
 function getAppVersion() {
     try { return require('./package.json').version || '1.0.0'; } catch (_) { return '1.0.0'; }
+}
+
+/**
+ * P0-4: Paketlenmiş uygulamada ASAR içindeki bir dosyayı dış `node` sürecine
+ * veremeyiz. `asarUnpack` kapsamındaki dosyalar `app.asar.unpacked` altında
+ * FİZİKSEL olarak durur. Bu yardımcı, çalıştırılabilir gerçek yolu döndürür.
+ * Geliştirme modunda normal yolu döner.
+ * @param {...string} segments src/mcp/server.js gibi parçalar
+ * @returns {string}
+ */
+function resolveUnpackedEntry(...segments) {
+    const packaged = path.join(__dirname, ...segments);
+    if (!app.isPackaged) return packaged;
+    const unpacked = packaged.replace(`app.asar${path.sep}`, `app.asar.unpacked${path.sep}`);
+    try {
+        if (fs.existsSync(unpacked)) return unpacked;
+    } catch (_) { /* yut */ }
+    return unpacked;
+}
+
+/**
+ * P1-5: Gerçek OS açılış zamanını boot geçmişine yazar. Enerji tasarrufu
+ * ölçümü kapanış→açılış eşleşmesiyle çalışır; bu kayıt normal kullanıcıda
+ * hiç yazılmıyordu. `os.uptime()` envanter toplamadan bağımsız, ucuz ve
+ * yönetici yetkisi gerektirmez. Hata açılışı ASLA bloklamaz.
+ */
+function registerOsBootTime() {
+    try {
+        if (!storageService || typeof storageService.appendBoot !== 'function') return;
+        const up = os.uptime();
+        if (!Number.isFinite(up) || up < 0) return;
+        const bootAtIso = new Date(Date.now() - Math.floor(up) * 1000).toISOString();
+        storageService.appendBoot(bootAtIso);
+    } catch (err) {
+        log.warn('[Init] açılış zamanı kaydedilemedi:', err && err.message);
+    }
+}
+
+/**
+ * P1-6: Sessiz saat (quiet hours) penceresi içinde miyiz? Gece yarısını
+ * kesen aralıklar (22:00 → 08:00) doğru ele alınır.
+ * @param {object} settings
+ * @param {Date} [now]
+ * @returns {boolean}
+ */
+function isQuietHoursNow(settings, now = new Date()) {
+    try {
+        if (!settings || settings.quietHoursEnabled !== true) return false;
+        const parse = (s) => {
+            const m = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(String(s || ''));
+            return m ? (Number(m[1]) * 60 + Number(m[2])) : null;
+        };
+        const start = parse(settings.quietStart);
+        const end = parse(settings.quietEnd);
+        if (start === null || end === null) return false;
+        const cur = now.getHours() * 60 + now.getMinutes();
+        // Aynı gün içi pencere (08:00→17:00) veya gece yarısını kesen (22:00→08:00).
+        return start <= end ? (cur >= start && cur < end) : (cur >= start || cur < end);
+    } catch (_) {
+        return false;
+    }
 }
 
 async function startHeadless() {
@@ -608,6 +672,16 @@ async function initServices() {
     taskManager = new TaskManager(storageService, warningManager, safetyPolicyEngine, historyService, webhookService, smartFinishEngine, metricCollector, null, timers);
     // WP-08.T3: renderer yalnızca gerçek terminal sonuçta başarı/hata toast'ı gösterir.
     taskManager.setResultListener((payload) => {
+        // P1-6: `desktopNotifySkip` / `desktopNotifyStart` artık gerçekten uygulanır.
+        const settings = safeGetSettings();
+        const quiet = isQuietHoursNow(settings);
+        const skipped = payload && (payload.code === 'blocked_by_policy' || payload.code === 'condition_invalid');
+        if (!quiet && ((skipped && settings.desktopNotifySkip === true) || (!skipped && settings.desktopNotifyStart === true))) {
+            const body = payload && payload.name
+                ? `${payload.name}${payload.message ? ` — ${payload.message}` : ''}`
+                : t('trayTooltip');
+            notifyDesktop('Power Pilot', body);
+        }
         if (!mainWindow || mainWindow.isDestroyed()) return;
         mainWindow.webContents.send(payload.success ? 'task-executed' : 'task-failed', payload);
     });
@@ -728,6 +802,10 @@ async function initServices() {
         : null;
     orderExecutor = new OrderExecutor({ taskManager, deviceService, audit: auditLog });
     if (consoleClient) startConsoleSync();
+    // P1-9: UPS düşük-batarya gözetimi (varsayılan kapalı; ayar açıksa çalışır).
+    try { startUpsSupervisor(storageService.getSettings()); } catch (err) {
+        log.warn('[UPS] gözetim başlatılamadı:', err && err.message);
+    }
     startBackupSchedule();
     // WP-11.T10: süresi geçen nonce'lar periyodik temizlenir.
     maintenanceTimer = timers.setInterval(() => {
@@ -773,6 +851,34 @@ async function initServices() {
             mainWindow.webContents.send(channel, data);
         }
     };
+    // P1-6: plasebo ayarlarını gerçek davranışa bağlayan yardımcılar.
+    const safeGetSettings = () => {
+        try {
+            return (storageService && typeof storageService.getSettings === 'function')
+                ? (storageService.getSettings() || {})
+                : {};
+        } catch (_) {
+            return {};
+        }
+    };
+    const isDesktopNotifyAllowed = (settings) => {
+        if (settings && settings.quietHoursEnabled === true && isQuietHoursNow(settings)) return false;
+        return true;
+    };
+    const notifyDesktop = (title, body) => {
+        try {
+            if (!Notification || typeof Notification.isSupported !== 'function' || !Notification.isSupported()) return;
+            const n = new Notification({ title, body, icon: getCurrentAppIconImage(64) });
+            n.on('click', () => {
+                try {
+                    if (mainWindow && !mainWindow.isDestroyed()) { mainWindow.show(); mainWindow.focus(); }
+                } catch (_) { /* yut */ }
+            });
+            n.show();
+        } catch (err) {
+            log.warn('[Notify] masaüstü bildirimi gönderilemedi:', err && err.message);
+        }
+    };
     /**
      * Kapatma uyarısı kullanıcıya GÖRÜNMELİ.
      *
@@ -784,8 +890,13 @@ async function initServices() {
      */
     warningManager.on('warning-started', (data) => {
         forwardWarning('warning-started')(data);
+        const settings = safeGetSettings();
         try {
-            if (mainWindow && !mainWindow.isDestroyed() && !isQuitting) {
+            // P1-6: `quietHoursEnabled` artık gerçekten uygulanır. Sessiz saat
+            // penceresinde pencere zorla öne getirilmez ve balon gösterilmez;
+            // uyarı yine çalışır (iptal hakkı korunur), yalnızca taciz etmez.
+            const quiet = isQuietHoursNow(settings);
+            if (!quiet && mainWindow && !mainWindow.isDestroyed() && !isQuitting) {
                 if (!mainWindow.isVisible()) mainWindow.show();
                 if (mainWindow.isMinimized()) mainWindow.restore();
                 mainWindow.setAlwaysOnTop(true);
@@ -809,13 +920,17 @@ async function initServices() {
         } catch (err) {
             log.warn('[Warning] pencere öne getirilemedi:', err && err.message);
         }
-        if (tray) {
-            try {
-                tray.displayBalloon({
-                    title: 'Power Pilot',
-                    content: t('trayWarningRunning')
-                });
-            } catch (_) { /* balon desteklenmiyor */ }
+        // P1-6: `desktopNotifyWarn` kapalıysa balon gönderilmez.
+        if (settings.desktopNotifyWarn !== false && isDesktopNotifyAllowed(settings)) {
+            if (tray) {
+                try {
+                    tray.displayBalloon({
+                        title: 'Power Pilot',
+                        content: t('trayWarningRunning')
+                    });
+                } catch (_) { /* balon desteklenmiyor */ }
+            }
+            notifyDesktop('Power Pilot', t('trayWarningRunning'));
         }
     });
     warningManager.on('warning-tick', forwardWarning('warning-tick'));
@@ -1422,6 +1537,12 @@ if (!gotTheLock) {
         }
         createWindow();
         createTray();
+        // P1-5: Enerji ölçümü "kapanış → sonraki açılış" eşleşmesine dayanır.
+        // Önceden `appendBoot` YALNIZCA kurumsal envanter toplamasından
+        // çağrılıyordu; normal kullanıcıda bootHistory ömür boyu boş kalıp
+        // ölçülen oturum sayısı hep 0 çıkıyordu. Artık her açılışta, envanter
+        // beklemeden, gerçek OS boot zamanı kaydedilir (aynı dakika tekilleşir).
+        registerOsBootTime();
         // WP-08.T2: uykudan dönüşte sayaç hedef zamandan yeniden senkronlanır.
         // Faz 2: kaçırılan görevler kullanıcı politikasına göre çalıştırılır ya
         // da gerekçesiyle atlanır (varsayılan: 10 dk tolerans içindeyse çalıştır).
@@ -2216,6 +2337,79 @@ async function setAiSilencedUntil(until) {
     return applySettingsPatch({ aiSilencedUntil: until }, current, 'ai_silenced');
 }
 
+/**
+ * P1-9: UPS düşük-batarya gözetimi (`upsmon` semantiği).
+ *
+ * Ölçülen kusur: UPS uyarısı yalnızca `log.warn` ile yazılıyordu; sunucu
+ * profilinde elektrik kesintisinde makine pil bitene kadar çalışıyordu.
+ * Bu döngü `upsEnabled` + `upsAutoActionEnabled` ise UPS'i yoklar ve `LB`
+ * durumunda kısa geri sayım sonrası seçilen eylemi uygular. Varsayılan kapalı.
+ */
+function stopUpsSupervisor() {
+    if (upsSupervisor) {
+        try { upsSupervisor.disarm(); } catch (_) { /* yut */ }
+    }
+    if (upsSupervisorTimer) {
+        try { timers.clear(upsSupervisorTimer); } catch (_) { /* yut */ }
+        upsSupervisorTimer = null;
+    }
+}
+
+function startUpsSupervisor(settings) {
+    stopUpsSupervisor();
+    const s = settings || {};
+    upsSupervisor = null;
+    if (s.upsEnabled !== true || s.upsAutoActionEnabled !== true) return;
+    if (!upsMonitor) return;
+    upsSupervisor = new UpsSupervisor({
+        powerService: PowerService,
+        action: ['hibernate', 'shutdown', 'sleep', 'lock', 'restart'].includes(s.upsAutoAction)
+            ? s.upsAutoAction
+            : 'hibernate',
+        countdownMs: (Number.isInteger(s.upsCountdownSeconds) ? s.upsCountdownSeconds : 30) * 1000,
+        onEvent: (type, payload) => {
+            const body = (() => {
+                if (type === 'critical') return t('upsAlertCritical');
+                if (type === 'executing') return t('upsAlertExecuting');
+                if (type === 'failed') return t('upsAlertFailed');
+                if (type === 'recovered') return t('upsAlertRecovered');
+                return null;
+            })();
+            log.warn(`[UPS] olay=${type}${body ? ` - ${body}` : ''}`);
+            if (body) {
+                const current = safeGetSettings();
+                if (isDesktopNotifyAllowed(current)) notifyDesktop('UPS', body);
+            }
+            if (type === 'executed' || type === 'failed') {
+                try {
+                    if (auditLog) {
+                        auditLog.append({
+                            actor: 'system',
+                            action: type === 'executed' ? 'ups_low_battery_action' : 'ups_low_battery_action_failed',
+                            target: 'ups',
+                            detail: `action=${payload && payload.action} charge=${payload && payload.ups && payload.ups.charge}`
+                        });
+                    }
+                } catch (_) { /* denetim yazımı akışı bozmaz */ }
+            }
+        }
+    });
+    const tick = async () => {
+        if (!upsSupervisor || !upsMonitor) return;
+        let state = null;
+        try {
+            state = await upsMonitor.query({ cacheTtlMs: 0 });
+        } catch (_) {
+            state = { reachable: false };
+        }
+        if (!upsSupervisor) return;
+        upsSupervisor.handleState(state);
+    };
+    upsSupervisorTimer = timers.setInterval(() => { tick().catch(() => {}); }, 60000);
+    // Açılışta 15 sn sonra ilk ölçüm (açılış yükü otursun).
+    timers.setTimeout(() => { tick().catch(() => {}); }, 15000);
+}
+
 /** O-16: UPS ayarları değişince izleyici yeniden oluşturulur. */
 function recreateUpsMonitor(settings) {
     try {
@@ -2234,6 +2428,7 @@ function recreateUpsMonitor(settings) {
         inventoryService.upsMonitor = upsMonitor;
         inventoryService._cache = null;
     }
+    startUpsSupervisor(settings);
 }
 
 /** Ortak uygulama yolu: ayarları + sırları atomik-ish uygular, hatada geri alır. */
@@ -2290,7 +2485,8 @@ async function applySettingsPatch(newSettings, current, auditAction) {
                 throw Object.assign(new Error(`API yeniden başlatılamadı: ${started.code}`), { code: started.code });
             }
         }
-        if (rest.upsHost !== undefined || rest.upsName !== undefined || rest.upsEnabled !== undefined) {
+        if (rest.upsHost !== undefined || rest.upsName !== undefined || rest.upsEnabled !== undefined
+            || rest.upsAutoActionEnabled !== undefined || rest.upsAutoAction !== undefined || rest.upsCountdownSeconds !== undefined) {
             recreateUpsMonitor(storageService.getSettings());
         }
         let iconSync = null;
@@ -2336,7 +2532,8 @@ async function applySettingsPatch(newSettings, current, auditAction) {
             if (needsRestart) {
                 await localApiService.restart();
             }
-            if (rest.upsHost !== undefined || rest.upsName !== undefined || rest.upsEnabled !== undefined) {
+            if (rest.upsHost !== undefined || rest.upsName !== undefined || rest.upsEnabled !== undefined
+                || rest.upsAutoActionEnabled !== undefined || rest.upsAutoAction !== undefined || rest.upsCountdownSeconds !== undefined) {
                 recreateUpsMonitor(storageService.getSettings());
             }
             if (rest.appIcon !== undefined) {
@@ -2643,7 +2840,10 @@ ipcHandle('test-ups', async (event, args) => {
 });
 ipcHandle('get-mcp-config', () => {
     const s = storageService.getSettings();
-    const mcpEntry = path.join(__dirname, 'src', 'mcp', 'server.js');
+    // P0-4: paketlenmiş uygulamada `__dirname` app.asar içindedir ve düz
+    // `node` .asar'dan dosya ÇALIŞTIRAMAZ. asarUnpack'a alınan yolu
+    // (app.asar.unpacked) kullanmak zorunlu.
+    const mcpEntry = resolveUnpackedEntry('src', 'mcp', 'server.js');
     return {
         apiEnabled: s.localApiEnabled === true,
         port: s.localApiPort || 18456,
@@ -2656,8 +2856,12 @@ ipcHandle('get-mcp-config', () => {
                     command: 'node',
                     args: [mcpEntry],
                     env: {
-                        POWER_PILOT_API_PORT: String(s.localApiPort || 18456),
-                        POWER_PILOT_API_KEY: '<API_KEY>'
+                        // P0-4: kanonik adlar (alt çizgili eski ad fallback olarak
+                        // okunur, bkz. src/shared/localApiConnection.js).
+                        POWERPILOT_API_PORT: String(s.localApiPort || 18456),
+                        POWERPILOT_API_KEY: '<API_KEY>',
+                        ...(s.localApiTlsEnabled === true ? { POWERPILOT_API_TLS: '1' } : {}),
+                        ...(s.localApiCaFile ? { POWERPILOT_API_CA: s.localApiCaFile } : {})
                     }
                 }
             }

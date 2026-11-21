@@ -82,8 +82,20 @@ describe('SmartFinishEngine koşullar', () => {
     });
 
     it('DISK_ACTIVITY eşik altı satisfied', () => {
-        const r = engine.evaluateSingleCondition({ type: 'disk_activity', thresholdKbps: 100 }, freshMetrics({ diskIops: 10 }));
+        const r = engine.evaluateSingleCondition({ type: 'disk_activity', thresholdKbps: 100 }, freshMetrics({ diskKbps: 10 }));
         expect(r.satisfied).toBe(true);
+    });
+
+    it('DISK_ACTIVITY disk tam yükteyken eşik üstü satisfied DEĞİL (KB/sn ↔ IOPS karışıklığı regresyonu)', () => {
+        // Eski kod `thresholdKbps`'i IOPS sanıyordu: 500 KB/sn eşiği, 900 IOPS
+        // yapan dolu bir diskte "boş" sayılabiliyordu.
+        const r = engine.evaluateSingleCondition({ type: 'disk_activity', thresholdKbps: 100 }, freshMetrics({ diskKbps: 9000, diskIops: 900 }));
+        expect(r.satisfied).toBe(false);
+    });
+
+    it('DISK_ACTIVITY verim ölçülemiyorsa fail-closed (erken kapatma yok)', () => {
+        const r = engine.evaluateSingleCondition({ type: 'disk_activity', thresholdKbps: 100 }, freshMetrics({ diskKbps: undefined }));
+        expect(r.satisfied).toBe(false);
     });
 
     it('BATTERY_LEVEL belowPercent satisfied', () => {

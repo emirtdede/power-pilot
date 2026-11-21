@@ -174,7 +174,10 @@ function main() {
         'docs/reports/soak.md',
         'docs/reports/licenses.json',
         'docs/release/SBOM.md',
-        'docs/release/RELEASE_HARDENING_1.0.1.md'
+        'docs/release/RELEASE_SIGNING.md',
+        'docs/architecture/SAFETY_POLICIES.md',
+        'docs/architecture/AUTOMATION_ENGINE.md',
+        'docs/README.md'
     ]) requireFile(rel);
 
     // WP-04/05: PowerShell idle probe ve tasklist spamı üretim kodunda yasak.

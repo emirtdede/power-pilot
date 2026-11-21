@@ -8,7 +8,6 @@
  * bu dosya yalnızca HTTP taşımasını yapar.
  */
 
-const http = require('http');
 const {
     parseArgs,
     buildRequest,
@@ -16,48 +15,23 @@ const {
     usageText,
     renderResponse
 } = require('./commands');
+const { resolveConnection, requestJson } = require('../shared/localApiConnection');
 
-const apiKey = process.env.POWERPILOT_API_KEY || '';
-const host = process.env.POWERPILOT_API_HOST || '127.0.0.1';
-const port = Number(process.env.POWERPILOT_API_PORT) || 18456;
+// P0-4: tek kaynak — kanonik `POWERPILOT_API_*`, alt çizgili ad fallback.
+const connection = resolveConnection(process.env);
+const apiKey = connection.apiKey;
+const host = connection.host;
+const port = connection.port;
 
 function requestApi(method, path, body = null) {
-    return new Promise((resolve, reject) => {
-        const dataStr = body ? JSON.stringify(body) : '';
-        const options = {
-            hostname: host,
-            port,
-            path: `/api/v1${path}`,
-            method,
-            headers: {
-                'X-API-Key': apiKey,
-                'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(dataStr)
-            }
-        };
-
-        const req = http.request(options, (res) => {
-            let data = '';
-            res.on('data', (chunk) => { data += chunk; });
-            res.on('end', () => {
-                let parsed = data;
-                try { parsed = JSON.parse(data); } catch (_) { /* düz metin yanıt */ }
-                resolve({ status: res.statusCode, body: parsed });
-            });
-        });
-
-        req.on('error', (err) => {
-            if (err && err.code === 'ECONNREFUSED') {
-                return reject(new Error(
-                    `Power Pilot yerel API'sine bağlanılamadı (${host}:${port}). ` +
-                    'Uygulama çalışıyor mu ve Entegrasyonlar sekmesinde API açık mı?'
-                ));
-            }
-            reject(new Error(`API bağlantı hatası: ${err.message}`));
-        });
-
-        if (dataStr) req.write(dataStr);
-        req.end();
+    return requestJson(connection, method, path, body).catch((err) => {
+        if (err && err.code === 'ECONNREFUSED') {
+            throw new Error(
+                `Power Pilot yerel API'sine bağlanılamadı (${host}:${port}). ` +
+                'Uygulama çalışıyor mu ve Entegrasyonlar sekmesinde API açık mı?'
+            );
+        }
+        throw err instanceof Error ? err : new Error(`API bağlantı hatası: ${err && err.message}`);
     });
 }
 

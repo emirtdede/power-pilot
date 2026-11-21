@@ -6,10 +6,32 @@ Power Pilot, komut satırı ve PowerShell ortamlarından güvenli biçimde kontr
 
 ## 1. Environment Variable Tanımlama
 
+Power Pilot istemcileri (CLI, MCP, ajanlar) bağlantı bilgisini **tek bir
+sözleşmeden** okur: `src/shared/localApiConnection.js`.
+
+| Değişken | Varsayılan | Anlamı |
+|---|---|---|
+| `POWERPILOT_API_KEY` | — | API anahtarı (zorunlu) |
+| `POWERPILOT_API_HOST` | `127.0.0.1` | Yerel API ana bilgisayarı |
+| `POWERPILOT_API_PORT` | `18456` | Port |
+| `POWERPILOT_API_TLS` | kapalı | `1`/`true` ise `https` |
+| `POWERPILOT_API_CA` | — | Özel/self-signed sertifika için CA dosyası yolu |
+
+> **Geriye uyum:** eski `POWER_PILOT_API_*` (alt çizgili) adlar fallback olarak
+> hâlâ okunur. Kanonik ad bitişik yazımdır. Arayüz "MCP yapılandırmasını kopyala"
+> çıktısı da bu kanonik adları üretir — kopyala-yapıştır yapan kullanıcı 401 almaz.
+
 PowerShell ortamınızda API anahtarınızı tanımlayın:
 
 ```powershell
 $env:POWERPILOT_API_KEY = "pp_key_sizin_anahtariz"
+```
+
+TLS kullanıyorsanız:
+
+```powershell
+$env:POWERPILOT_API_TLS = "1"
+$env:POWERPILOT_API_CA  = "C:\sertifikalar\powerpilot-ca.pem"
 ```
 
 ---

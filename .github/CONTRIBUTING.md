@@ -81,13 +81,14 @@ request is not ready to merge while a required check is failing or flaky.
 
 Documentation lives under `docs/`:
 
+- the index is [`docs/README.md`](docs/README.md);
 - architecture and security design in `docs/architecture/`;
-- audits in `docs/audit/YYYY-MM-DD/`;
-- plans in `docs/planning/` (archive completed plans);
 - release and signing procedures in `docs/release/`;
-- operations in `docs/runbooks/`.
+- operations in `docs/runbooks/`;
+- API contract in `docs/openapi/`.
 
-Use relative links and update the nearest `README.md` index.
+Use relative links and update the index when you add or remove a document.
+Historical/planning notes belong in `CHANGELOG.md`, not in `docs/`.
 
 ## Security reports
 

@@ -125,8 +125,11 @@ describe('SmartFinishEngine — tek koşullar', () => {
         expect(engine.evaluateSingleCondition({ type: CONDITION_TYPE.USER_IDLE, idleSeconds: 1000 }, metrics({ userIdleSeconds: 400 })).satisfied).toBe(false);
         expect(engine.evaluateSingleCondition({ type: CONDITION_TYPE.NETWORK_SPEED }, metrics({ networkDownloadKbps: 10, networkUploadKbps: 5 })).satisfied).toBe(true);
         expect(engine.evaluateSingleCondition({ type: CONDITION_TYPE.NETWORK_SPEED, thresholdKbps: 1 }, metrics({ networkDownloadKbps: 10 })).satisfied).toBe(false);
-        expect(engine.evaluateSingleCondition({ type: CONDITION_TYPE.DISK_ACTIVITY }, metrics({ diskIops: 5 })).satisfied).toBe(true);
-        expect(engine.evaluateSingleCondition({ type: CONDITION_TYPE.DISK_ACTIVITY, thresholdKbps: 1 }, metrics({ diskIops: 50 })).satisfied).toBe(false);
+        expect(engine.evaluateSingleCondition({ type: CONDITION_TYPE.DISK_ACTIVITY }, metrics({ diskKbps: 5 })).satisfied).toBe(true);
+        expect(engine.evaluateSingleCondition({ type: CONDITION_TYPE.DISK_ACTIVITY, thresholdKbps: 1 }, metrics({ diskKbps: 50 })).satisfied).toBe(false);
+        // P1-6: KB/sn eşiği IOPS ile kıyaslanmaz; açık `thresholdIops` ayrı yoldur.
+        expect(engine.evaluateSingleCondition({ type: CONDITION_TYPE.DISK_ACTIVITY, thresholdIops: 10 }, metrics({ diskIops: 5 })).satisfied).toBe(true);
+        expect(engine.evaluateSingleCondition({ type: CONDITION_TYPE.DISK_ACTIVITY, thresholdKbps: 100 }, metrics({ diskKbps: 5000 })).satisfied).toBe(false);
     });
 
     it('battery_level: desteklenmiyor / veri yok / alt / üst / eşik yok', () => {

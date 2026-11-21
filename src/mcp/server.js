@@ -10,8 +10,8 @@
  * Cursor, Antigravity, Windsurf, Cline) to the local Power Pilot REST API.
  */
 
-const http = require('http');
 const { POWER_ACTIONS } = require('../cli/commands');
+const { resolveConnection, requestJson } = require('../shared/localApiConnection');
 
 const MCP_PROTOCOL_VERSION = '2024-11-05';
 const SERVER_INFO = Object.freeze({
@@ -152,37 +152,17 @@ const RESOURCES = Object.freeze([
 ]);
 
 function defaultApiRequester(options = {}) {
-    const apiKey = options.apiKey !== undefined ? options.apiKey : (process.env.POWERPILOT_API_KEY || '');
-    const host = options.host || process.env.POWERPILOT_API_HOST || '127.0.0.1';
-    const port = Number(options.port || process.env.POWERPILOT_API_PORT) || 18456;
+    // P0-4: tek sözleşme — CLI/MCP/UI aynı env adlarını okur; TLS destekli.
+    const conn = resolveConnection(process.env);
+    if (options.apiKey !== undefined) conn.apiKey = options.apiKey;
+    if (options.host !== undefined) conn.host = options.host;
+    if (options.port !== undefined) conn.port = Number(options.port) || conn.port;
+    if (options.tls !== undefined) conn.tls = options.tls === true;
+    if (options.caFile !== undefined) conn.caFile = options.caFile;
 
     return function requestApi(method, apiPath, body = null) {
-        return new Promise((resolve, reject) => {
-            const payload = body ? JSON.stringify(body) : '';
-            const req = http.request({
-                hostname: host,
-                port,
-                path: `/api/v1${apiPath}`,
-                method,
-                headers: {
-                    'X-API-Key': apiKey,
-                    'Content-Type': 'application/json',
-                    'Content-Length': Buffer.byteLength(payload)
-                }
-            }, (res) => {
-                let raw = '';
-                res.on('data', (chunk) => { raw += chunk; });
-                res.on('end', () => {
-                    let parsed = raw;
-                    try { parsed = JSON.parse(raw); } catch (_) { /* plain text */ }
-                    resolve({ status: res.statusCode || 500, body: parsed });
-                });
-            });
-            req.on('error', (err) => {
-                reject(new Error(`Power Pilot Local API unreachable (${host}:${port}): ${err.message}`));
-            });
-            if (payload) req.write(payload);
-            req.end();
+        return requestJson(conn, method, apiPath, body).catch((err) => {
+            throw new Error(`Power Pilot Local API unreachable (${conn.host}:${conn.port}): ${err.message}`);
         });
     };
 }
@@ -370,12 +350,53 @@ function startStdioServer(options = {}) {
     const stdout = options.stdout || process.stdout;
     let buffer = '';
 
-    stdin.setEncoding('utf8');
-    stdin.on('data', async (chunk) => {
-        buffer += chunk;
-        while (buffer.length > 0) {
+    const writeResponse = (res) => {
+        if (!res) return;
+        stdout.write(`${JSON.stringify(res)}\n`);
+    };
+
+    // P0-4: gerçek çerçeveleme. İki biçim birlikte desteklenir:
+    //  1) Content-Length: <n>\r\n\r\n<gövde>   (LSP / MCP stdio standardı)
+    //  2) satır-sonlu JSON (tek satır bir JSON-RPC nesnesi)
+    // Eski kod yalnızca `\n` bölüyordu; Content-Length'li istekte gövde hiç
+    // tamamlanmadığı için sunucu SONSUZA KADAR kilitleniyordu.
+    const drain = async () => {
+        for (;;) {
+            // Baştaki boş satırları at.
+            buffer = buffer.replace(/^\s+/, '');
+            if (!buffer) return;
+
+            const headerMatch = /^Content-Length:\s*(\d+)\s*\r?\n/i.exec(buffer);
+            if (headerMatch) {
+                const len = Number(headerMatch[1]);
+                const headerEnd = buffer.indexOf('\r\n\r\n');
+                const sepLen = 4;
+                if (headerEnd === -1) {
+                    // Başlık henüz tamamlanmadı; daha fazla veri bekle.
+                    if (buffer.length > 65536) buffer = ''; // bozuk başlık: sıfırla
+                    return;
+                }
+                const bodyStart = headerEnd + sepLen;
+                if (buffer.length - bodyStart < len) return; // gövde eksik: bekle
+                const bodyText = buffer.slice(bodyStart, bodyStart + len);
+                buffer = buffer.slice(bodyStart + len);
+                let parsed;
+                try {
+                    parsed = JSON.parse(bodyText);
+                } catch (_) {
+                    continue; // bozuk çerçeve: atla, kilitlenme yok
+                }
+                const res = await handleRpcRequest(parsed, options);
+                writeResponse(res);
+                continue;
+            }
+
+            // Satır-sonlu biçim.
             const nl = buffer.indexOf('\n');
-            if (nl === -1) break;
+            if (nl === -1) {
+                if (buffer.length > 1048576) buffer = ''; // taşma koruması
+                return; // satır tamamlanmadı: bekle
+            }
             const line = buffer.slice(0, nl).trim();
             buffer = buffer.slice(nl + 1);
             if (!line || line.startsWith('Content-Length:')) continue;
@@ -386,10 +407,21 @@ function startStdioServer(options = {}) {
                 continue;
             }
             const res = await handleRpcRequest(parsed, options);
-            if (res) {
-                stdout.write(`${JSON.stringify(res)}\n`);
-            }
+            writeResponse(res);
+            // Satır-sonlu yanıt da Content-Length ile istenmiş olabilir;
+            // standart istemciler satır-sonlu yanıtı da kabul eder.
         }
+    };
+
+    stdin.setEncoding('utf8');
+    let chain = Promise.resolve();
+    stdin.on('data', (chunk) => {
+        buffer += chunk;
+        // Sıralı işleme: paralel async handleRpcRequest yanıtları karışmasın.
+        chain = chain.then(drain).catch(() => { /* tek istek hatası akışı durdurmaz */ });
+    });
+    stdin.on('end', () => {
+        chain = chain.then(drain).catch(() => {});
     });
 }
 

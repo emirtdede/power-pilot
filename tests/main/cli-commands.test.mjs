@@ -65,8 +65,16 @@ describe('CLI komut kataloğu', () => {
         expect(req).toMatchObject({
             method: 'POST',
             path: '/tasks/timer',
-            body: { action: 'sleep', durationMs: '60000', name: 'Test' }
+            // P0-4: Local API `Number.isInteger` bekler; gönderilen değer sayı olmalı.
+            body: { action: 'sleep', durationMs: 60000, name: 'Test' }
         });
+        expect(typeof req.body.durationMs).toBe('number');
+    });
+
+    it('--minutes değeri tam sayı milisaniyeye çevrilir (400 hatası regresyonu)', () => {
+        const req = buildRequest(parseArgs(['timer', '--minutes', '45']));
+        expect(req.body.durationMs).toBe(2700000);
+        expect(Number.isInteger(req.body.durationMs)).toBe(true);
     });
 
     it('cancel id yol parçasına kodlanır', () => {

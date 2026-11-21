@@ -115,7 +115,10 @@
       "**/*.node",
       "**/node_modules/ps-list/vendor/*.exe",
       "src/assets/icons/*.ico",
-      "src/assets/icons/*.png"
+      "src/assets/icons/*.png",
+      "src/mcp/**",
+      "src/cli/**",
+      "src/shared/**"
     ],
     "win": {
       "target": [

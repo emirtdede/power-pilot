@@ -393,6 +393,10 @@ const SETTINGS_SCHEMA = {
     // O-16: NUT protokolüne satır enjeksiyonunu önleyen katı desenler.
     upsHost: { str: [1, 128], pattern: /^[A-Za-z0-9.:\[\]_-]+$/ },
     upsName: { str: [1, 64], pattern: /^[A-Za-z0-9._-]+$/ },
+    // P1-9: UPS düşük-batarya otomatik eylemi (varsayılan kapalı).
+    upsAutoActionEnabled: 'boolean',
+    upsAutoAction: ['hibernate', 'shutdown', 'sleep', 'lock', 'restart'],
+    upsCountdownSeconds: { int: [0, 600] },
     assumedOffHours: { num: [0.5, 24], nullable: true }, // FAZ D: beyanlı kapanış varsayımı
     statsEnabled: 'boolean',
     deviceWattage: { int: [5, 2000], nullable: true }, // WBS-E1: null = bilinmiyor
@@ -429,6 +433,11 @@ const SETTINGS_SCHEMA = {
     graceSeconds: { int: [0, 120] },
     protectFullscreen: 'boolean',
     protectActiveIo: 'boolean',
+    // P1-6: gerçekten uygulanan güvenlik ayarları.
+    forceCloseApps: 'boolean',
+    remoteApprovalRequired: 'boolean',
+    // P0-3: kullanıcı düzenleyebilir korunan uygulama listesi (.exe adları).
+    protectedApps: { processList: 50, nullable: true },
     pinLengthMode: ['flex', '4', '6', '8'],
     autoBackupEnabled: 'boolean',
     shortcuts: { shortcutMap: true }
@@ -486,6 +495,15 @@ function validateSettings(patch, currentSettings = {}, schema = SETTINGS_SCHEMA)
             const normalized = val.map(h => normalizeIpOrCidr(h));
             if (new Set(normalized).size !== normalized.length) {
                 return fail(`${key} yinelenen kayıt içeremez.`, 'INVALID_SETTING');
+            }
+        }
+        // P0-3: korunan uygulama listesi — her kayıt <ad>.exe biçiminde, yol yok.
+        if (rule && rule.processList) {
+            const list = Array.isArray(val) ? val : null;
+            const valid = list && list.length <= rule.processList &&
+                list.every((n) => typeof n === 'string' && /^[A-Za-z0-9._-]{1,64}\.exe$/i.test(n.trim()));
+            if (!valid) {
+                return fail(`${key} en fazla ${rule.processList} adet "<ad>.exe" içermeli.`, 'INVALID_SETTING');
             }
         }
         // WP-02.T11: mTLS istemci parmak izi allowlist'i — SHA-256 hex.

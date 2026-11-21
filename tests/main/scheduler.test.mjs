@@ -369,7 +369,7 @@ describe('TaskManager scheduler bağlantısı (TS-2.2)', () => {
         task.status = 'expired'; // uygulama kapalıyken vade dolmuş
         expect(tm.runTaskNow(task.id)).toBe(true);
         await flush(); await flush();
-        expect(d.power.execute).toHaveBeenCalledWith('shutdown');
+        expect(d.power.execute).toHaveBeenCalledWith('shutdown', expect.anything());
         stop(tm);
     });
 

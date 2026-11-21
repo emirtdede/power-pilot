@@ -61,7 +61,7 @@ It goes beyond a simple countdown. **Smart Finish** waits for real work to finis
 
 For developers, AI coding agents, and enterprise teams, Power Pilot ships with a **built-in Model Context Protocol (MCP) server** (`powerpilot-mcp` / `powerpilot mcp`), a **terminal CLI** (`powerpilot`), a dedicated **in-app Documentation Center**, **multi-subpage Settings with one-click preset profiles**, and an optional **local REST API** with API-key roles, TLS/mTLS, IP allowlists, Ed25519-signed orders, webhooks, Wake-on-LAN, an n8n/Telegram workflow, and a headless Windows service agent. Every remote path is designed to fail closed.
 
-> **Documentation:** architecture, audits, release process, runbooks, and API references are indexed in [`docs/README.md`](docs/README.md).
+> **Documentation:** architecture, release process, runbooks, and API references are indexed in [`docs/README.md`](docs/README.md).
 
 ---
 
@@ -117,7 +117,7 @@ For developers, AI coding agents, and enterprise teams, Power Pilot ships with a
 ### <img src="assets/icons/palette.svg" width="20" height="20" align="absmiddle" alt="" /> 28 Theme Palettes, 4 System-Wide App Icons & 73-Language Catalog
 - **2 Modes × 14 Color Themes (28 Palettes)**: `Obsidian`, `Slate`, `Navy`, `Blue`, `Cyan`, `Indigo`, `Purple`, `Pink`, `Red`, `Orange`, `Yellow`, `Emerald`, `Grass`, and `Lime` across Light and Dark modes.
 - **4 Selectable System-Wide App & Desktop Icons**: `Monochrome Dark` (default), `Monochrome Light`, `High-Contrast Monochrome`, and `Classic Cyan` — synchronized live across the main window, mini widget, system tray, taskbar, in-app SVG brand marks, and Windows Desktop / Start Menu shortcuts (`.lnk`).
-- **73-Language Catalog**: 17 fully translated locales (Turkish, English, German, Swedish, Norwegian, Danish, French, Polish, Italian, Dutch, Czech, Spanish, Portuguese, Japanese, Chinese, Korean, Arabic — 1,136 keys each) + 56 planned languages with automatic English fallback and full **RTL** mirroring (`ar`, `he`, `fa`, `ur`).
+- **73-Language Catalog**: 17 fully translated locales (Turkish, English, German, Swedish, Norwegian, Danish, French, Polish, Italian, Dutch, Czech, Spanish, Portuguese, Japanese, Chinese, Korean, Arabic — 1,156 keys each, parity enforced in CI) + 56 selectable languages with automatic English fallback and full **RTL** mirroring (`ar`, `he`, `fa`, `ur`).
 
 ### <img src="assets/icons/plug.svg" width="20" height="20" align="absmiddle" alt="" /> 7-Subpage Integrations & Local REST API
 - Dedicated split-navigation pages for **Local REST API (OpenAPI 3.0)**, **Outbound Webhooks**, **MCP Server (AI)**, **CLI & Scripts**, **Wake-on-LAN** (with saved devices list), **UPS / NUT Monitor**, and **Enterprise Console**.
@@ -180,9 +180,8 @@ Power_Pilot/
 │   ├── uninstallerSidebar.bmp       # Custom 24-bit NSIS uninstaller sidebar (version-free)
 │   ├── installerHeader.bmp          # Custom 24-bit NSIS inner page header (version-free)
 │   └── installer.nsh                # Custom NSIS install/uninstall hooks & Task Scheduler cleanup
-├── docs/                            # Architecture, release, runbooks, i18n plan, API schema
+├── docs/                            # Architecture, release, runbooks, API schema
 │   ├── architecture/                # Automation, Smart Finish, safety, local API, accessibility
-│   ├── i18n/                        # 73-language translation architecture & rollout plan
 │   ├── integrations/                # n8n and PowerShell/CLI guides
 │   ├── openapi/                     # OpenAPI 3.0 schema for the local REST API
 │   ├── release/                     # Signing, ASAR integrity, SBOM documentation
@@ -443,7 +442,7 @@ Power Pilot basit bir geri sayımdan daha fazlasını yapar. **Smart Finish**, g
 
 Geliştiriciler, yapay zekâ kodlama ajanları ve kurumsal ekipler için Power Pilot; **yerleşik Model Context Protocol (MCP) sunucusu** (`powerpilot-mcp` / `powerpilot mcp`), **terminal CLI istemcisi** (`powerpilot`), kenar menüsünde bağımsız **Dokümantasyon Merkezi**, **tek tıkla hazır profiller sunan çoklu alt sayfalı Ayarlar mimarisi** ve isteğe bağlı **yerel REST API** (API anahtarı rolleri, TLS/mTLS, IP izin listeleri, Ed25519 imzalı emirler, webhook'lar, Wake-on-LAN, n8n/Telegram iş akışı ve başsız Windows servis ajanı) ile birlikte gelir.
 
-> **Dokümantasyon:** mimari, denetimler, sürüm süreci, runbook'lar ve API referansları [`docs/README.md`](docs/README.md) içinde indekslenmiştir.
+> **Dokümantasyon:** mimari, sürüm süreci, runbook'lar ve API referansları [`docs/README.md`](docs/README.md) içinde indekslenmiştir.
 
 ---
 
@@ -492,7 +491,7 @@ Geliştiriciler, yapay zekâ kodlama ajanları ve kurumsal ekipler için Power P
 ### <img src="assets/icons/palette.svg" width="20" height="20" align="absmiddle" alt="" /> 28 Tema Paleti, 4 Sistem Geneli Uygulama İkonu ve 73 Dil Kataloğu
 - **2 Mod × 14 Renk Teması (28 Palet)**: Açık ve Koyu modlarda `Siyah (Obsidian)`, `Gri`, `Lacivert`, `Mavi`, `Cyan`, `İndigo`, `Mor`, `Pembe`, `Kırmızı`, `Turuncu`, `Sarı`, `Zümrüt Yeşili`, `Çimen Yeşili` ve `Açık Yeşil`.
 - **4 Seçilebilir Sistem Geneli Uygulama ve Masaüstü İkonu**: `Koyu Monokrom` (varsayılan), `Açık Monokrom`, `Saf Siyah-Beyaz` ve `Klasik Cyan` — ana pencere, mini widget, sistem tepsisi, görev çubuğu, uygulama içi SVG logolar ve Windows Masaüstü/Başlat kısayollarında (`.lnk`) eşzamanlı güncellenir.
-- **73 Dil Desteği**: 17 tam çevrili dil (her biri 1.136 anahtar) + 56 planlı dil için otomatik İngilizce yedekleme (fallback) ve 4 RTL dil (`ar`, `he`, `fa`, `ur`) için sağdan-sola arayüz desteği.
+- **73 Dil Desteği**: 17 tam çevrili dil (her biri 1.156 anahtar; parite CI'da zorunlu) + 56 seçilebilir dil için otomatik İngilizce yedekleme (fallback) ve 4 RTL dil (`ar`, `he`, `fa`, `ur`) için sağdan-sola arayüz desteği.
 
 ### <img src="assets/icons/plug.svg" width="20" height="20" align="absmiddle" alt="" /> 7 Alt Sayfalı Entegrasyonlar ve Yerel REST API
 - **Yerel REST API (OpenAPI 3.0)**, **Webhooks**, **MCP Sunucusu (AI)**, **CLI ve Betikler**, **Wake-on-LAN** (kayıtlı cihazlar listesi), **UPS / NUT İzleme** ve **Kurumsal Konsol** için bağımsız alt sayfalar.

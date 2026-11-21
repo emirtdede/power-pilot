@@ -318,7 +318,7 @@ describe('TaskManager — yürütme akışı', () => {
     it('uyarı onayı ile ilerler (proceed)', async () => {
         const { h, t } = await runTask({}, { warningConfig: { enabled: true, durationSeconds: 1 } });
         expect(h.warning.showWarning).toHaveBeenCalled();
-        expect(h.power.execute).toHaveBeenCalledWith('lock');
+        expect(h.power.execute).toHaveBeenCalledWith('lock', expect.anything());
         expect(t.status).toBe(TASK_STATUS.COMPLETED);
         expect(h.webhook.triggerEvent).toHaveBeenCalledWith('task_warning_started', t);
         expect(h.webhook.triggerEvent).toHaveBeenCalledWith('power_action_started', t);

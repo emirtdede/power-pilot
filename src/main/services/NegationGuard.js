@@ -18,6 +18,22 @@ const ACTION_STEMS = [
     'çık', 'cik', 'durdur', 'sonlandır', 'sonlandir'
 ];
 
+// P1-7: İngilizce fiil kökleri. Önceden guard YALNIZCA Türkçe biliyordu;
+// "don't shut down in 10 minutes" cümlesi olumlu sanılıp yıkıcı eyleme
+// dönüşebiliyordu. Artık iki dil birlikte denetlenir.
+const ACTION_STEMS_EN = [
+    'shut down', 'shutdown', 'shutting down', 'power off', 'poweroff',
+    'restart', 'reboot', 'sleep', 'suspend', 'hibernate', 'sign out', 'signout',
+    'log off', 'logoff', 'lock', 'turn off', 'close down'
+];
+
+// İngilizce olumsuzluk belirteçleri (fiilden önce veya sonra yakın pencerede).
+const NEGATION_CUES_EN = [
+    /\bdon'?t\b/, /\bdo\s+not\b/, /\bdoesn'?t\b/, /\bdoes\s+not\b/,
+    /\bnever\b/, /\bnot\b/, /\bno\b/, /\bavoid\b/, /\bwithout\b/,
+    /\bcancel\b/, /\bstop\b/, /\bprevent\b/, /\bhold\s+off\b/
+];
+
 // -ma/-me olumsuzluk eki. "kapatmak" (olumlu mastar) DIŞLANIR: -ma'dan sonra
 // k geliyorsa olumlu mastardır. kapatma, kapatmayın, kapatmam, kapatmayacağım,
 // kapanmasın, kapanma, uyutmayın, kilitlemeyin...
@@ -51,7 +67,19 @@ function findStem(text) {
         if (idx === -1) continue;
         // Aynı konumda daha uzun kök (uyu < uyut) tercih edilir.
         if (best === null || idx < best.index || (idx === best.index && stem.length > best.stem.length)) {
-            best = { stem, index: idx };
+            best = { stem, index: idx, lang: 'tr' };
+        }
+    }
+    return best;
+}
+
+function findStemEn(text) {
+    let best = null;
+    for (const stem of ACTION_STEMS_EN) {
+        const idx = text.indexOf(stem);
+        if (idx === -1) continue;
+        if (best === null || idx < best.index || (idx === best.index && stem.length > best.stem.length)) {
+            best = { stem, index: idx, lang: 'en' };
         }
     }
     return best;
@@ -65,29 +93,44 @@ function inspect(text) {
     const t = normalize(text);
     if (!t) return { negated: false, reason: '' };
 
-    const found = findStem(t);
+    // P1-7: iki dil birlikte denetlenir. En erken eşleşen fiil seçilir;
+    // hiçbiri yoksa cümle güç eylemi önermiyor demektir.
+    const tr = findStem(t);
+    const en = findStemEn(t);
+    let found = tr;
+    if (en && (!tr || en.index < tr.index)) found = en;
     if (!found) {
-        // Eylem fiili yoksa cümle güç eylemi önermiyor; genel olumsuzluk
-        // tek başına yıkıcı öneriyi engellemez (parser zaten null döner).
         return { negated: false, reason: '' };
     }
 
-    // Fiilden sonraki 24 karakter (çekim + kısa nesne) incelenir.
-    const tail = t.slice(found.index + found.stem.length, found.index + found.stem.length + 24);
     const snippet = t.slice(found.index, Math.min(t.length, found.index + 40));
 
-    if (NEGATIVE_INFLECTION.test(tail) || PRESENT_NEGATIVE.test(tail) ||
-        AORIST_NEGATIVE.test(tail) || FUTURE_NEGATIVE.test(tail)) {
-        return { negated: true, reason: 'NEGATED_ACTION', stem: found.stem, snippet };
+    if (found.lang === 'tr') {
+        // Fiilden sonraki 24 karakter (çekim + kısa nesne) incelenir.
+        const tail = t.slice(found.index + found.stem.length, found.index + found.stem.length + 24);
+        if (NEGATIVE_INFLECTION.test(tail) || PRESENT_NEGATIVE.test(tail) ||
+            AORIST_NEGATIVE.test(tail) || FUTURE_NEGATIVE.test(tail)) {
+            return { negated: true, reason: 'NEGATED_ACTION', stem: found.stem, snippet };
+        }
     }
 
-    // "Sakın kapat", "kapatmak istemiyorum", "kapat gerek yok" gibi yapılar.
-    const windowStart = Math.max(0, found.index - 24);
+    // "Sakın kapat", "kapatmak istemiyorum", "don't shut down" gibi yapılar.
+    const windowStart = Math.max(0, found.index - 32);
     const windowEnd = Math.min(t.length, found.index + found.stem.length + 40);
     const around = t.slice(windowStart, windowEnd);
+
+    // Türkçe genel olumsuzluk belirteçleri her iki fiil için de geçerli olabilir;
+    // İngilizce belirteçler ise yalnızca İngilizce fiille anlamlıdır.
     for (const cue of NEGATION_CUES) {
         if (cue.test(around)) {
             return { negated: true, reason: 'NEGATION_CUE', stem: found.stem, snippet };
+        }
+    }
+    if (found.lang === 'en') {
+        for (const cue of NEGATION_CUES_EN) {
+            if (cue.test(around)) {
+                return { negated: true, reason: 'NEGATION_CUE_EN', stem: found.stem, snippet };
+            }
         }
     }
 

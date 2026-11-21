@@ -45,12 +45,18 @@ class TerminalActionVerifier {
      * Terminal eylem sonrası doğrulamayı kurar.
      * @param {string} action eylem adı
      * @param {Function} onVetoed pencere dolduğunda çağrılır (süreç hâlâ ayakta)
+     * @param {number} [extraMs] P1-6: OS'e verilen yerel gecikme (`shutdown /t n`).
+     *        Doğrulama penceresi bu süre kadar ÖTELENİR; aksi hâlde meşru bir
+     *        gecikme "kapatma engellendi" diye yanlış raporlanırdı. Gecikme
+     *        dolduğunda Windows oturumu kapatır ve timer hiç çalışmaz.
      * @returns {boolean} doğrulama kuruldu mu
      */
-    arm(action, onVetoed) {
+    arm(action, onVetoed, extraMs = 0) {
         if (!TerminalActionVerifier.isTerminalAction(action)) return false;
         if (typeof onVetoed !== 'function') return false;
         this.disarm();
+        const extra = Number.isFinite(extraMs) && extraMs > 0 ? Math.floor(extraMs) : 0;
+        const windowMs = this.graceMs + extra;
         this.handle = this.setTimer(() => {
             this.handle = null;
             try {
@@ -58,7 +64,7 @@ class TerminalActionVerifier {
             } catch (_) {
                 /* geri çağırım hatası süreç akışını bozmaz */
             }
-        }, this.graceMs);
+        }, windowMs);
         if (this.handle && typeof this.handle.unref === 'function') {
             // Doğrulama beklemesi uygulamanın kapanmasını geciktirmemeli.
             this.handle.unref();

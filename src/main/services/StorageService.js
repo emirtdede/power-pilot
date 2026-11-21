@@ -144,6 +144,11 @@ class StorageService {
                 upsEnabled: false,
                 upsHost: '127.0.0.1',
                 upsName: 'ups',
+                // P1-9: UPS düşük-batarya eylemi. Varsayılan KAPALI; açıksa
+                // `LB` görüldüğünde geri sayım sonrası seçilen güç eylemi uygulanır.
+                upsAutoActionEnabled: false,
+                upsAutoAction: 'hibernate',
+                upsCountdownSeconds: 30,
                 assumedOffHours: null,
                 lanModeEnabled: false,
                 lanAllowedIps: [],
@@ -184,6 +189,12 @@ class StorageService {
                 graceSeconds: 15,
                 protectFullscreen: true,
                 protectActiveIo: true,
+                // P1-6: artık gerçekten uygulanan güvenlik/UX ayarları.
+                forceCloseApps: false,
+                remoteApprovalRequired: false,
+                // P0-3: Kullanıcı düzenleyebilir korunan uygulama listesi (null = kod
+                // içindeki güvenli varsayılan kullanılır). .exe adları, en fazla 50.
+                protectedApps: null,
                 pinLengthMode: 'flex',
                 autoBackupEnabled: true,
                 wakeMode: 'run',

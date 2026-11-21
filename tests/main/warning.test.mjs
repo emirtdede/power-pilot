@@ -22,9 +22,17 @@ describe('WarningManager', () => {
         expect(ticks.length).toBeGreaterThanOrEqual(1);
     }, 10000);
 
-    it('classic modda süre dolunca DURDURULUR (proceed:false, WBS-9.4)', async () => {
+    it('süre dolunca kullanıcı iptal etmediyse eylem GERÇEKLEŞİR (P0-2)', async () => {
+        // Eski davranış classic modda görevi iptal ediyordu; bu, kullanıcının
+        // kendi kurduğu zamanlayıcıyı sabaha kadar açık bırakıyordu.
         const wm = new WarningManager(null);
         const res = await wm.showWarning(warnTask(1));
+        expect(res).toEqual({ proceed: true, snoozed: false });
+    }, 10000);
+
+    it('requireConfirmation:true ise süre dolunca İPTAL edilir (açık onay modu)', async () => {
+        const wm = new WarningManager(null);
+        const res = await wm.showWarning(warnTask(1, { warningConfig: { enabled: true, durationSeconds: 1, requireConfirmation: true } }));
         expect(res).toEqual({ proceed: false, snoozed: false });
     }, 10000);
 

@@ -317,6 +317,13 @@ class TaskManager {
             ? this.timerRegistry.setInterval.bind(this.timerRegistry)
             : setInterval;
         this.loopInterval = schedule(() => {
+            // P1-8: klasör taraması asenkron önden yüklenir. Senkron tarama
+            // 1 sn'lik döngünün içinde ana süreci kilitliyordu; artık önbellek
+            // ısıtılır ve değerlendirme bir sonraki turda önbellekten okur.
+            if (this.smartFinishEngine && typeof this.smartFinishEngine.prefetchDirectoryScans === 'function') {
+                Promise.resolve(this.smartFinishEngine.prefetchDirectoryScans(this.tasks))
+                    .catch(() => { /* önbellek ısıtma best-effort */ });
+            }
             this.evaluateTasks();
         }, 1000);
     }
@@ -509,14 +516,32 @@ class TaskManager {
             }
 
             // Warning Modal / Countdown check
-            if (task.warningConfig && task.warningConfig.enabled && this.warningManager) {
+            // P1-6: uzaktan gelen görev + `remoteApprovalRequired` → yerel insan
+            // onayı ZORUNLUDUR. Uyarı ayarı kapalı olsa bile bir onay penceresi
+            // açılır ve sayaç dolarsa eylem İPTAL edilir (fail-closed).
+            const requireLocalApproval = this.resolveRemoteApproval(task);
+            let warningTask = task;
+            if (requireLocalApproval && !(task.warningConfig && task.warningConfig.requireConfirmation === true)) {
+                const base = (task.warningConfig && typeof task.warningConfig === 'object') ? task.warningConfig : {};
+                const rawSec = Number.isInteger(base.durationSeconds) ? base.durationSeconds : 60;
+                warningTask = {
+                    ...task,
+                    warningConfig: {
+                        ...base,
+                        enabled: true,
+                        requireConfirmation: true,
+                        durationSeconds: Math.min(Math.max(rawSec, 30), 300)
+                    }
+                };
+            }
+            if (warningTask.warningConfig && warningTask.warningConfig.enabled && this.warningManager) {
                 claim.phase = 'warning';
                 task.status = TASK_STATUS.WARNING;
                 this.persistChanges();
 
                 if (this.webhook) this.webhook.triggerEvent('task_warning_started', task);
 
-                const warningConfirmed = await this.warningManager.showWarning(task);
+                const warningConfirmed = await this.warningManager.showWarning(warningTask);
                 // İptal, warning await'i sırasında geldiyse token geçersizdir.
                 if (!this.isClaimValid(task.id, token)) return;
 
@@ -563,7 +588,18 @@ class TaskManager {
 
             let result;
             try {
-                result = await this.power.execute(task.action);
+                // P1-6: `forceCloseApps` (Ayarlar) artık gerçekten uygulanır:
+                // açık uygulamalar kapanmayı veto ediyorsa /f ile zorla kapatılır.
+                // Görev düzeyinde `safetyPolicy.forceCloseApps` ayarı ezer.
+                const forceClose = this.resolveForceClose(task);
+                // P1-6: "Açık Uygulamalar İçin Bekleme Süresi" (graceSeconds)
+                // artık gerçekten uygulanır: Windows'un yerel gecikmesi (`/t n`)
+                // kullanılır; bu pencerede `shutdown /a` ile iptal edilebilir.
+                const graceSeconds = this.resolveGraceSeconds(task);
+                if (graceSeconds > 0) {
+                    claim.graceUntil = Date.now() + graceSeconds * 1000;
+                }
+                result = await this.power.execute(task.action, { forceClose, graceSeconds });
             } catch (err) {
                 result = { success: false, error: err && err.message ? err.message : 'Güç işlemi hatası.' };
             }
@@ -574,11 +610,22 @@ class TaskManager {
                 try {
                     const fb = this.storage.getSettings().fallbackAction;
                     let targetFb = null;
+                    const RETRY_ONCE_DELAY_MS = 30000;
                     if (fb === 'hibernate_to_sleep' && task.action === 'hibernate') targetFb = 'sleep';
                     else if (fb === 'sleep_to_lock' && task.action === 'sleep') targetFb = 'lock';
                     else if (fb === 'retry_once') targetFb = task.action;
                     else if (fb && fb !== 'none' && fb !== task.action && ['sleep', 'hibernate', 'lock'].includes(fb)) targetFb = fb;
                     if (targetFb) {
+                        // P1-6: README "30 sn sonra yeniden dene" diyordu ama kod
+                        // 0 ms'de anında tekrar deniyordu. Artık gerçekten beklenir;
+                        // iptal bu pencerede de kazanır.
+                        if (fb === 'retry_once') {
+                            const canceledDuringRetry = await this.waitForRetryDelay(RETRY_ONCE_DELAY_MS);
+                            if (canceledDuringRetry || !this.isClaimValid(task.id, token)) {
+                                this.persistChanges();
+                                return;
+                            }
+                        }
                         log.warn(`[TaskManager] Ana eylem (${task.action}) başarısız; yedek eylem deneniyor: ${targetFb}`);
                         const fbRes = await this.power.execute(targetFb);
                         if (fbRes && fbRes.success) {
@@ -607,7 +654,11 @@ class TaskManager {
                 // A6: kapatma komutu döndü ama oturum kapanmadıysa Windows
                 // engellemiştir. Doğrulayıcı pencere dolarsa rapor verilir;
                 // süreç gerçekten kapanırsa timer hiç çalışmaz.
-                this.armTerminalVetoCheck(task);
+                // P1-6: yerel gecikme (`/t n`) doğrulama penceresine eklenir;
+                // meşru bekleme "engellendi" diye yanlış raporlanmaz.
+                this.armTerminalVetoCheck(task, Number.isFinite(claim.graceUntil) && claim.graceUntil > Date.now()
+                    ? claim.graceUntil - Date.now()
+                    : 0);
 
                 if (task.recurrence && task.recurrence.enabled) {
                     this.calculateNextRecurrence(task);
@@ -640,7 +691,7 @@ class TaskManager {
     // A6: kapatma/yeniden başlatma vetosu. Komut başarı dönse de Windows
     // oturumu hemen kapatmazsa (açık uygulamalar onay bekliyorsa) kısa bir
     // pencere sonunda süreç hâlâ ayaktadır ve engellenme raporlanır.
-    armTerminalVetoCheck(task) {
+    armTerminalVetoCheck(task, extraMs = 0) {
         if (!task || !this.terminalVerifier) return false;
         if (!TerminalActionVerifier.isTerminalAction(task.action)) return false;
         const expectedRun = task.lastRunAt;
@@ -661,7 +712,7 @@ class TaskManager {
                     log.warn('[TaskManager] Veto dinleyicisi hata verdi:', err && err.message);
                 }
             }
-        });
+        }, extraMs);
     }
 
     // WBS-11.5: Açılışta yanlış tetiklenebilen sessizlik-tipi koşullar.
@@ -698,6 +749,32 @@ class TaskManager {
     }
 
     /**
+     * P1-6: `remoteApprovalRequired` çözümü. Uzaktan gelen (REST API / n8n /
+     * konsol) güç görevleri, ayar açıksa YEREL bir insan onayı olmadan
+     * çalışmaz. Onay penceresi, `warningConfig.requireConfirmation` semantiğiyle
+     * çalışır: sayaç dolarsa eylem İPTAL edilir (fail-closed).
+     * @param {AutomationTask} task
+     * @returns {boolean}
+     */
+    resolveRemoteApproval(task) {
+        if (!task) return false;
+        const remoteSources = [TASK_SOURCE.LOCAL_API, TASK_SOURCE.N8N, TASK_SOURCE.CONSOLE];
+        if (!remoteSources.includes(task.source)) return false;
+        // P1-6: yalnızca kullanıcının AÇIKÇA verdiği görev-düzeyi değer ezer.
+        if (AutomationTask.isExplicitPolicy(task, 'remoteApprovalRequired')) {
+            return task.safetyPolicy.remoteApprovalRequired === true;
+        }
+        try {
+            const settings = this.storage && typeof this.storage.getSettings === 'function'
+                ? this.storage.getSettings()
+                : {};
+            return settings && settings.remoteApprovalRequired === true;
+        } catch (_) {
+            return false;
+        }
+    }
+
+    /**
      * K-04: otonomi modu tek kaynaktan (kalıcı ayarlar) okunur. İstemci
      * payload'ındaki `mode` yok sayılır; ayar okunamazsa güvenli varsayılan
      * `classic` kullanılır.
@@ -711,6 +788,76 @@ class TaskManager {
         } catch (_) {
             return 'classic';
         }
+    }
+
+    /**
+     * P1-6: `forceCloseApps` çözümü. Görev düzeyi `safetyPolicy.forceCloseApps`
+     * açıkça verilmişse o kazanır; yoksa kalıcı ayar okunur.
+     * @param {AutomationTask} task
+     * @returns {boolean}
+     */
+    resolveForceClose(task) {
+        // P1-6: yalnızca AÇIKÇA verilmiş görev-düzeyi değer kalıcı ayarı ezer.
+        if (AutomationTask.isExplicitPolicy(task, 'forceCloseApps')) {
+            return task.safetyPolicy.forceCloseApps === true;
+        }
+        try {
+            const settings = this.storage && typeof this.storage.getSettings === 'function'
+                ? this.storage.getSettings()
+                : {};
+            return settings && settings.forceCloseApps === true;
+        } catch (_) {
+            return false;
+        }
+    }
+
+    /**
+     * P1-6: `graceSeconds` ("Açık Uygulamalar İçin Bekleme Süresi") çözümü.
+     * Yalnızca oturum sonlandıran eylemlerde (shutdown/restart/signout) anlamlıdır;
+     * Windows `shutdown /t n` bu pencereyi OS düzeyinde uygular.
+     * Görev düzeyi `safetyPolicy.graceSeconds` ayarı varsa o kazanır.
+     * @param {AutomationTask} task
+     * @returns {number} saniye (0 = gecikme yok)
+     */
+    resolveGraceSeconds(task) {
+        const terminal = task && ['shutdown', 'restart', 'signout'].includes(task.action);
+        if (!terminal) return 0;
+        const clamp = (value) => {
+            const n = Number(value);
+            if (!Number.isFinite(n) || n <= 0) return 0;
+            return Math.min(Math.round(n), 600);
+        };
+        // `graceSeconds` varsayılanlarda YOK; verilmişse zaten gerçek bir tercihtir.
+        // Yine de işaret varsa ona uyulur (tutarlılık).
+        const explicit = task.safetyPolicyExplicit;
+        const hasTaskLevel = task && task.safetyPolicy && task.safetyPolicy.graceSeconds !== undefined
+            && (!explicit || typeof explicit !== 'object' || explicit.graceSeconds !== false);
+        if (hasTaskLevel) {
+            return clamp(task.safetyPolicy.graceSeconds);
+        }
+        try {
+            const settings = this.storage && typeof this.storage.getSettings === 'function'
+                ? this.storage.getSettings()
+                : {};
+            return clamp(settings && settings.graceSeconds);
+        } catch (_) {
+            return 0;
+        }
+    }
+
+    /**
+     * P1-6: `retry_once` yedeği için gerçek bekleme penceresi.
+     * Bekleme sırasında görev iptal edilirse `true` döner; çağıran tekrar
+     * denemeden vazgeçer. Zamanlayıcı unref edilir (uygulama kapanışını tutmaz).
+     * @param {number} ms
+     * @returns {Promise<boolean>} iptal edildiyse true
+     */
+    waitForRetryDelay(ms) {
+        const delay = Number.isInteger(ms) && ms > 0 ? ms : 30000;
+        return new Promise((resolve) => {
+            const timer = setTimeout(() => resolve(false), delay);
+            if (timer && typeof timer.unref === 'function') timer.unref();
+        });
     }
 
     createTask(taskData) {
@@ -827,8 +974,22 @@ class TaskManager {
 
         const claim = this.claims.get(taskId);
         if (claim) {
-            // OS komutu başladıysa geri alınamaz; kullanıcıya açıkça söylenir.
-            if (claim.phase === 'executing' && claim.powerStarted) {
+            // P1-6: OS komutu yerel gecikme penceresinde bekliyorsa
+            // (`shutdown /t n` + `graceSeconds`) iptal HÂLÂ mümkündür:
+            // `shutdown /a` planlanmış kapatmayı gerçekten durdurur.
+            const inGrace = claim.phase === 'executing' && claim.powerStarted
+                && Number.isFinite(claim.graceUntil) && Date.now() < claim.graceUntil;
+            if (inGrace) {
+                claim.cancelRequested = true;
+                const power = this.power;
+                if (power && typeof power.abortScheduledShutdown === 'function') {
+                    Promise.resolve(power.abortScheduledShutdown()).catch(() => { /* rapor ana akışı bozmaz */ });
+                } else if (typeof PowerService.abortScheduledShutdown === 'function') {
+                    Promise.resolve(PowerService.abortScheduledShutdown()).catch(() => { /* yut */ });
+                }
+                log.info(`[TaskManager] Kapatma bekleme penceresinde iptal edildi: ${task.name}`);
+            } else if (claim.phase === 'executing' && claim.powerStarted) {
+                // OS komutu başladıysa geri alınamaz; kullanıcıya açıkça söylenir.
                 claim.cancelRequested = true;
                 if (this.history) {
                     this.history.record(task, EXECUTION_RESULT_CODE.CANCEL_TOO_LATE, 'Güç işlemi başladıktan sonra iptal edilemez');

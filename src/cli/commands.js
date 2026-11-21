@@ -84,13 +84,19 @@ const COMMANDS = {
     timer: {
         method: 'POST',
         path: () => '/tasks/timer',
-        body: (i) => ({
-            action: i.flags.action || 'shutdown',
-            durationMs: i.flags.durationMs !== undefined
+        body: (i) => {
+            // P0-4: Local API `durationMs`'i TAM SAYI bekler. Eski kod `String(...)`
+            // gönderdiği için `Number.isInteger("2700000") === false` → her istek 400.
+            const raw = i.flags.durationMs !== undefined
                 ? i.flags.durationMs
-                : (i.flags.minutes !== undefined ? String(Number(i.flags.minutes) * 60000) : undefined),
-            ...(i.flags.name ? { name: i.flags.name } : {})
-        }),
+                : (i.flags.minutes !== undefined ? Number(i.flags.minutes) * 60000 : undefined);
+            const durationMs = raw === undefined || raw === null || raw === '' ? undefined : Number(raw);
+            return {
+                action: i.flags.action || 'shutdown',
+                ...(Number.isFinite(durationMs) ? { durationMs } : {}),
+                ...(i.flags.name ? { name: i.flags.name } : {})
+            };
+        },
         format: (r) => r.body,
         usage: 'Süreli görev: --action <shutdown|restart|sleep|hibernate|lock|signout> --durationMs <ms> | --minutes <dk> [--name <ad>]'
     },

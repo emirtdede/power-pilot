@@ -39,16 +39,27 @@ class PowerService {
     /**
      * Executes a power action safely via OS utilities.
      * @param {string} action - One of POWER_ACTIONS
-     * @returns {Promise<{success: boolean, error?: string}>}
+     * @param {{forceClose?: boolean, graceSeconds?: number}} [options]
+     *        `forceClose`: shutdown/restart/signout'a `/f` ekler (açık
+     *        uygulamaları zorla kapat).
+     *        `graceSeconds`: P1-6 — Windows'un YEREL gecikmesi (`/t n`) kullanılır.
+     *        Bu, Ayarlar'daki "Açık Uygulamalar İçin Bekleme Süresi"nin gerçek
+     *        karşılığıdır: kullanıcıya açık uygulamaları kaydetmesi için süre
+     *        tanınır ve `shutdown /a` ile GERÇEKTEN iptal edilebilir.
+     * @returns {Promise<{success: boolean, error?: string, graceSeconds?: number}>}
      */
-    static execute(action) {
+    static execute(action, options = {}) {
         const guard = PowerService.executionAllowed();
         if (!guard.ok) {
             log.error(`[PowerService] Eylem bloke edildi (${action}): ${guard.code || 'GUARD'}`);
             return Promise.resolve({ success: false, error: guard.error || 'Güvenlik denetimi eylemi engelledi.', code: guard.code || 'BLOCKED' });
         }
+        const force = options && options.forceClose === true;
+        // P1-6: 0..600 sn aralığı; geçersiz/negatif değer 0'a düşer.
+        const rawGrace = Number(options && options.graceSeconds);
+        const grace = Number.isFinite(rawGrace) && rawGrace > 0 ? Math.min(Math.round(rawGrace), 600) : 0;
         return new Promise((resolve) => {
-            log.info(`[PowerService] Executing action: ${action}`);
+            log.info(`[PowerService] Executing action: ${action}${force ? ' (forceClose)' : ''}${grace > 0 ? ` (grace ${grace}s)` : ''}`);
 
             let file = null;
             let args = [];
@@ -56,11 +67,11 @@ class PowerService {
             switch (action) {
                 case POWER_ACTIONS.SHUTDOWN:
                     file = 'shutdown.exe';
-                    args = ['/s', '/t', '0'];
+                    args = force ? ['/s', '/f', '/t', String(grace)] : ['/s', '/t', String(grace)];
                     break;
                 case POWER_ACTIONS.RESTART:
                     file = 'shutdown.exe';
-                    args = ['/r', '/t', '0'];
+                    args = force ? ['/r', '/f', '/t', String(grace)] : ['/r', '/t', String(grace)];
                     break;
                 case POWER_ACTIONS.SLEEP:
                     // L-09: rundll32 parametre yorumu hibernation ayarına göre
@@ -82,7 +93,7 @@ class PowerService {
                     break;
                 case POWER_ACTIONS.SIGNOUT:
                     file = 'shutdown.exe';
-                    args = ['/l'];
+                    args = force ? ['/l', '/f'] : ['/l'];
                     break;
                 default:
                     return resolve({ success: false, error: `Invalid power action: ${action}` });
@@ -93,6 +104,31 @@ class PowerService {
                     log.error(`[PowerService] Action execution failed (${action}):`, err);
                     return resolve({ success: false, error: err.message || stderr });
                 }
+                return resolve({ success: true });
+            });
+        });
+    }
+
+    /**
+     * P1-6: `graceSeconds` penceresi içinde planlanmış kapatmayı iptal eder.
+     *
+     * `shutdown /t n` ile başlatılan kapatma, Windows'un kendi zamanlayıcısında
+     * bekler; `shutdown /a` onu GERÇEKTEN durdurur. Bu yalnızca yerel gecikme
+     * penceresinde anlamlıdır (süre 0 ise Windows komutu anında uygular).
+     * @returns {Promise<{success: boolean, error?: string}>}
+     */
+    static abortScheduledShutdown() {
+        const guard = PowerService.executionAllowed();
+        if (!guard.ok) {
+            return Promise.resolve({ success: false, error: guard.error || 'Güvenlik denetimi eylemi engelledi.', code: guard.code || 'BLOCKED' });
+        }
+        return new Promise((resolve) => {
+            execFile('shutdown.exe', ['/a'], { windowsHide: true, timeout: 15000 }, (err, stdout, stderr) => {
+                if (err) {
+                    log.warn('[PowerService] Kapatma iptali başarısız:', err && err.message);
+                    return resolve({ success: false, error: (err && err.message) || stderr });
+                }
+                log.info('[PowerService] Planlanmış kapatma iptal edildi (shutdown /a)');
                 return resolve({ success: true });
             });
         });

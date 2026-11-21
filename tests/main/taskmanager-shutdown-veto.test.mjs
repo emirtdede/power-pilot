@@ -55,7 +55,7 @@ describe('TaskManager A6 — kapatma engellendi raporu', () => {
         tm.evaluateTasks();
         await flush(120);
 
-        expect(power.execute).toHaveBeenCalledWith('shutdown');
+        expect(power.execute).toHaveBeenCalledWith('shutdown', expect.anything());
         // Komut başarı döndü → görev tamamlandı.
         expect(task.status).toBe('completed');
         // Doğrulama penceresi kuruldu ama henüz dolmadı.

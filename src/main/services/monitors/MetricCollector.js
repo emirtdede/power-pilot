@@ -55,6 +55,7 @@ class MetricCollector {
             networkDownloadKbps: 0,
             networkUploadKbps: 0,
             diskIops: 0,
+            diskKbps: 0,
             userIdleSeconds: 0,
             batteryLevelPercent: null,
             isCharging: null,
@@ -274,6 +275,15 @@ class MetricCollector {
             const wSec = typeof disks.wIO_sec === 'number' && disks.wIO_sec > 0 ? disks.wIO_sec : 0;
             // WP-13.T3: `disksIO` saniyedeki IOPS döndürür; KB/sn değildir.
             this.currentMetrics.diskIops = Math.round(rSec + wSec);
+        } catch (_) { /* önceki değer korunur */ }
+        // P1-6: Ayrıca GERÇEK verim (KB/sn) ölçülür. Şablonlar `thresholdKbps`
+        // gönderiyor; bu değeri IOPS ile kıyaslamak "disk tam yükteyken boş"
+        // yanılgısına yol açıyordu. `fsStats` rx/wx_sec bayt/sn döndürür.
+        try {
+            const fs = await this.si.fsStats();
+            const rx = typeof fs.rx_sec === 'number' && fs.rx_sec > 0 ? fs.rx_sec : 0;
+            const wx = typeof fs.wx_sec === 'number' && fs.wx_sec > 0 ? fs.wx_sec : 0;
+            this.currentMetrics.diskKbps = Math.round((rx + wx) / 1024);
         } catch (_) { /* önceki değer korunur */ }
     }
 

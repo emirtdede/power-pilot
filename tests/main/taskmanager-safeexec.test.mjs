@@ -54,7 +54,7 @@ describe('TaskManager + SafetyPolicyEngine (yükseltilmemiş kurulum)', () => {
         await flush(150);
 
         expect(power.execute).toHaveBeenCalledTimes(1);
-        expect(power.execute).toHaveBeenCalledWith('shutdown');
+        expect(power.execute).toHaveBeenCalledWith('shutdown', expect.anything());
         expect(task.status).toBe('completed');
         expect(task.lastResult && task.lastResult.code).toBe('success');
         expect(history.record).toHaveBeenCalled();

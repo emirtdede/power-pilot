@@ -3631,6 +3631,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (upsEn) upsEn.checked = s.upsEnabled === true;
             if (upsHost) upsHost.value = s.upsHost || '127.0.0.1';
             if (upsName) upsName.value = s.upsName || 'ups';
+            // P1-9: düşük-batarya otomatik eylemi (varsayılan kapalı).
+            const upsAutoEn = document.getElementById('ups-auto-action-enabled');
+            const upsAutoType = document.getElementById('ups-auto-action');
+            const upsCountdown = document.getElementById('ups-countdown-seconds');
+            if (upsAutoEn) upsAutoEn.checked = s.upsAutoActionEnabled === true;
+            if (upsAutoType) upsAutoType.value = s.upsAutoAction || 'hibernate';
+            if (upsCountdown) upsCountdown.value = String(Number.isInteger(s.upsCountdownSeconds) ? s.upsCountdownSeconds : 30);
 
             const entUrl = document.getElementById('ent-console-url');
             const entAgent = document.getElementById('ent-agent-id');
@@ -3880,7 +3887,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             const upsEnabled = document.getElementById('ups-enabled')?.checked === true;
             const upsHost = (document.getElementById('ups-host')?.value || '127.0.0.1').trim();
             const upsName = (document.getElementById('ups-name')?.value || 'ups').trim();
-            const res = await window.electronAPI.saveSettingsAtomic({ settings: { upsEnabled, upsHost, upsName } });
+            // P1-9: düşük-batarya otomatik eylemi ayarları.
+            const upsAutoActionEnabled = document.getElementById('ups-auto-action-enabled')?.checked === true;
+            const upsAutoAction = document.getElementById('ups-auto-action')?.value || 'hibernate';
+            const rawCountdown = Number(document.getElementById('ups-countdown-seconds')?.value);
+            const upsCountdownSeconds = Number.isInteger(rawCountdown) ? Math.min(Math.max(rawCountdown, 0), 600) : 30;
+            const res = await window.electronAPI.saveSettingsAtomic({
+                settings: { upsEnabled, upsHost, upsName, upsAutoActionEnabled, upsAutoAction, upsCountdownSeconds }
+            });
             if (res && res.success !== false) showToast(t('toastSettingsSaved'), 'success');
             else showToast((res && res.message) || t('errorSaveFailed'), 'error');
         });

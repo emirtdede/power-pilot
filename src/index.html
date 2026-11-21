@@ -307,7 +307,7 @@
 
             <!-- A6: kapatma engellendi bildirimi (gizli; yalnızca veto olursa görünür) -->
             <div id="shutdown-veto-notice" role="alert"
-                class="hidden shrink-0 w-[calc(100%-2rem)] max-w-[64rem] mx-auto mt-11 rounded-xl border border-amber-400/50 bg-amber-500/10 px-4 py-3 text-xs leading-relaxed text-amber-800 dark:text-amber-200">
+                class="hidden shrink-0 w-[calc(100%-2rem)] max-w-[64rem] mx-auto mt-4 rounded-xl border border-amber-400/50 bg-amber-500/10 px-4 py-3 text-xs leading-relaxed text-amber-800 dark:text-amber-200">
                 <div class="flex items-start gap-2">
                     <span class="material-symbols-outlined text-base leading-none" aria-hidden="true">warning</span>
                     <div class="flex-1">
@@ -2649,7 +2649,7 @@
                                 <div class="pp-meta-row">
                                     <span class="pp-meta-label" data-i18n="developer">Geliştirici</span>
                                     <a href="https://vellium.dev" target="_blank" rel="noopener noreferrer"
-                                        class="inline-flex min-h-[24px] items-center text-xs font-semibold text-primary dark:text-primary-light hover:underline">Vellium Teknoloji A.Ş. (vellium.dev)</a>
+                                        class="inline-flex min-h-[24px] items-center text-xs font-semibold text-primary dark:text-primary-light hover:underline">vellium.dev</a>
                                 </div>
                                 <div class="pp-meta-row">
                                     <span class="pp-meta-label" data-i18n="aboutReleaseChannel">Dağıtım</span>
@@ -2786,7 +2786,7 @@
 
                             <div
                                 class="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-600 dark:text-slate-400">
-                                <span>Copyright &copy; <span class="copyright-year"></span> Vellium Teknoloji Anonim Şirketi. <span
+                                <span>Copyright &copy; <span class="copyright-year"></span> Vellium. <span
                                         data-i18n="copyrightText">All rights reserved.</span></span>
                                 <span data-i18n="copyrightDisclaimer">Power Pilot tescilli bir
                                     yazılımdır.</span>
@@ -3547,6 +3547,31 @@
                                     <span class="text-xs font-semibold text-slate-600 dark:text-slate-400" data-i18n="upsNameLabel">UPS Adı</span>
                                     <input id="ups-name" type="text" value="ups" placeholder="ups" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs font-mono" />
                                 </label>
+                            </div>
+                            <div class="pt-3 border-t border-slate-200 dark:border-slate-700 space-y-3">
+                                <label class="flex items-center justify-between bg-slate-100 dark:bg-slate-900 p-3 rounded-lg cursor-pointer">
+                                    <span class="space-y-0.5">
+                                        <span class="block text-xs font-bold text-slate-600 dark:text-slate-300" data-i18n="upsAutoActionLabel">Düşük Bataryada Otomatik Eylem</span>
+                                        <span class="block text-[11px] text-slate-600 dark:text-slate-400" data-i18n="upsAutoActionDesc">UPS "LB" (düşük batarya) bildirdiğinde geri sayım sonrası seçilen güç eylemi uygulanır.</span>
+                                    </span>
+                                    <input id="ups-auto-action-enabled" type="checkbox" class="w-4 h-4" />
+                                </label>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <label class="space-y-1">
+                                        <span class="text-xs font-semibold text-slate-600 dark:text-slate-400" data-i18n="upsAutoActionType">Eylem</span>
+                                        <select id="ups-auto-action" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs">
+                                            <option value="hibernate" data-i18n="actionHibernate">Hazırda Beklet</option>
+                                            <option value="shutdown" data-i18n="actionShutdown">Kapat</option>
+                                            <option value="sleep" data-i18n="actionSleep">Uyku</option>
+                                            <option value="lock" data-i18n="actionLock">Kilitle</option>
+                                            <option value="restart" data-i18n="actionRestart">Yeniden Başlat</option>
+                                        </select>
+                                    </label>
+                                    <label class="space-y-1">
+                                        <span class="text-xs font-semibold text-slate-600 dark:text-slate-400" data-i18n="upsCountdownLabel">Geri Sayım (saniye)</span>
+                                        <input id="ups-countdown-seconds" type="number" min="0" max="600" step="5" value="30" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-xs font-mono" />
+                                    </label>
+                                </div>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <button type="button" id="btn-save-ups" class="pp-btn-primary text-xs" data-i18n="save">Kaydet</button>

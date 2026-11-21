@@ -1,5 +1,85 @@
 # Changelog — Power Pilot (WBS-10.4)
 
+## [Unreleased] — Zero-Tolerance Audit Remediation (2026-11-21)
+
+Bu sürüm, denetimde tespit edilen **plasebo ayarları** ve **kalıcı kusurları**
+kök nedenden kapatır. Hiçbir ayar "arayüzde var, davranışta yok" durumunda
+bırakılmadı; hiçbir hata sessizce yutulmadı.
+
+### Kök neden: politika varsayılanlarının ayarları gölgelemesi (P1-6)
+- **Ölçülen kusur:** `AutomationTask` her göreve **tam** bir `safetyPolicy`
+  nesnesi yazıyordu (varsayılan `false` değerlerle). Sonuç: kalıcı ayarlar
+  (`forceCloseApps`, `remoteApprovalRequired`, `protectFullscreen`,
+  `protectActiveIo`) hiçbir zaman uygulanmıyordu.
+- **Çözüm:** `safetyPolicyExplicit` işareti. Kısmi nesne → verilen her alan
+  bilinçli tercih; tam (maddeleştirilmiş) nesne → yalnızca varsayılandan farklı
+  alanlar; kalıcı kayıt → yalnızca işaretli alanlar. Karar
+  `AutomationTask.isExplicitPolicy` / `SafetyPolicyEngine.isExplicitPolicy` ile
+  verilir ve `toJSON` ile kalıcılaşır.
+- **Regresyon testi:** `tests/main/policy-explicitness.test.mjs`.
+
+### Güvenlik
+- **Korunan uygulamalar kullanıcı ayarı oldu (`protectedApps`).** Varsayılan
+  listeden `steam.exe`, `epicgameslauncher.exe`, `discord.exe` çıkarıldı; liste
+  Ayarlar → Güvenlik'ten düzenlenir. Bir görev, kendi izlediği süreçten muaftır
+  (aksi halde "Steam kapanınca kapat" görevi kendini engellerdi).
+- **Zorla kapatma artık gerçek (`forceCloseApps`).** `PowerService.execute()`
+  `/f` bayrağını geçirir; görev düzeyi değer açıkça verilirse o kazanır.
+- **Uzaktan onay gerçek bir kapı (`remoteApprovalRequired`).** `local_api`,
+  `n8n`, `console` kaynaklı görevler yerel insan onayı ister; sayaç dolarsa
+  eylem **iptal** edilir (fail-closed). Yerel UI görevleri etkilenmez.
+- **Aktif güç isteği kapısı** yükseltme yoksa görünür biçimde atlanır
+  (`loadCheck: "unavailable"` + denetim kaydı + arayüz uyarısı) — sessizce
+  açık bırakılmaz.
+
+### Davranış
+- **Bekleme süresi gerçek bir OS gecikmesi (`graceSeconds`).** `shutdown` /
+  `restart` / `signout` için Windows `/t n` kullanılır; bekleme penceresinde
+  iptal `shutdown /a` ile zamanlanmış kapatmayı **gerçekten** durdurur. Veto
+  doğrulama penceresi gecikme kadar ötelenir (meşru bekleme yanlış
+  "engellendi" olarak raporlanmaz). 0–600 sn, görev düzeyi değer ezer.
+- **Uyarı sayacı = iptal penceresi.** Süre dolarsa eylem çalışır; katı mod
+  isteyen `warningConfig.requireConfirmation: true` ile dolduğunda iptal eder.
+- **Yeniden deneme gerçek bekleme (`retry_once`).** 30 sn pencere; bu sırada
+  iptal edilen görev tekrar denenmez.
+- **UPS düşük-batarya gözetimi (opt-in, `UpsSupervisor`).** `LB` + `OB` →
+  kısa geri sayım → seçilen güç eylemi. Normale dönüş iptal eder; cooldown
+  vardır; **ulaşılamayan UPS asla eylem üretmez**.
+- **Sessiz uyarı saati (`quietHours`) gerçek.** Pencere içinde pencere öne
+  getirme ve balon/desktop bildirimi bastırılır; uyarı ve iptal hakkı korunur.
+
+### Ölçüm doğruluğu
+- **`disk_activity` birimi düzeltildi.** `si.fsStats()` üzerinden KB/s
+  (`diskKbps`) ölçülür ve `thresholdKbps` ile karşılaştırılır; açıkça
+  `thresholdIops` verilirse IOPS yolu korunur. Ölçülemezse sonuç
+  **fail-closed** (`satisfied: false`).
+- **Dizin taraması 1 sn'lik döngüyü bloklamaz.** `scanDirectoryAsync`
+  (`fs.promises`) + `SmartFinishEngine.prefetchDirectoryScans` ile önbellekli
+  okuma; senkron `scanDirectory` sözleşmesi doğrudan çağıranlar için korundu.
+
+### Bağlantı sözleşmesi (P0-4)
+- **Tek kaynak:** `src/shared/localApiConnection.js`. Kanonik ad
+  `POWERPILOT_API_*`; `POWER_PILOT_API_*` geriye uyum fallback'i.
+  `*_API_TLS` / `*_API_CA` ile TLS. CLI, MCP, ajan ve "MCP yapılandırmasını
+  kopyala" çıktısı aynı sözleşmeyi kullanır — kopyala-yapıştır 401 üretmez.
+- CLI süre alanını sayısal `durationMs` olarak gönderir.
+
+### Arayüz ve koruma
+- **UPS düşük-batarya eylemi ayarları eklendi** (etkinleştir / eylem /
+  geri sayım) ve kaydetme akışına bağlandı.
+- **DOM bütünlüğü kapısı:** `tests/main/dom-integrity.test.mjs` yinelenen ID ve
+  eksik KPI kartlarının geri gelmesini engeller.
+- **Türkçe olumsuzlama koruması** İngilizce kalıpları da kapsar
+  (`NegationGuard`), dil-farkındalı.
+
+### Dokümantasyon
+- Tarihsel/yanıltıcı belgeler silindi: `architecture/POWER_PILOT_CURRENT_ARCHITECTURE.md`,
+  `i18n/TRANSLATION_PLAN.md`, `release/RELEASE_HARDENING_1.0.1.md`.
+- `docs/README.md` tek indeks olarak yeniden yazıldı; mimari belgeler
+  (otomasyon motoru, Smart Finish, güvenlik politikaları) yürürlükteki
+  davranışa göre güncellendi. Uygulama içi Dokümantasyon Merkezi de aynı
+  gerçekleri anlatır.
+
 ## [1.0.0] — Official Production Release (2026-11-21)
 
 - **v1.0.0 Resmi Yayın:** Vellium (`vellium.dev`, `support@vellium.dev`) çatısı altında sabitlenen ilk kararlı üretim sürümü (`v1.0.0`).

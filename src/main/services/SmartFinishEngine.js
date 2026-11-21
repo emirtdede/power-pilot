@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const { CONDITION_TYPE, LOGIC_OPERATOR } = require('./models/AutomationTask');
 const { canonicalProcessName } = require('./processNames');
-const { scanDirectory, isPartialFile } = require('./conditions/DirectoryIdle');
+const { scanDirectory, scanDirectoryAsync, isPartialFile } = require('./conditions/DirectoryIdle');
 
 class SmartFinishEngine {
     constructor(metricCollector) {
@@ -96,6 +96,48 @@ class SmartFinishEngine {
                 if (!belongsToAliveTask(key)) map.delete(key);
             }
         }
+    }
+
+    /**
+     * P1-8: Klasör taramalarını ASENKRON önden yükler.
+     *
+     * Ölçülen kusur: `scanDirectory` senkron FS çağrıları yapıyordu ve
+     * TaskManager'ın 1 sn'lik döngüsünün içinden çağrıldığı için yavaş/ağ
+     * disklerinde ana süreci (UI + tüm zamanlayıcılar) kilitliyordu.
+     * Bu yöntem yalnızca önbelleği ısıtır; sonuç `evaluateSingleCondition`
+     * tarafından önbellekten okunur. Hata durumunda sessizce geçilir ve
+     * değerlendirme yolu fail-closed davranışını korur.
+     * @param {Array<object>} tasks
+     * @returns {Promise<void>}
+     */
+    async prefetchDirectoryScans(tasks) {
+        if (!Array.isArray(tasks) || tasks.length === 0) return;
+        const now = Date.now();
+        const jobs = [];
+        for (const task of tasks) {
+            if (!task || !task.enabled) continue;
+            const conditions = (task.conditionGroup && Array.isArray(task.conditionGroup.conditions))
+                ? task.conditionGroup.conditions
+                : [];
+            for (let index = 0; index < conditions.length; index += 1) {
+                const cond = conditions[index];
+                if (!cond || cond.type !== CONDITION_TYPE.DIRECTORY_IDLE) continue;
+                const key = `${task.id}:${index}`;
+                const cached = this.directoryScanCache.get(key);
+                if (cached && now - cached.at < this.directoryScanIntervalMs) continue;
+                const dirPath = cond.dirPath || cond.filePath;
+                if (typeof dirPath !== 'string' || dirPath.length === 0) continue;
+                jobs.push(
+                    scanDirectoryAsync(dirPath, {
+                        maxDepth: Number.isInteger(cond.maxDepth) ? cond.maxDepth : 2,
+                        maxEntries: Number.isInteger(cond.maxEntries) ? cond.maxEntries : 5000
+                    })
+                        .then((scan) => { this.directoryScanCache.set(key, { at: Date.now(), scan }); })
+                        .catch(() => { /* önbellek ısıtılamadı: değerlendirme kendi yolunu izler */ })
+                );
+            }
+        }
+        if (jobs.length > 0) await Promise.all(jobs);
     }
 
     evaluateSingleCondition(cond, metrics, taskId = null) {
@@ -250,13 +292,30 @@ class SmartFinishEngine {
             }
 
             case CONDITION_TYPE.DISK_ACTIVITY: {
-                // WBS-1.2 + WP-13.T3: disk durağanlığı — IOPS metriği.
-                const thresholdIops = cond.thresholdKbps != null ? cond.thresholdKbps : 100;
-                const activity = metrics.diskIops || 0;
-                const satisfied = activity <= thresholdIops;
+                // P1-6: Şablonlar `thresholdKbps` (KB/sn) gönderir; motor bunu
+                // IOPS sanıp kıyaslıyordu (HDD ~150 IOPS'ta doyuma ulaşır, yani
+                // disk tam yükteyken "boş" sayılabiliyordu). Artık gerçek verim
+                // (KB/sn) kullanılır. Geriye uyum: açıkça `thresholdIops`
+                // verilmişse IOPS metriği ile kıyaslanır.
+                const useIops = cond.thresholdIops != null;
+                if (useIops) {
+                    const thresholdIops = cond.thresholdIops;
+                    const iops = metrics.diskIops || 0;
+                    return {
+                        satisfied: iops <= thresholdIops,
+                        message: `Disk ${Math.round(iops)} IOPS (Eşik: ${thresholdIops})`
+                    };
+                }
+                const thresholdKbps = cond.thresholdKbps != null ? cond.thresholdKbps : 100;
+                // `diskKbps` ölçülemiyorsa (eski örnek/ARA bellek) güvenli taraf:
+                // "meşgul" kabul et — erken kapatma yapma.
+                if (typeof metrics.diskKbps !== 'number') {
+                    return { satisfied: false, message: 'Disk verimi ölçülemedi; bekleniyor' };
+                }
+                const kbps = metrics.diskKbps;
                 return {
-                    satisfied,
-                    message: `Disk ${Math.round(activity)} IOPS (Eşik: ${thresholdIops})`
+                    satisfied: kbps <= thresholdKbps,
+                    message: `Disk ${Math.round(kbps)} KB/sn (Eşik: ${thresholdKbps} KB/sn)`
                 };
             }
 
