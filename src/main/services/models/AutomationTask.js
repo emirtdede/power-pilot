@@ -298,6 +298,12 @@ class AutomationTask {
         this.lastRunAt = data.lastRunAt || null;
         this.lastResult = data.lastResult || null; // { code, message, timestamp }
         this.errorInfo = data.errorInfo || null;
+        // P1-6 (üçüncü tur): görev duraklatıldığında hangi durumdan geldiğini
+        // hatırlar; `resumeTask` doğru duruma döner. Yalnızca duraklatılmış
+        // görevlerde anlamlıdır, diğerlerinde null.
+        this.pausedFromStatus = typeof data.pausedFromStatus === 'string'
+            ? data.pausedFromStatus.slice(0, 32)
+            : null;
     }
 
     /**
@@ -348,7 +354,8 @@ class AutomationTask {
             chain: this.chain,
             lastRunAt: this.lastRunAt,
             lastResult: this.lastResult,
-            errorInfo: this.errorInfo
+            errorInfo: this.errorInfo,
+            pausedFromStatus: this.pausedFromStatus
         };
     }
 }

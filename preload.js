@@ -21,6 +21,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     createTask: (taskData) => ipcRenderer.invoke('create-task', taskData),
     cancelTask: (taskId, pin) => ipcRenderer.invoke('cancel-task', pin === undefined ? taskId : { taskId, pin }),
     snoozeTask: (args) => ipcRenderer.invoke('snooze-task', args),
+    pauseTask: (taskId) => ipcRenderer.invoke('pause-task', taskId),
+    resumeTask: (taskId) => ipcRenderer.invoke('resume-task', taskId),
     removeTask: (taskId) => ipcRenderer.invoke('remove-task', taskId),
     removeTerminalTasks: () => ipcRenderer.invoke('remove-terminal-tasks'),
     // Cancel PIN API (WBS-11.2)

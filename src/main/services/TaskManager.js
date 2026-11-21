@@ -670,12 +670,17 @@ class TaskManager {
             } else {
                 task.status = TASK_STATUS.FAILED;
                 task.errorInfo = (result && result.error) || 'Güç işlemi çalıştırılamadı.';
+                // P1-6 (üçüncü tur): hata nedeni artık korunur. Eskiden her
+                // başarısızlık `os_execution_failed` idi; `timeout` ve
+                // `authorization_error` kodları hiç üretilmiyordu (etiketleri
+                // ve sağlık sınıflandırması olmasına rağmen).
+                const failureCode = this.mapPowerFailureCode(result && result.code);
                 task.lastResult = {
-                    code: EXECUTION_RESULT_CODE.OS_EXECUTION_FAILED,
+                    code: failureCode,
                     message: task.errorInfo,
                     ...(cancelTooLate ? { note: 'CANCEL_TOO_LATE' } : {})
                 };
-                if (this.history) this.history.record(task, EXECUTION_RESULT_CODE.OS_EXECUTION_FAILED, task.errorInfo);
+                if (this.history) this.history.record(task, failureCode, task.errorInfo);
                 this.notifyResult(task, false);
                 this.removeScheduler(task.id);
             }
@@ -842,6 +847,31 @@ class TaskManager {
             return clamp(settings && settings.graceSeconds);
         } catch (_) {
             return 0;
+        }
+    }
+
+    /**
+     * P1-6 (üçüncü tur): PowerService hata sınıfını yürütme sonuç koduna çevirir.
+     *
+     * `EXECUTION_RESULT_CODE` içinde `timeout` ve `authorization_error` zaten
+     * tanımlıydı, 17 dilde etiketleri vardı ve `HealthMetrics` bunları
+     * başarısızlık olarak sayıyordu — ama hiçbir kod yolu bu değerleri
+     * üretmiyordu; her şey `os_execution_failed` oluyordu. Kullanıcı zaman
+     * aşımını yetki reddinden ayırt edemiyordu.
+     *
+     * @param {string|undefined} code PowerService.POWER_ERROR değeri
+     * @returns {string} EXECUTION_RESULT_CODE değeri
+     */
+    mapPowerFailureCode(code) {
+        switch (code) {
+            case 'POWER_TIMEOUT':
+                return EXECUTION_RESULT_CODE.TIMEOUT;
+            case 'POWER_AUTHORIZATION':
+                return EXECUTION_RESULT_CODE.AUTHORIZATION_ERROR;
+            case 'POWER_BLOCKED':
+                return EXECUTION_RESULT_CODE.BLOCKED_BY_POLICY;
+            default:
+                return EXECUTION_RESULT_CODE.OS_EXECUTION_FAILED;
         }
     }
 
@@ -1247,6 +1277,117 @@ class TaskManager {
         if (this.webhook) this.webhook.triggerEvent('task_snoozed', task);
         this.syncScheduler(task);
         return { ok: true, code: 'SNOOZED', minutes: applied.minutes };
+    }
+
+    /**
+     * P1-6 (üçüncü tur): GÖREV DÜZEYİNDE duraklatma.
+     *
+     * Denetim kusuru: `task.enabled` beş yürütme yolunda gerçek bir kapıydı
+     * (`evaluateTasks`, `getActiveTasks`, `hasInFlight`, `runScheduledTask`,
+     * `TaskSchedulerBridge`), `statusDisabled` 17 dilde çeviriye sahipti ve
+     * renderer `task.enabled !== false` kontrolünü yapıyordu — ama hiçbir kod
+     * yolu `enabled` alanını ASLA false yapmıyordu. Yani "görevi duraklat"
+     * yeteneği motorda vardı, kullanıcıya ulaşmıyordu. Tıpkı `directory_idle`
+     * gibi: altyapı tam, kapı yok.
+     *
+     * Duraklatma, iptalden farklıdır: görev silinmez, terminal olmaz ve
+     * `resumeTask` ile kaldığı yerden devam eder. Tekrarlayan görev de
+     * duraklatılabilir (sonraki occurrence hesaplanmaz).
+     *
+     * @param {string} taskId
+     * @returns {{ok: boolean, code?: string, message?: string}}
+     */
+    pauseTask(taskId) {
+        const task = this.tasks.find((t) => t && t.id === taskId);
+        if (!task) return { ok: false, code: 'NOT_FOUND' };
+        if (task.enabled === false && task.status === TASK_STATUS.DISABLED) {
+            return { ok: true, code: 'ALREADY_PAUSED' };
+        }
+        // Yürütülmekte olan görev duraklatılamaz: OS komutu çoktan başlamış
+        // olabilir. Kullanıcı önce iptal etmelidir (fail-closed).
+        const claim = this.claims && this.claims.get(taskId);
+        if (claim && claim.phase === 'executing' && claim.powerStarted) {
+            return { ok: false, code: 'TASK_EXECUTING', message: 'Güç işlemi başladı; önce iptal edin.' };
+        }
+        if (TaskManager.isTerminalStatus(task.status)) {
+            return { ok: false, code: 'TASK_NOT_PAUSABLE', message: 'Bitmiş görev duraklatılamaz.' };
+        }
+        const snapshot = task.toJSON();
+        // Devam ederken doğru duruma dönmek için önceki durumu sakla.
+        task.pausedFromStatus = task.status;
+        task.enabled = false;
+        task.status = TASK_STATUS.DISABLED;
+        task.lastProgressMessage = null;
+        task.updatedAt = new Date().toISOString();
+        try {
+            this.persistChanges({ throwOnError: true });
+        } catch (err) {
+            Object.assign(task, snapshot);
+            delete task.pausedFromStatus;
+            return { ok: false, code: 'TASK_PERSIST_FAILED', message: 'Duraklatma kalıcılaştırılamadı.' };
+        }
+        // Windows Görev Zamanlayıcı yedeği de kaldırılır; aksi halde uygulama
+        // kapalıyken duraklatılmış görev yine tetiklenirdi.
+        this.removeScheduler(taskId);
+        if (this.history) this.history.record(task, EXECUTION_RESULT_CODE.CANCELLED_BY_USER, 'Görev duraklatıldı');
+        return { ok: true, code: 'PAUSED' };
+    }
+
+    /**
+     * Duraklatılmış görevi kaldığı yerden sürdürür.
+     *
+     * - Koşullu görev → MONITORING (Smart Finish yeniden değerlendirir).
+     * - Gelecekteki zamanlı görev → SCHEDULED, hedef korunur.
+     * - Vadesi geçmiş zamanlı görev → EXPIRED (asla otomatik çalıştırılmaz;
+     *   `recoverTasksOnStartup` ile aynı güvenlik kuralı).
+     *
+     * @param {string} taskId
+     * @returns {{ok: boolean, code?: string, message?: string}}
+     */
+    resumeTask(taskId) {
+        const task = this.tasks.find((t) => t && t.id === taskId);
+        if (!task) return { ok: false, code: 'NOT_FOUND' };
+        if (task.enabled !== false && task.status !== TASK_STATUS.DISABLED) {
+            return { ok: false, code: 'TASK_NOT_PAUSED', message: 'Görev duraklatılmış değil.' };
+        }
+        const snapshot = task.toJSON();
+        const previous = task.pausedFromStatus;
+        const hasConditions = !!(task.conditionGroup && Array.isArray(task.conditionGroup.conditions)
+            && task.conditionGroup.conditions.length > 0);
+        task.enabled = true;
+        if (hasConditions) {
+            task.status = TASK_STATUS.MONITORING;
+        } else if (task.recurrence && task.recurrence.enabled) {
+            this.calculateNextRecurrence(task);
+            task.status = TASK_STATUS.SCHEDULED;
+        } else if (previous === TASK_STATUS.EXPIRED || previous === TASK_STATUS.FAILED
+            || previous === TASK_STATUS.BLOCKED || previous === TASK_STATUS.COMPLETED) {
+            // Geri dönülemez terminal durum: yeniden canlandırmak yerine
+            // zamanı geçmişse EXPIRED, değilse SCHEDULED yap.
+            task.status = (task.trigger.targetTime && task.trigger.targetTime < Date.now())
+                ? TASK_STATUS.EXPIRED
+                : TASK_STATUS.SCHEDULED;
+        } else if (task.trigger.targetTime && task.trigger.targetTime < Date.now()) {
+            task.status = TASK_STATUS.EXPIRED;
+            task.errorInfo = 'Duraklatma sırasında zamanı geçti; güvenlik için çalıştırılmadı.';
+        } else {
+            task.status = TASK_STATUS.SCHEDULED;
+        }
+        // `delete` yerine açıkça null: model alanı her zaman tanımlı kalır ve
+        // toJSON kalıcı kayıtta tutarlı bir şekil üretir.
+        task.pausedFromStatus = null;
+        task.errorInfo = task.status === TASK_STATUS.EXPIRED ? task.errorInfo : null;
+        task.updatedAt = new Date().toISOString();
+        try {
+            this.persistChanges({ throwOnError: true });
+        } catch (err) {
+            Object.assign(task, snapshot);
+            return { ok: false, code: 'TASK_PERSIST_FAILED', message: 'Sürdürme kalıcılaştırılamadı.' };
+        }
+        if (task.status === TASK_STATUS.SCHEDULED || task.status === TASK_STATUS.MONITORING) {
+            this.syncScheduler(task);
+        }
+        return { ok: true, code: 'RESUMED', status: task.status };
     }
 
     togglePauseAll() {

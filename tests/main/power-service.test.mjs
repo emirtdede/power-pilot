@@ -6,7 +6,8 @@
  * `execFile` çağrısından ÖNCE döner.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { PowerService, POWER_ACTIONS } from '../../src/main/services/PowerService.js';
+import { PowerService, POWER_ACTIONS, POWER_ERROR, classifyExecError } from '../../src/main/services/PowerService.js';
+import TaskManager from '../../src/main/services/TaskManager.js';
 
 afterEach(() => {
     PowerService.setExecutionGuard(null);
@@ -44,7 +45,12 @@ describe('PowerService', () => {
 
     it('geçersiz eylem exec çağrısı olmadan reddedilir', async () => {
         const res = await PowerService.execute('rm-rf');
-        expect(res).toEqual({ success: false, error: 'Invalid power action: rm-rf' });
+        // P1-6 (üçüncü tur): hata nedeni artık kararlı bir kod taşır.
+        expect(res).toEqual({
+            success: false,
+            error: 'Invalid power action: rm-rf',
+            code: 'POWER_INVALID_ACTION'
+        });
     });
 
     it('guard hatası fırlatan fonksiyon çağrıyı engellemez (fail-safe değil, açık hata)', () => {
@@ -56,5 +62,35 @@ describe('PowerService', () => {
     it('setExecutionGuard fonksiyon olmayan değeri temizler', () => {
         PowerService.setExecutionGuard('nope');
         expect(PowerService.executionAllowed()).toEqual({ ok: true });
+    });
+
+    // P1-6 (üçüncü tur): hata nedeni sınıflandırması.
+    // Eskiden her başarısızlık `os_execution_failed` oluyordu; `timeout` ve
+    // `authorization_error` kodları hiç üretilmiyordu.
+    it('classifyExecError: zaman aşımı', () => {
+        expect(classifyExecError(Object.assign(new Error('timed out'), { code: 'ETIMEDOUT' }))).toBe(POWER_ERROR.TIMEOUT);
+        expect(classifyExecError({ message: 'kill', killed: true })).toBe(POWER_ERROR.TIMEOUT);
+        expect(classifyExecError({ message: 'term', signal: 'SIGTERM' })).toBe(POWER_ERROR.TIMEOUT);
+    });
+
+    it('classifyExecError: yetki reddi', () => {
+        expect(classifyExecError(Object.assign(new Error('denied'), { code: 'EPERM' }))).toBe(POWER_ERROR.AUTHORIZATION);
+        expect(classifyExecError(Object.assign(new Error('denied'), { code: 'EACCES' }))).toBe(POWER_ERROR.AUTHORIZATION);
+        expect(classifyExecError(new Error('Access is denied.'))).toBe(POWER_ERROR.AUTHORIZATION);
+        expect(classifyExecError(new Error('Bu işlem için yönetici hakları gerekli.'))).toBe(POWER_ERROR.AUTHORIZATION);
+    });
+
+    it('classifyExecError: bilinmeyen hata genel yürütme hatası', () => {
+        expect(classifyExecError(new Error('spawn shutdown.exe ENOENT'))).toBe(POWER_ERROR.EXEC_FAILED);
+        expect(classifyExecError(null)).toBe(POWER_ERROR.EXEC_FAILED);
+    });
+
+    it('hata kodları yürütme sonuç kodlarına eşlenir', () => {
+        const tm = TaskManager.prototype;
+        expect(tm.mapPowerFailureCode(POWER_ERROR.TIMEOUT)).toBe('timeout');
+        expect(tm.mapPowerFailureCode(POWER_ERROR.AUTHORIZATION)).toBe('authorization_error');
+        expect(tm.mapPowerFailureCode(POWER_ERROR.BLOCKED)).toBe('blocked_by_policy');
+        expect(tm.mapPowerFailureCode(POWER_ERROR.EXEC_FAILED)).toBe('os_execution_failed');
+        expect(tm.mapPowerFailureCode(undefined)).toBe('os_execution_failed');
     });
 });

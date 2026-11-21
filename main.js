@@ -1824,6 +1824,27 @@ ipcHandle('create-task', (event, data) => {
         return { success: false, code: err.code || 'TASK_CREATION_FAILED', message: t('errorTaskCreationFailed') };
     }
 });
+// P1-6 (üçüncü tur): Görev duraklat / sürdür.
+// Motorda `task.enabled` beş yürütme yolunda gerçek bir kapıydı ve
+// `statusDisabled` 17 dilde çevriliydi, ama hiçbir yol bu alanı yazmıyordu.
+ipcHandle('pause-task', (event, taskId) => {
+    const check = validateTaskId(taskId);
+    if (!check.ok) return { success: false, code: check.code, message: t('errorInvalidRequest') };
+    const result = taskManager.pauseTask(taskId);
+    if (!result.ok) {
+        return { success: false, code: result.code || 'PAUSE_FAILED', message: result.message || t('taskPauseFailed') };
+    }
+    return { success: true, code: result.code };
+});
+ipcHandle('resume-task', (event, taskId) => {
+    const check = validateTaskId(taskId);
+    if (!check.ok) return { success: false, code: check.code, message: t('errorInvalidRequest') };
+    const result = taskManager.resumeTask(taskId);
+    if (!result.ok) {
+        return { success: false, code: result.code || 'RESUME_FAILED', message: result.message || t('taskResumeFailed') };
+    }
+    return { success: true, code: result.code, status: result.status };
+});
 ipcHandle('cancel-task', async (event, payload) => {
     // WBS-11.2: Geriye uyumlu — string id veya {taskId, pin}.
     const taskId = typeof payload === 'string' ? payload : payload && payload.taskId;

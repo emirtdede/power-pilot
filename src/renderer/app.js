@@ -2149,7 +2149,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     // WP-13.T7: küme değişmediyse yalnızca süre hücreleri güncellenir.
     let lastTaskRenderSignature = '';
 
+    /**
+     * P1-6 (üçüncü tur): görev duraklatıldı mı?
+     *
+     * Duraklatılmış görev `status='disabled'` + `enabled=false` taşır. Bu,
+     * `removeTask`'ın terminal listesinde de yer aldığı için varsayılan
+     * "kaldırılabilir" sayılırdı — yani kullanıcı duraklattığı görevi
+     * sürdürmek yerine silebilirdi. Burada açıkça ayrılır.
+     */
+    function isTaskPaused(task) {
+        return !!task && task.status === 'disabled' && task.enabled === false;
+    }
+
     function isTaskActive(task) {
+        if (!task) return false;
+        // Duraklatılmış görev "aktif" filtresinde GÖRÜNÜR kalır; aksi halde
+        // duraklatınca satır kaybolur ve sürdürmenin hiçbir yolu olmaz.
+        if (isTaskPaused(task)) return true;
         return TASK_ACTIVE_STATUSES.has(task.status) && task.enabled !== false;
     }
 
@@ -2157,6 +2173,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // yalnızca terminal durumdakileri siler (removeTask).
     const TASK_REMOVABLE_STATUSES = new Set(['completed', 'cancelled', 'blocked', 'failed', 'expired', 'disabled']);
     function isTaskRemovable(task) {
+        // Duraklatılmış görev terminal DEĞİLDİR: sürdürülebilir, silinemez.
+        if (isTaskPaused(task)) return false;
         return !!task && TASK_REMOVABLE_STATUSES.has(task.status);
     }
 
@@ -2318,8 +2336,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const rows = list.map(task => {
                 const active = isTaskActive(task);
+                // P1-6 (üçüncü tur): duraklatılmış görev ayrı eylem kümesi alır.
+                const paused = isTaskPaused(task);
                 const next = (task.trigger && task.trigger.targetTime) ? formatTaskRemaining(task.trigger.targetTime) : '—';
-                const statusClass = active ? 'bg-primary/10 text-primary dark:text-primary-light' : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300';
+                const statusClass = paused
+                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                    : (active ? 'bg-primary/10 text-primary dark:text-primary-light' : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300');
                 const row = document.createElement('tr');
                 row.className = 'hover:bg-slate-50 dark:hover:bg-slate-900/50';
                 row.setAttribute('data-task-id', String(task.id));
@@ -2347,16 +2369,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const actionCell = document.createElement('td');
                 actionCell.className = 'p-3 text-right whitespace-nowrap space-x-1';
-                if (active) {
+                if (paused) {
+                    // P1-6 (üçüncü tur): duraklatılmış görev silinemez/sayılmaz;
+                    // kullanıcı yalnızca sürdürebilir (veya iptal edebilir).
+                    const resume = document.createElement('button');
+                    resume.className = 'btn-task-resume px-2 py-1 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 text-[11px] font-bold';
+                    resume.textContent = t('taskResume');
+                    resume.addEventListener('click', () => resumeTaskFromList(task.id));
+                    const cancelPaused = document.createElement('button');
+                    cancelPaused.className = 'btn-task-cancel px-2 py-1 rounded bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 text-[11px] font-bold';
+                    cancelPaused.textContent = t('taskCancel');
+                    cancelPaused.addEventListener('click', () => cancelTaskFromList(task.id));
+                    actionCell.append(resume, cancelPaused);
+                } else if (active) {
                     const snooze = document.createElement('button');
                     snooze.className = 'btn-task-snooze px-2 py-1 rounded bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 text-[11px] font-bold';
                     snooze.textContent = `+10 ${t('shortMinute')}`;
                     snooze.addEventListener('click', () => snoozeTaskFromList(task.id, 10));
+                    const pause = document.createElement('button');
+                    pause.className = 'btn-task-pause px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 text-[11px] font-bold';
+                    pause.textContent = t('taskPause');
+                    pause.addEventListener('click', () => pauseTaskFromList(task.id));
                     const cancel = document.createElement('button');
                     cancel.className = 'btn-task-cancel px-2 py-1 rounded bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 text-[11px] font-bold';
                     cancel.textContent = t('taskCancel');
                     cancel.addEventListener('click', () => cancelTaskFromList(task.id));
-                    actionCell.append(snooze, cancel);
+                    actionCell.append(snooze, pause, cancel);
                 } else if (isTaskRemovable(task)) {
                     // Biten görev: kullanıcı listeden kaldırabilmelidir.
                     // Aksi halde iptal edilen görevler eylemsiz satırlar
@@ -2448,6 +2486,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         showToast(t('taskSnoozed', { minutes }), 'success');
         loadTasks();
+    }
+
+    async function pauseTaskFromList(taskId) {
+        if (!window.electronAPI || typeof window.electronAPI.pauseTask !== 'function') return;
+        try {
+            const res = await window.electronAPI.pauseTask(taskId);
+            if (res && res.success === false) {
+                showToast(res.message || t('taskPauseFailed'), 'error');
+                return;
+            }
+            showToast(t('taskPaused'), 'success');
+            loadTasks();
+        } catch (err) {
+            showToast(t('taskPauseFailed'), 'error');
+        }
+    }
+
+    async function resumeTaskFromList(taskId) {
+        if (!window.electronAPI || typeof window.electronAPI.resumeTask !== 'function') return;
+        try {
+            const res = await window.electronAPI.resumeTask(taskId);
+            if (res && res.success === false) {
+                showToast(res.message || t('taskResumeFailed'), 'error');
+                return;
+            }
+            showToast(t('taskResumed'), 'success');
+            loadTasks();
+        } catch (err) {
+            showToast(t('taskResumeFailed'), 'error');
+        }
     }
 
     document.querySelectorAll('[data-task-filter]').forEach(btn => {

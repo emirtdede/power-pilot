@@ -22,6 +22,52 @@ const POWER_ACTIONS = {
     SIGNOUT: 'signout'
 };
 
+/**
+ * P1-6 (üçüncü tur): hata NEDENİ ayrımı.
+ *
+ * Eskiden her başarısızlık `os_execution_failed` olarak raporlanıyordu.
+ * Oysa `EXECUTION_RESULT_CODE` içinde `timeout` ve `authorization_error`
+ * tanımlıydı, 17 dilde etiketleri vardı ve `HealthMetrics` bunları
+ * "otomasyon çalışmadı" sayıyordu — ama HİÇBİR kod yolu bu değerleri
+ * üretmiyordu. Kullanıcı "OS reddetti" görüyor, zaman aşımı ile yetki
+ * reddini ayırt edemiyordu.
+ *
+ * Artık `execFile` hatası sınıflandırılır:
+ *  - ETIMEDOUT / SIGTERM(15 sn timeout)  → POWER_TIMEOUT
+ *  - EPERM / EACCES / ELEVATION_REQUIRED → POWER_AUTHORIZATION
+ *  - Aksi halde                          → POWER_EXEC_FAILED
+ */
+const POWER_ERROR = Object.freeze({
+    TIMEOUT: 'POWER_TIMEOUT',
+    AUTHORIZATION: 'POWER_AUTHORIZATION',
+    INVALID_ACTION: 'POWER_INVALID_ACTION',
+    BLOCKED: 'POWER_BLOCKED',
+    EXEC_FAILED: 'POWER_EXEC_FAILED'
+});
+
+const AUTHORIZATION_ERRNOS = new Set(['EPERM', 'EACCES', 'ELEVATION_REQUIRED', 'ERROR_ELEVATION_REQUIRED']);
+const TIMEOUT_ERRNOS = new Set(['ETIMEDOUT', 'ESOCKETTIMEDOUT']);
+
+/**
+ * execFile hatasını kararlı bir sınıfa çevirir. Saf fonksiyon (test edilebilir).
+ * @param {NodeJS.ErrnoException|null} err
+ * @returns {string} POWER_ERROR değerlerinden biri
+ */
+function classifyExecError(err) {
+    if (!err) return POWER_ERROR.EXEC_FAILED;
+    const code = typeof err.code === 'string' ? err.code : '';
+    if (TIMEOUT_ERRNOS.has(code) || err.killed === true || err.signal === 'SIGTERM') {
+        return POWER_ERROR.TIMEOUT;
+    }
+    if (AUTHORIZATION_ERRNOS.has(code)) return POWER_ERROR.AUTHORIZATION;
+    // Windows yerelleştirilmiş mesajları: "Access is denied" / "Erişim engellendi".
+    const msg = String(err.message || '');
+    if (/access is denied|erişim engellendi|requires elevation|yönetici/i.test(msg)) {
+        return POWER_ERROR.AUTHORIZATION;
+    }
+    return POWER_ERROR.EXEC_FAILED;
+}
+
 class PowerService {
     /**
      * WP-11.T7: audit zinciri kurcalanmışsa veya depo bakım modundaysa
@@ -96,13 +142,17 @@ class PowerService {
                     args = force ? ['/l', '/f'] : ['/l'];
                     break;
                 default:
-                    return resolve({ success: false, error: `Invalid power action: ${action}` });
+                    return resolve({ success: false, error: `Invalid power action: ${action}`, code: POWER_ERROR.INVALID_ACTION });
             }
 
             execFile(file, args, { windowsHide: true, timeout: 15000 }, (err, stdout, stderr) => {
                 if (err) {
                     log.error(`[PowerService] Action execution failed (${action}):`, err);
-                    return resolve({ success: false, error: err.message || stderr });
+                    return resolve({
+                        success: false,
+                        error: err.message || stderr,
+                        code: classifyExecError(err)
+                    });
                 }
                 return resolve({ success: true });
             });
@@ -144,5 +194,7 @@ class PowerService {
 
 module.exports = {
     PowerService,
-    POWER_ACTIONS
+    POWER_ACTIONS,
+    POWER_ERROR,
+    classifyExecError
 };
