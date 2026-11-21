@@ -757,6 +757,7 @@
   "sfRestart": "Start på nytt",
   "sfSaveTemplate": "Lagre mal",
   "sfShutdown": "Slå av",
+  "sfSignout": "Logg av",
   "sfSleep": "Sove",
   "sfSpecificTime": "Spesifikk tid (valgfritt - hvis valgt, overvåkes ikke forholdene; den kjører på det tidspunktet)",
   "sfStabilityLabel": "Stabilitet (s)",

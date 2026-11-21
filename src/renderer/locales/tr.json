@@ -757,6 +757,7 @@
   "sfRestart": "Tekrar başlat",
   "sfSaveTemplate": "Şablonu Kaydet",
   "sfShutdown": "Kapat",
+  "sfSignout": "Oturumu Kapat",
   "sfSleep": "Uyku",
   "sfSpecificTime": "Belirli zaman (isteğe bağlı — seçilirse koşullar izlenmez; o saatte çalışır)",
   "sfStabilityLabel": "Kararlılık (sn)",

@@ -757,6 +757,7 @@
   "sfRestart": "Reanudar",
   "sfSaveTemplate": "Guardar plantilla",
   "sfShutdown": "Cerrar",
+  "sfSignout": "Cerrar sesión",
   "sfSleep": "Dormir",
   "sfSpecificTime": "Hora específica (opcional; si se selecciona, las condiciones no se monitorean; se ejecuta en ese momento)",
   "sfStabilityLabel": "Estabilidad (s)",

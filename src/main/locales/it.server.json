@@ -757,6 +757,7 @@
   "sfRestart": "Ricomincia",
   "sfSaveTemplate": "Salva modello",
   "sfShutdown": "Fermare",
+  "sfSignout": "Disconnetti",
   "sfSleep": "Sonno",
   "sfSpecificTime": "Orario specifico (facoltativo: se selezionato, le condizioni non vengono monitorate; viene eseguito in quell'ora)",
   "sfStabilityLabel": "Stabilità (s)",

@@ -757,6 +757,7 @@
   "sfRestart": "Uruchom ponownie",
   "sfSaveTemplate": "Zapisz szablon",
   "sfShutdown": "Zamknięcie",
+  "sfSignout": "Wyloguj",
   "sfSleep": "Spać",
   "sfSpecificTime": "Określony czas (opcjonalnie — jeśli wybrano, warunki nie są monitorowane; działa o tej godzinie)",
   "sfStabilityLabel": "Stabilność (s)",

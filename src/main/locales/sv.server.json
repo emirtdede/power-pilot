@@ -757,6 +757,7 @@
   "sfRestart": "Starta om",
   "sfSaveTemplate": "Spara mall",
   "sfShutdown": "Stäng av",
+  "sfSignout": "Logga ut",
   "sfSleep": "Sova",
   "sfSpecificTime": "Specifik tid (valfritt – om vald övervakas inte förhållandena, den körs vid den tidpunkten)",
   "sfStabilityLabel": "Stabilitet (s)",

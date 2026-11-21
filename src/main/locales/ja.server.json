@@ -757,6 +757,7 @@
   "sfRestart": "再起動",
   "sfSaveTemplate": "テンプレートの保存",
   "sfShutdown": "シャットダウン",
+  "sfSignout": "サインアウト",
   "sfSleep": "寝る",
   "sfSpecificTime": "特定の時間 (オプション - 選択した場合、条件は監視されません。その時間に実行されます)",
   "sfStabilityLabel": "安定時間（秒）",

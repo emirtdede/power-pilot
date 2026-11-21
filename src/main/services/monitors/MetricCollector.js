@@ -45,6 +45,16 @@ class MetricCollector {
         this._lastProcessSampleAt = 0;
         this._processListInFlight = false;
 
+        /**
+         * P1-6 (dördüncü tur): kaynak bazlı "uçuşta" kaydı.
+         *
+         * Timeout'un GERÇEKTEN bağlaması için, yavaş bir OS çağrısı hâlâ
+         * sürerken yeni tick o kaynağı ATLAR; böylece üst üste WMI/PowerShell
+         * çağrısı yine oluşmaz ama örnekleme bloklanmaz.
+         */
+        this._inflightSources = new Map();
+        this.sourceAbandonMs = options.sourceAbandonMs || Math.max(this.sampleTimeoutMs * 4, 30000);
+
         this.prevCpuTimes = this.getCpuTimes();
         this.startSampling();
     }
@@ -109,6 +119,31 @@ class MetricCollector {
         });
     }
 
+    /**
+     * Bir metrik kaynağını başlatır; kaynak zaten uçuştaysa `null` döner ve
+     * bu tick'te ATLANIR (üst üste OS çağrısı yok).
+     *
+     * Kaynak `sourceAbandonMs`'den uzun süre asılı kalırsa işaret düşürülür:
+     * aksi halde kalıcı olarak asılan bir sağlayıcı o metriği sonsuza dek
+     * dondururdu.
+     */
+    _startSource(name, fn) {
+        const existing = this._inflightSources.get(name);
+        if (existing) {
+            if (this.now() - existing.startedAt < this.sourceAbandonMs) return null;
+            this._inflightSources.delete(name);
+        }
+        const startedAt = this.now();
+        const tracked = Promise.resolve().then(fn).finally(() => {
+            const rec = this._inflightSources.get(name);
+            if (rec && rec.startedAt === startedAt) this._inflightSources.delete(name);
+        });
+        // Zaman aşımından SONRA reddeden bir kaynak "unhandled rejection" üretmesin.
+        tracked.catch(() => {});
+        this._inflightSources.set(name, { startedAt, promise: tracked });
+        return tracked;
+    }
+
     async sampleOnce() {
         // WP-13.T3: önceki ölçüm bitmeden yeni tick başlamaz.
         if (this._sampling) return false;
@@ -123,27 +158,30 @@ class MetricCollector {
                 // Tüketici yokken eski liste "taze" görünmemeli: fail-closed.
                 this.currentMetrics.processListStale = true;
             }
-            // O-10: alt işler ayrı tutulur; timeout sonrası yeni tick başlamadan
-            // önce hepsinin bitmesi beklenir (üst üste WMI/PowerShell çağrısı yok).
             const idleTask = this.sampleIdle();
-            const networkTask = this.sampleNetwork();
-            const disksTask = this.sampleDisks();
-            const batteryTask = this.sampleBattery();
-            const underlying = Promise.allSettled([processTask, idleTask, networkTask, disksTask, batteryTask]);
-            const results = await Promise.allSettled([
-                this.withTimeout(processTask),
-                this.withTimeout(idleTask),
-                this.withTimeout(networkTask),
-                this.withTimeout(disksTask),
-                this.withTimeout(batteryTask)
-            ]);
+            // O-10: kaynaklar hâlâ uçuştaysa atlanır — üst üste WMI/PowerShell
+            // çağrısı yok. Atlanan kaynak bu tick için başarısız sayılır.
+            const networkTask = this._startSource('network', () => this.sampleNetwork());
+            const disksTask = this._startSource('disks', () => this.sampleDisks());
+            const batteryTask = this._startSource('battery', () => this.sampleBattery());
+            const pending = [processTask, idleTask, networkTask, disksTask, batteryTask];
+            const results = await Promise.allSettled(pending.map((task) => (
+                task
+                    ? this.withTimeout(task)
+                    : Promise.reject(new Error('SOURCE_IN_FLIGHT'))
+            )));
             failed = results.some((r) => r.status === 'rejected');
             this.sampleCount += 1;
             const elapsed = this.now() - started;
             // İlk 2 örnek + başarısız/geciken örnek stale sayılır (fail-closed).
             this.currentMetrics.stale = this.sampleCount < 3 || failed || elapsed >= this.sampleTimeoutMs;
             this.currentMetrics.sampledAt = new Date().toISOString();
-            await underlying.catch(() => {});
+            // P1-6 (dördüncü tur): BURADA `await underlying` VARDI. Yavaş bir
+            // sağlayıcı bitene kadar sampleOnce dönmüyordu (ölçüm: tek örnek
+            // 27 sn), yani 4 sn'lik zaman aşımı hiçbir şeyi sınırlamıyor ve
+            // metrikler kalıcı `stale` kalıyordu. Artık uçuştaki işler
+            // `_inflightSources` + `tracked.catch` ile sahiplenilir; sampleOnce
+            // en fazla `sampleTimeoutMs` bekler.
             return true;
         } finally {
             this._sampling = false;

@@ -757,6 +757,7 @@
   "sfRestart": "إعادة تشغيل",
   "sfSaveTemplate": "حفظ القالب",
   "sfShutdown": "اغلق",
+  "sfSignout": "تسجيل الخروج",
   "sfSleep": "ينام",
   "sfSpecificTime": "وقت محدد (اختياري — إذا تم تحديده، لا تتم مراقبة الظروف؛ فهو يعمل في ذلك الوقت)",
   "sfStabilityLabel": "الاستقرار (ث)",

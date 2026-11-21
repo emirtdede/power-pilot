@@ -757,6 +757,7 @@
   "sfRestart": "重新启动",
   "sfSaveTemplate": "保存模板",
   "sfShutdown": "关闭",
+  "sfSignout": "注销",
   "sfSleep": "睡觉",
   "sfSpecificTime": "特定时间（可选 - 如果选择，则不会监控条件；它会在那时运行）",
   "sfStabilityLabel": "稳定时长（秒）",

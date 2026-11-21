@@ -757,6 +757,7 @@
   "sfRestart": "Restartujte",
   "sfSaveTemplate": "Uložit šablonu",
   "sfShutdown": "Vypněte",
+  "sfSignout": "Odhlásit",
   "sfSleep": "Spát",
   "sfSpecificTime": "Konkrétní čas (nepovinné — pokud je vybráno, podmínky nejsou monitorovány; běží v tu dobu)",
   "sfStabilityLabel": "Stabilita (s)",

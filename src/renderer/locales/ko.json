@@ -757,6 +757,7 @@
   "sfRestart": "다시 시작",
   "sfSaveTemplate": "템플릿 저장",
   "sfShutdown": "종료",
+  "sfSignout": "로그아웃",
   "sfSleep": "잠",
   "sfSpecificTime": "특정 시간(선택 사항 - 선택하면 조건이 모니터링되지 않으며 해당 시간에 실행됩니다.)",
   "sfStabilityLabel": "안정 시간(초)",

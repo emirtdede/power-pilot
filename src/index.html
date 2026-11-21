@@ -3005,12 +3005,19 @@
                     <label for="sf-action"
                         class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5"
                         data-i18n="sfActionLabel">Çalıştırılacak Güç İşlemi</label>
+                    <!-- P1-6 (üçüncü tur): ana görev kurucusu 6 güç eyleminin
+                         TAMAMINI sunar. `restart` ve `signout` PowerService'te
+                         uygulanmış, doğrulayıcıda kabul edilmiş ve 17 dilde
+                         etiketlenmişti; burada seçenekleri yoktu, yani bu iki
+                         eylemle görev oluşturmanın hiçbir yolu yoktu. -->
                     <select id="sf-action"
                         class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-sm">
                         <option value="shutdown" data-i18n="sfShutdown">Kapat</option>
+                        <option value="restart" data-i18n="sfRestart">Yeniden Başlat</option>
                         <option value="sleep" data-i18n="sfSleep">Uyku</option>
                         <option value="hibernate" data-i18n="sfHibernate">Hazırda Beklet</option>
                         <option value="lock" data-i18n="sfLock">Kilitle</option>
+                        <option value="signout" data-i18n="sfSignout">Oturumu Kapat</option>
                     </select>
                 </div>
                 <div>
@@ -3026,6 +3033,7 @@
                             <option value="sleep" data-i18n="sfSleep">Uyku</option>
                             <option value="hibernate" data-i18n="sfHibernate">Hazırda Beklet</option>
                             <option value="lock" data-i18n="sfLock">Kilitle</option>
+                            <option value="signout" data-i18n="sfSignout">Oturumu Kapat</option>
                         </select>
                         <input id="sf-chain-delay" type="number" min="1" max="43200" value="60"
                             data-i18n-title="sfChainDelayTitle" title="Kaç dakika sonra"
@@ -3607,6 +3615,7 @@
                                     <option value="sleep" data-i18n="actionSleep">Uyku Modu</option>
                                     <option value="hibernate" data-i18n="actionHibernate">Hazırda Beklet</option>
                                     <option value="lock" data-i18n="actionLock">Kilitle</option>
+                                    <option value="signout" data-i18n="actionSignout">Oturumu Kapat</option>
                                 </select>
                                 <input id="cli-builder-minutes" type="number" min="1" max="1440" value="45" aria-label="Dakika" data-i18n-aria-label="settingDefaultMinutes" class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-xs tabular-nums" />
                                 <button type="button" id="btn-copy-cli-cmd" class="pp-btn-primary text-xs" data-i18n="docsCopyBtn">Komutu Kopyala</button>

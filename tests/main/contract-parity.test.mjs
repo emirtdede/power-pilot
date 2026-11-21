@@ -215,3 +215,102 @@ describe('C. Koşul tipi paritesi', () => {
         expect(missing, `okuyucusu olmayan koşul tipi: ${missing.join(', ')}`).toEqual([]);
     });
 });
+
+describe('D. Güç eylemi paritesi', () => {
+    /**
+     * P1-6 (üçüncü tur): `PowerService.POWER_ACTIONS` altı eylem tanımlar ve
+     * hepsini uygular (`shutdown.exe /s|/r|/h|/l`, `LockWorkStation`,
+     * `SetSuspendState`). `validate.js` altısını da kabul ediyor, 17 dilde
+     * etiketleri var.
+     *
+     * Ama ana görev kurucusu (`#sf-action`) yalnızca dört seçenek sunuyordu:
+     * `restart` ve `signout` ile görev oluşturmanın HİÇBİR yolu yoktu. Motor
+     * destekliyor, doğrulayıcı kabul ediyor, çeviri hazır — kapı yok. Aynı
+     * `directory_idle` sınıfı.
+     */
+    const powerActionValues = () => {
+        const m = read('src/main/services/PowerService.js').match(/const POWER_ACTIONS\s*=\s*\{([\s\S]*?)\n\};/);
+        return m ? [...m[1].matchAll(/([A-Z_]+)\s*:\s*'([a-z_]+)'/g)].map((x) => x[2]) : [];
+    };
+
+    /** Bir <select id="..."> içindeki <option value="..."> değerleri. */
+    const optionValuesOf = (selectId) => {
+        const idx = html.indexOf(`id="${selectId}"`);
+        if (idx < 0) return [];
+        const end = html.indexOf('</select>', idx);
+        if (end < 0) return [];
+        return [...html.slice(idx, end).matchAll(/<option[^>]*value="([a-z_]*)"/g)].map((x) => x[1]);
+    };
+
+    it('PowerService altı güç eylemi tanımlar (regresyon tabanı)', () => {
+        expect(powerActionValues().sort()).toEqual(
+            ['shutdown', 'restart', 'sleep', 'hibernate', 'lock', 'signout'].sort()
+        );
+    });
+
+    it('ana görev kurucusu her güç eylemini sunar', () => {
+        const offered = new Set(optionValuesOf('sf-action'));
+        const missing = powerActionValues().filter((a) => !offered.has(a));
+        expect(missing, `#sf-action sunmuyor: ${missing.join(', ')}`).toEqual([]);
+    });
+
+    it('zincir kurucusu her güç eylemini sunar', () => {
+        const offered = new Set(optionValuesOf('sf-chain-action'));
+        const missing = powerActionValues().filter((a) => !offered.has(a));
+        expect(missing, `#sf-chain-action sunmuyor: ${missing.join(', ')}`).toEqual([]);
+    });
+
+    it('CLI komut oluşturucu her güç eylemini sunar', () => {
+        const offered = new Set(optionValuesOf('cli-builder-action'));
+        const missing = powerActionValues().filter((a) => !offered.has(a));
+        expect(missing, `#cli-builder-action sunmuyor: ${missing.join(', ')}`).toEqual([]);
+    });
+
+    it('doğrulayıcı her güç eylemini kabul eder', () => {
+        const validate = read('src/main/ipc/validate.js');
+        // validate.js POWER_ACTIONS'ı doğrudan içe aktarıp Object.values ile
+        // karşılaştırır; sabit listeyi elle yazmak bu pariteyi bozardı.
+        expect(validate).toMatch(/POWER_ACTIONS/);
+        expect(validate).toMatch(/Object\.values\(POWER_ACTIONS\)\.includes\(/);
+    });
+
+    it('her güç eyleminin renderer etiket anahtarı 17 dilde var', () => {
+        const app = read('src/renderer/app.js');
+        const block = app.slice(app.indexOf('function getActionString'), app.indexOf('function getActionString') + 700);
+        const keyOf = {};
+        for (const m of block.matchAll(/\b([a-z]+)\s*:\s*'([A-Za-z0-9_]+)'/g)) keyOf[m[1]] = m[2];
+
+        const langs = fs.readdirSync(path.join(root, 'src/renderer/locales'))
+            .filter((f) => f.endsWith('.json') && f !== 'manifest.json')
+            .map((f) => ({ lang: f.replace('.json', ''), d: JSON.parse(read(`src/renderer/locales/${f}`)) }));
+
+        const problems = [];
+        for (const action of powerActionValues()) {
+            const key = keyOf[action];
+            if (!key) { problems.push(`(etiket yok):${action}`); continue; }
+            for (const { lang, d } of langs) {
+                if (typeof d[key] !== 'string' || !d[key].trim()) problems.push(`${lang}:${key}`);
+            }
+        }
+        expect(problems).toEqual([]);
+    });
+
+    it('seçicilerdeki her data-i18n anahtarı 17 dilde çözülür', () => {
+        const langs = fs.readdirSync(path.join(root, 'src/renderer/locales'))
+            .filter((f) => f.endsWith('.json') && f !== 'manifest.json')
+            .map((f) => ({ lang: f.replace('.json', ''), d: JSON.parse(read(`src/renderer/locales/${f}`)) }));
+
+        const problems = [];
+        for (const id of ['sf-action', 'sf-chain-action', 'cli-builder-action']) {
+            const idx = html.indexOf(`id="${id}"`);
+            if (idx < 0) continue;
+            const body = html.slice(idx, html.indexOf('</select>', idx));
+            for (const m of body.matchAll(/data-i18n="([A-Za-z0-9_]+)"/g)) {
+                for (const { lang, d } of langs) {
+                    if (typeof d[m[1]] !== 'string' || !d[m[1]].trim()) problems.push(`${id} ${lang}:${m[1]}`);
+                }
+            }
+        }
+        expect(problems).toEqual([]);
+    });
+});

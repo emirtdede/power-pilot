@@ -757,6 +757,7 @@
   "sfRestart": "Genstart",
   "sfSaveTemplate": "Gem skabelon",
   "sfShutdown": "Luk ned",
+  "sfSignout": "Log af",
   "sfSleep": "Sove",
   "sfSpecificTime": "Specifik tid (valgfrit – hvis valgt, overvåges forholdene ikke; det kører på det tidspunkt)",
   "sfStabilityLabel": "Stabilitet (s)",

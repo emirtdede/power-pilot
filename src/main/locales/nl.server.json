@@ -757,6 +757,7 @@
   "sfRestart": "Opnieuw opstarten",
   "sfSaveTemplate": "Sjabloon opslaan",
   "sfShutdown": "Sluit af",
+  "sfSignout": "Afmelden",
   "sfSleep": "Slaap",
   "sfSpecificTime": "Specifieke tijd (optioneel — indien geselecteerd, worden de omstandigheden niet bewaakt; deze loopt op dat tijdstip)",
   "sfStabilityLabel": "Stabiliteit (s)",

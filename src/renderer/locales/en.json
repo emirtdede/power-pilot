@@ -757,6 +757,7 @@
   "sfRestart": "Restart",
   "sfSaveTemplate": "Save Template",
   "sfShutdown": "Shut down",
+  "sfSignout": "Sign out",
   "sfSleep": "Sleep",
   "sfSpecificTime": "Specific time (optional — if selected, conditions are not monitored; it runs at that time)",
   "sfStabilityLabel": "Stability (sec)",
