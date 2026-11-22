@@ -1,5 +1,5 @@
 /**
- * conditions/DirectoryIdle.js — WP-07.T2 (K-05)
+ * conditions/DirectoryIdle.js - WP-07.T2 (K-05)
  * Klasör "sabitlendi" koşulu. `file_stable` yalnızca DOSYA içindir;
  * klasör mtime'ı indirme sırasında da değişmediği için erken kapanmaya yol
  * açıyordu. Bu modül klasörün içeriğini özetler:

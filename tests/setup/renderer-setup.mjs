@@ -1,5 +1,5 @@
 /**
- * tests/setup/renderer-setup.mjs — WBS-4.1
+ * tests/setup/renderer-setup.mjs - WBS-4.1
  * window.electronAPI köprüsünün varsayılan mock'u.
  */
 process.env.NODE_ENV = 'test';

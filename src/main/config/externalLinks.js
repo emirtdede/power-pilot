@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * externalLinks.js — WP-10.T6
+ * externalLinks.js - WP-10.T6
  * Dış tarayıcıda açılmasına izin verilen HTTPS host'ları. Alt alan adı
  * eşleşmesi yalnızca listede açıkça belirtilen taban adlar için yapılır.
  */

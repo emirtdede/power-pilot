@@ -14,11 +14,15 @@
     "build:renderer": "node scripts/build-renderer.mjs",
     "build:locales": "node scripts/build-locales.mjs",
     "build:icons": "node scripts/generate-brand-assets.cjs && node scripts/generate-installer-assets.cjs",
+    "build:nsis-i18n": "node scripts/generate-nsis-i18n.mjs",
+    "build:setup-i18n": "node scripts/generate-setup-i18n.mjs",
     "prepack": "npm run build:renderer",
     "pack": "electron-builder --dir --config electron-builder.config.cjs --publish never",
     "pack:store": "electron-builder --dir --config electron-builder.store.cjs --publish never",
-    "dist": "electron-builder --win nsis --config electron-builder.config.cjs --publish never",
+    "dist": "node scripts/build-setup.mjs",
+    "dist:setup": "node scripts/build-setup.mjs",
     "dist:nsis": "electron-builder --win nsis --config electron-builder.config.cjs --publish never",
+    "dist:setup-stub": "electron-builder --dir --config electron-builder.config.cjs --publish never && node scripts/build-setup.mjs --skip-pack",
     "dist:portable": "electron-builder --win portable --config electron-builder.config.cjs --publish never",
     "dist:appx": "node scripts/build-appx.js",
     "dist:store": "node scripts/build-appx.js --store",
@@ -39,7 +43,8 @@
     "verify:signature": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-signature.ps1",
     "test:load": "node --expose-gc scripts/load-test.mjs",
     "sbom": "node scripts/sbom.mjs",
-    "audit:licenses": "node scripts/license-check.mjs"
+    "audit:licenses": "node scripts/license-check.mjs",
+    "winget:manifest": "node scripts/generate-winget-manifest.mjs"
   },
   "build": {
     "appId": "Vellium.PowerPilot",
@@ -89,6 +94,12 @@
       "!node_modules/@fugood/whisper.node/src/**",
       "!node_modules/@fugood/node-whisper-wasm/**",
       "!scripts/generate-*.cjs",
+      "!scripts/generate-nsis-i18n.mjs",
+      "!scripts/generate-setup-i18n.mjs",
+      "!scripts/build-setup.mjs",
+      "!scripts/nsis-i18n/**",
+      "!scripts/setup-i18n/**",
+      "!installer/**",
       "!**/*.map"
     ],
     "electronLanguages": [
@@ -118,7 +129,17 @@
       "src/assets/icons/*.png",
       "src/mcp/**",
       "src/cli/**",
-      "src/shared/**"
+      "src/shared/**",
+      "src/agent/**"
+    ],
+    "extraResources": [
+      {
+        "from": "build/bin",
+        "to": "bin",
+        "filter": [
+          "*.cmd"
+        ]
+      }
     ],
     "win": {
       "target": [
@@ -133,6 +154,14 @@
         "certificateSubjectName": "${env.WIN_CERT_SUBJECT}"
       }
     },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "emirtdede",
+        "repo": "power-pilot",
+        "releaseType": "release"
+      }
+    ],
     "portable": {
       "artifactName": "${productName} Portable ${version}.${ext}"
     },
@@ -149,6 +178,9 @@
       "installerSidebar": "build/installerSidebar.bmp",
       "uninstallerSidebar": "build/uninstallerSidebar.bmp",
       "installerHeader": "build/installerHeader.bmp",
+      "installerLanguages": [
+        "en_US"
+      ],
       "include": "build/installer.nsh"
     },
     "appx": {
@@ -248,6 +280,7 @@
     "better-sqlite3": "^13.0.3",
     "canonicalize": "^5.1.0",
     "electron-log": "^5.4.4",
+    "electron-updater": "^6.8.11",
     "ipaddr.js": "2.5.0",
     "node-llama-cpp": "^3.20.0",
     "ps-list": "9.0.0",

@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * electron-builder.store.cjs — Microsoft Store (MSIX) dağıtımı.
+ * electron-builder.store.cjs - Microsoft Store (MSIX) dağıtımı.
  *
  * NSIS yapılandırmasının üzerine:
  *  - yalnızca `appx` hedefi,
@@ -47,11 +47,14 @@ const prune = [
     '!scripts/install-service.ps1',
     '!scripts/firewall.ps1',
     '!scripts/packaged-e2e.ps1',
-    '!scripts/*.mjs'
+    '!scripts/*.mjs',
+    // Microsoft Store kurulumlari yalnizca Store uzerinden guncellenir; kendi guncelleyicisi paketlenmez.
+    '!node_modules/electron-updater/**'
 ];
 
 module.exports = {
     ...base,
+    publish: null,
     win: {
         ...base.win,
         target: ['appx']

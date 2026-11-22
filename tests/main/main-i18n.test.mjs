@@ -11,7 +11,7 @@ afterEach(() => {
     resetCache();
 });
 
-describe('dil normalizasyonu — desteklenmeyen sistem dili İngilizceye düşer', () => {
+describe('dil normalizasyonu - desteklenmeyen sistem dili İngilizceye düşer', () => {
     // Regresyon: önceden hepsi 'tr'ye düşüyordu; Rusça/Hintçe/Vietnamca bir
     // Windows'ta uygulama ilk açılışta Türkçe görünüyordu.
     it('desteklenmeyen diller İngilizceye düşer', () => {

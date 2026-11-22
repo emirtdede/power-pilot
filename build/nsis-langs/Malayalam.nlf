@@ -1,0 +1,191 @@
+﻿# Header, don't edit
+NLF v6
+# Start editing here
+# Language ID
+1100
+# Font and size - dash (-) means default
+-
+-
+# Codepage - dash (-) means ASCII code page
+1200
+# RTL - anything else than RTL means LTR
+-
+# Power Pilot custom NLF table
+# ^Branding
+Nullsoft Install System %s
+# ^SetupCaption
+$(^Name) സെറ്റപ്പ്
+# ^UninstallCaption
+$(^Name) അൺഇൻസ്റ്റാൾ
+# ^LicenseSubCaption
+: License
+# ^ComponentsSubCaption
+: ഇൻസ്റ്റാളേഷൻ ഫോൾഡർ
+# ^DirSubCaption
+: ഇൻസ്റ്റാളേഷൻ ഫോൾഡർ
+# ^InstallingSubCaption
+: ഇൻസ്റ്റാൾ ചെയ്യുന്നു
+# ^CompletedSubCaption
+: പൂർത്തിയായി
+# ^UnComponentsSubCaption
+: അൺഇൻസ്റ്റാൾ ചെയ്യുന്നു
+# ^UnDirSubCaption
+: ഇൻസ്റ്റാളേഷൻ ഫോൾഡർ
+# ^ConfirmSubCaption
+: അൺഇൻസ്റ്റാൾ ചെയ്യുന്നു
+# ^UninstallingSubCaption
+: അൺഇൻസ്റ്റാൾ ചെയ്യുന്നു
+# ^UnCompletedSubCaption
+: പൂർത്തിയായി
+# ^BackBtn
+< &പിന്നോട്ട്
+# ^NextBtn
+&അടുത്തത് >
+# ^AgreeBtn
+ഞാൻ &സമ്മതിക്കുന്നു
+# ^AcceptBtn
+ഞാൻ &സമ്മതിക്കുന്നു
+# ^DontAcceptBtn
+റദ്ദാക്കുക
+# ^InstallBtn
+&ഇൻസ്റ്റാൾ ചെയ്യുക
+# ^UninstallBtn
+&അൺഇൻസ്റ്റാൾ ചെയ്യുക
+# ^CancelBtn
+റദ്ദാക്കുക
+# ^CloseBtn
+&അടയ്ക്കുക
+# ^BrowseBtn
+&ബ്രൗസ് ചെയ്യുക...
+# ^ShowDetailsBtn
+&വിശദാംശങ്ങൾ കാണിക്കുക
+# ^ClickNext
+തുടരാൻ അടുത്തത് ക്ലിക്കുചെയ്യുക.
+# ^ClickInstall
+ഇൻസ്റ്റാളേഷൻ ആരംഭിക്കാൻ ഇൻസ്റ്റാൾ ചെയ്യുക ക്ലിക്കുചെയ്യുക.
+# ^ClickUninstall
+അൺഇൻസ്റ്റാൾ ആരംഭിക്കാൻ അൺഇൻസ്റ്റാൾ ചെയ്യുക ക്ലിക്കുചെയ്യുക.
+# ^Name
+Name
+# ^Completed
+പൂർത്തിയായി
+# ^LicenseText
+തുടരാൻ അടുത്തത് ക്ലിക്കുചെയ്യുക.
+# ^LicenseTextCB
+തുടരാൻ അടുത്തത് ക്ലിക്കുചെയ്യുക.
+# ^LicenseTextRB
+തുടരാൻ അടുത്തത് ക്ലിക്കുചെയ്യുക.
+# ^UnLicenseText
+തുടരാൻ അടുത്തത് ക്ലിക്കുചെയ്യുക.
+# ^UnLicenseTextCB
+തുടരാൻ അടുത്തത് ക്ലിക്കുചെയ്യുക.
+# ^UnLicenseTextRB
+തുടരാൻ അടുത്തത് ക്ലിക്കുചെയ്യുക.
+# ^Custom
+Custom
+# ^ComponentsText
+തുടരാൻ അടുത്തത് ക്ലിക്കുചെയ്യുക.
+# ^ComponentsSubText1
+തുടരാൻ അടുത്തത് ക്ലിക്കുചെയ്യുക.
+# ^ComponentsSubText2_NoInstTypes
+തുടരാൻ അടുത്തത് ക്ലിക്കുചെയ്യുക.
+# ^ComponentsSubText2
+തുടരാൻ അടുത്തത് ക്ലിക്കുചെയ്യുക.
+# ^UnComponentsText
+തുടരാൻ അടുത്തത് ക്ലിക്കുചെയ്യുക.
+# ^UnComponentsSubText1
+തുടരാൻ അടുത്തത് ക്ലിക്കുചെയ്യുക.
+# ^UnComponentsSubText2_NoInstTypes
+തുടരാൻ അടുത്തത് ക്ലിക്കുചെയ്യുക.
+# ^UnComponentsSubText2
+തുടരാൻ അടുത്തത് ക്ലിക്കുചെയ്യുക.
+# ^DirText
+സെറ്റപ്പ് $(^NameDA) താഴെയുള്ള ഫോൾഡറിൽ ഇൻസ്റ്റാൾ ചെയ്യും. മറ്റൊരു ഫോൾഡർ തിരഞ്ഞെടുക്കാൻ ബ്രൗസ് ക്ലിക്കുചെയ്യുക. $_CLICK
+# ^DirSubText
+ലക്ഷ്യ ഫോൾഡർ
+# ^DirBrowseText
+$(^NameDA) ഇൻസ്റ്റാൾ ചെയ്യാനുള്ള ഫോൾഡർ തിരഞ്ഞെടുക്കുക:
+# ^UnDirText
+താഴെയുള്ള ഫോൾഡറിൽ നിന്ന് $(^NameDA) നീക്കം ചെയ്യപ്പെടും. $_CLICK
+# ^UnDirSubText
+""
+# ^UnDirBrowseText
+$(^NameDA) ഇൻസ്റ്റാൾ ചെയ്യാനുള്ള ഫോൾഡർ തിരഞ്ഞെടുക്കുക:
+# ^SpaceAvailable
+"ലഭ്യമായ സ്ഥലം: "
+# ^SpaceRequired
+"ആവശ്യമായ സ്ഥലം: "
+# ^UninstallingText
+താഴെയുള്ള ഫോൾഡറിൽ നിന്ന് $(^NameDA) നീക്കം ചെയ്യപ്പെടും. $_CLICK
+# ^UninstallingSubText
+നീക്കം ചെയ്യുന്ന സ്ഥലം:
+# ^FileError
+Error: \r\n\r\n$0
+# ^FileError_NoIgnore
+Error: \r\n\r\n$0
+# ^CantWrite
+"Error: "
+# ^CopyFailed
+Error
+# ^CopyTo
+"-> "
+# ^Registering
+"... "
+# ^Unregistering
+"... "
+# ^SymbolNotFound
+"Error: "
+# ^CouldNotLoad
+"Error: "
+# ^CreateFolder
+"+ "
+# ^CreateShortcut
+"+ "
+# ^CreatedUninstaller
+"+ "
+# ^Delete
+"- "
+# ^DeleteOnReboot
+"- "
+# ^ErrorCreatingShortcut
+"Error: "
+# ^ErrorCreating
+"Error: "
+# ^ErrorDecompressing
+ഫയലുകൾ എക്സ്ട്രാക്റ്റ് ചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു. ഇൻസ്റ്റാളർ വീണ്ടും പ്രവർത്തിപ്പിക്കുക.
+# ^ErrorRegistering
+DLL Error
+# ^ExecShell
+"Exec: "
+# ^Exec
+"Exec: "
+# ^Extract
+"-> "
+# ^ErrorWriting
+"Error: "
+# ^InvalidOpcode
+ഫയലുകൾ എക്സ്ട്രാക്റ്റ് ചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു. ഇൻസ്റ്റാളർ വീണ്ടും പ്രവർത്തിപ്പിക്കുക.
+# ^NoOLE
+"OLE: "
+# ^OutputFolder
+"-> "
+# ^RemoveFolder
+"- "
+# ^RenameOnReboot
+"-> "
+# ^Rename
+"-> "
+# ^Skipped
+"... "
+# ^CopyDetails
+വിശദാംശങ്ങൾ പകർത്തുക
+# ^LogInstall
+Log
+# ^Byte
+B
+# ^Kilo
+ K
+# ^Mega
+ M
+# ^Giga
+ G

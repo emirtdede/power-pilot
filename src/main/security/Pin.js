@@ -1,5 +1,5 @@
 /**
- * Pin.js — WP-04.T4
+ * Pin.js - WP-04.T4
  * PIN türetimi/doğrulaması: Argon2id (m=19456 KiB, t=2, p=1, 16 bayt salt,
  * 32 bayt çıktı, PHC string). Eski SHA-256(salt:pin) kayıtları doğrulandıktan
  * sonra Argon2id'e yükseltilir. scrypt fallback YOKTUR.

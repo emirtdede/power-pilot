@@ -1,0 +1,191 @@
+﻿# Header, don't edit
+NLF v6
+# Start editing here
+# Language ID
+1095
+# Font and size - dash (-) means default
+-
+-
+# Codepage - dash (-) means ASCII code page
+1200
+# RTL - anything else than RTL means LTR
+-
+# Power Pilot custom NLF table
+# ^Branding
+Nullsoft Install System %s
+# ^SetupCaption
+$(^Name) સેટઅપ
+# ^UninstallCaption
+$(^Name) અનઇન્સ્ટોલ
+# ^LicenseSubCaption
+: License
+# ^ComponentsSubCaption
+: ઇન્સ્ટોલેશન ફોલ્ડર
+# ^DirSubCaption
+: ઇન્સ્ટોલેશન ફોલ્ડર
+# ^InstallingSubCaption
+: ઇન્સ્ટોલ થઈ રહ્યું છે
+# ^CompletedSubCaption
+: પૂર્ણ
+# ^UnComponentsSubCaption
+: અનઇન્સ્ટોલ થઈ રહ્યું છે
+# ^UnDirSubCaption
+: ઇન્સ્ટોલેશન ફોલ્ડર
+# ^ConfirmSubCaption
+: અનઇન્સ્ટોલ થઈ રહ્યું છે
+# ^UninstallingSubCaption
+: અનઇન્સ્ટોલ થઈ રહ્યું છે
+# ^UnCompletedSubCaption
+: પૂર્ણ
+# ^BackBtn
+< &પાછળ
+# ^NextBtn
+&આગળ >
+# ^AgreeBtn
+હું &સંમત છું
+# ^AcceptBtn
+હું &સંમત છું
+# ^DontAcceptBtn
+રદ કરો
+# ^InstallBtn
+&ઇન્સ્ટોલ કરો
+# ^UninstallBtn
+&અનઇન્સ્ટોલ કરો
+# ^CancelBtn
+રદ કરો
+# ^CloseBtn
+&બંધ કરો
+# ^BrowseBtn
+&બ્રાઉઝ કરો...
+# ^ShowDetailsBtn
+&વિગતો બતાવો
+# ^ClickNext
+ચાલુ રાખવા માટે આગળ ક્લિક કરો.
+# ^ClickInstall
+ઇન્સ્ટોલેશન શરૂ કરવા માટે ઇન્સ્ટોલ કરો ક્લિક કરો.
+# ^ClickUninstall
+અનઇન્સ્ટોલ શરૂ કરવા માટે અનઇન્સ્ટોલ કરો ક્લિક કરો.
+# ^Name
+Name
+# ^Completed
+પૂર્ણ
+# ^LicenseText
+ચાલુ રાખવા માટે આગળ ક્લિક કરો.
+# ^LicenseTextCB
+ચાલુ રાખવા માટે આગળ ક્લિક કરો.
+# ^LicenseTextRB
+ચાલુ રાખવા માટે આગળ ક્લિક કરો.
+# ^UnLicenseText
+ચાલુ રાખવા માટે આગળ ક્લિક કરો.
+# ^UnLicenseTextCB
+ચાલુ રાખવા માટે આગળ ક્લિક કરો.
+# ^UnLicenseTextRB
+ચાલુ રાખવા માટે આગળ ક્લિક કરો.
+# ^Custom
+Custom
+# ^ComponentsText
+ચાલુ રાખવા માટે આગળ ક્લિક કરો.
+# ^ComponentsSubText1
+ચાલુ રાખવા માટે આગળ ક્લિક કરો.
+# ^ComponentsSubText2_NoInstTypes
+ચાલુ રાખવા માટે આગળ ક્લિક કરો.
+# ^ComponentsSubText2
+ચાલુ રાખવા માટે આગળ ક્લિક કરો.
+# ^UnComponentsText
+ચાલુ રાખવા માટે આગળ ક્લિક કરો.
+# ^UnComponentsSubText1
+ચાલુ રાખવા માટે આગળ ક્લિક કરો.
+# ^UnComponentsSubText2_NoInstTypes
+ચાલુ રાખવા માટે આગળ ક્લિક કરો.
+# ^UnComponentsSubText2
+ચાલુ રાખવા માટે આગળ ક્લિક કરો.
+# ^DirText
+સેટઅપ $(^NameDA) ને નીચેના ફોલ્ડરમાં ઇન્સ્ટોલ કરશે. અન્ય ફોલ્ડર પસંદ કરવા બ્રાઉઝ કરો ક્લિક કરો. $_CLICK
+# ^DirSubText
+ગંતવ્ય ફોલ્ડર
+# ^DirBrowseText
+$(^NameDA) ઇન્સ્ટોલ કરવા માટે ફોલ્ડર પસંદ કરો:
+# ^UnDirText
+$(^NameDA) ને નીચેના ફોલ્ડરમાંથી દૂર કરવામાં આવશે. $_CLICK
+# ^UnDirSubText
+""
+# ^UnDirBrowseText
+$(^NameDA) ઇન્સ્ટોલ કરવા માટે ફોલ્ડર પસંદ કરો:
+# ^SpaceAvailable
+"ઉપલબ્ધ જગ્યા: "
+# ^SpaceRequired
+"જરૂરી જગ્યા: "
+# ^UninstallingText
+$(^NameDA) ને નીચેના ફોલ્ડરમાંથી દૂર કરવામાં આવશે. $_CLICK
+# ^UninstallingSubText
+અહીંથી દૂર થઈ રહ્યું છે:
+# ^FileError
+Error: \r\n\r\n$0
+# ^FileError_NoIgnore
+Error: \r\n\r\n$0
+# ^CantWrite
+"Error: "
+# ^CopyFailed
+Error
+# ^CopyTo
+"-> "
+# ^Registering
+"... "
+# ^Unregistering
+"... "
+# ^SymbolNotFound
+"Error: "
+# ^CouldNotLoad
+"Error: "
+# ^CreateFolder
+"+ "
+# ^CreateShortcut
+"+ "
+# ^CreatedUninstaller
+"+ "
+# ^Delete
+"- "
+# ^DeleteOnReboot
+"- "
+# ^ErrorCreatingShortcut
+"Error: "
+# ^ErrorCreating
+"Error: "
+# ^ErrorDecompressing
+ફાઇલો કાઢવામાં નિષ્ફળ. કૃપા કરીને ઇન્સ્ટોલર ફરીથી ચલાવો.
+# ^ErrorRegistering
+DLL Error
+# ^ExecShell
+"Exec: "
+# ^Exec
+"Exec: "
+# ^Extract
+"-> "
+# ^ErrorWriting
+"Error: "
+# ^InvalidOpcode
+ફાઇલો કાઢવામાં નિષ્ફળ. કૃપા કરીને ઇન્સ્ટોલર ફરીથી ચલાવો.
+# ^NoOLE
+"OLE: "
+# ^OutputFolder
+"-> "
+# ^RemoveFolder
+"- "
+# ^RenameOnReboot
+"-> "
+# ^Rename
+"-> "
+# ^Skipped
+"... "
+# ^CopyDetails
+વિગતો કોપી કરો
+# ^LogInstall
+Log
+# ^Byte
+B
+# ^Kilo
+ K
+# ^Mega
+ M
+# ^Giga
+ G

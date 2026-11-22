@@ -1,5 +1,5 @@
 /**
- * build-config.test.mjs — WBS-7.1 / P0-3
+ * build-config.test.mjs - WBS-7.1 / P0-3
  * Paketleme sözleşmesi: native modüller ASAR dışında + rebuild hook'u kayıtlı.
  * (CI'da `npm run pack` ile birlikte koşar; config drift'i burada yakalanır.)
  */

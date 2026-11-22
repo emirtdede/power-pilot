@@ -1,5 +1,5 @@
 /**
- * localapi-auth.test.mjs — LocalApiService handleRequest: auth, rate-limit, LAN, JSON.
+ * localapi-auth.test.mjs - LocalApiService handleRequest: auth, rate-limit, LAN, JSON.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import crypto from 'node:crypto';

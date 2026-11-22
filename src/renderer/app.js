@@ -220,6 +220,7 @@ async function applyLanguage(lang) {
     document.documentElement.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
     // Statik Türkçe iskelet artık aktif dille değiştirildi; kapıyı aç.
     document.documentElement.classList.remove('i18n-pending');
+    try { document.dispatchEvent(new CustomEvent('pp-language-applied')); } catch (_) { /* yut */ }
     // Dynamic labels, countdown text and per-view renderers live inside
     // the DOMContentLoaded scope. afterLanguageChange() is wired there so
     // a language switch refreshes them with the new dictionary.
@@ -301,7 +302,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const navEl = document.getElementById(navId);
         const viewLabel = (navEl && (navEl.getAttribute('aria-label')
             || (navEl.querySelector('.nav-label') || {}).textContent || '')).trim();
-        if (viewLabel) document.title = `${viewLabel} — Power Pilot`;
+        if (viewLabel) document.title = `${viewLabel} - Power Pilot`;
         if (focusView && targetView) {
             targetView.setAttribute('tabindex', '-1');
             try {
@@ -483,7 +484,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
     Object.keys(navLinks).forEach(navId => {
-        document.getElementById(navId).addEventListener('click', () => switchView(navId, { focusView: true }));
+        document.getElementById(navId).addEventListener('click', () => {
+            const wz = document.getElementById('wizard-overlay');
+            if (wz && !wz.classList.contains('hidden')) {
+                if (typeof closeWzColorPicker === 'function') closeWzColorPicker();
+                if (typeof closeWzLangPicker === 'function') closeWzLangPicker();
+                if (!wizardReplayMode) {
+                    try { localStorage.setItem('pp-wizard-skipped', '1'); } catch (_) { }
+                }
+                wz.classList.add('hidden');
+                if (typeof wizardStopTimers === 'function') wizardStopTimers();
+            }
+            switchView(navId, { focusView: true });
+        });
     });
 
     // PPX-003: sticky CTA yüksekliğini ölç ve scroller'a alt boşluk
@@ -595,7 +608,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Start Timer — WP-08.T1: yalnızca IPC başarılıysa sayaç başlar.
+    // Start Timer - WP-08.T1: yalnızca IPC başarılıysa sayaç başlar.
     document.getElementById('btn-start').addEventListener('click', async () => {
         const days = parseInt(dInput.value) || 0;
         const hours = parseInt(hInput.value) || 0;
@@ -897,7 +910,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function timerTick() {
         if (!timerTargetTime) return;
-        // WP-08.T2: monotonik hedef — gizli sekmede/uykuda kayan sayaç yok.
+        // WP-08.T2: monotonik hedef - gizli sekmede/uykuda kayan sayaç yok.
         const left = Math.max(0, Math.ceil((timerTargetTime - Date.now()) / 1000));
         if (left !== secondsRemaining) {
             secondsRemaining = left;
@@ -942,7 +955,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let stagedMarksFired = {};
     /**
      * A9: uyarı sesi tercihi.
-     *  - 'auto'  : 22:00–08:00 arası sessiz (eski sabit davranış)
+     *  - 'auto'  : 22:00-08:00 arası sessiz (eski sabit davranış)
      *  - 'always': gece de çalar (gece çalışan kullanıcı uyarıyı kaçırmasın)
      *  - 'never' : hiç çalmaz (görsel uyarı yine görünür)
      * Geçersiz/boş değer 'auto' sayılır.
@@ -955,10 +968,10 @@ document.addEventListener('DOMContentLoaded', async () => {
      * Sessiz saat penceresi içinde miyiz?
      *
      * İki ayrı tüketici vardır ve bilinçli olarak AYRI tutulur:
-     *  1. Bu işlev — `soundMode: 'auto'` iken arayüz bip'ini susturur. Bu,
+     *  1. Bu işlev - `soundMode: 'auto'` iken arayüz bip'ini susturur. Bu,
      *     kullanıcının saat alanlarıyla doğrudan kurduğu davranıştır; ayrıca
      *     bir anahtara bağlanması eski (ve belgelenmiş) davranışı bozardı.
-     *  2. Arka uç `quietHoursEnabled` — pencereyi zorla öne getirmeyi ve
+     *  2. Arka uç `quietHoursEnabled` - pencereyi zorla öne getirmeyi ve
      *     masaüstü bildirimlerini susturur (bkz. `main.js` `isQuietHoursNow`).
      * @param {Date} [now]
      * @returns {boolean}
@@ -1107,10 +1120,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (match(sc.theme)) {
             e.preventDefault();
             const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-            try { localStorage.setItem('theme', next); } catch (_) { }
-            if (elTheme) elTheme.value = next;
-            applyTheme(next, activeThemeId);
-            persistThemeAsync(next, activeThemeId);
+            selectThemeMode(next);
             return;
         }
         if (match(sc.quickstart)) {
@@ -1170,7 +1180,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (m > 0 || h > 0 || d > 0) textStr += `${m} ${dict.timeFormatMinutes} `;
         textStr += `${s} ${dict.timeFormatSeconds}`;
 
-        // Update active view headings and sentence dynamically (DOM API — HTML sink yok).
+        // Update active view headings and sentence dynamically (DOM API - HTML sink yok).
         const headingEl = document.getElementById('active-heading');
         const subheadingEl = document.getElementById('active-subheading');
         const saveHintEl = document.getElementById('active-save-hint');
@@ -1355,44 +1365,226 @@ document.addEventListener('DOMContentLoaded', async () => {
     const elLanguage = document.getElementById('setting-language');
     const VALID_THEME_IDS = [
         'obsidian', 'slate', 'navy', 'blue', 'cyan', 'indigo', 'purple',
-        'pink', 'red', 'orange', 'yellow', 'emerald', 'grass', 'lime'
+        'pink', 'red', 'orange', 'yellow', 'emerald', 'grass', 'lime', 'custom'
     ];
     const VALID_APP_ICONS = [
-        'monochrome-dark', 'monochrome-light', 'monochrome-contrast', 'classic-cyan'
+        'monochrome-dark', 'monochrome-light', 'monochrome-contrast', 'classic-cyan',
+        'theme-obsidian', 'theme-slate', 'theme-navy', 'theme-blue', 'theme-cyan',
+        'theme-indigo', 'theme-purple', 'theme-pink', 'theme-red', 'theme-orange',
+        'theme-yellow', 'theme-emerald', 'theme-grass', 'theme-lime', 'custom'
     ];
+    const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
+    const btnModeSystem = document.getElementById('btn-mode-system');
     const btnModeLight = document.getElementById('btn-mode-light');
     const btnModeDark = document.getElementById('btn-mode-dark');
     const themeColorGrid = document.getElementById('theme-color-grid');
     const themeColorCountEl = document.getElementById('theme-color-count');
+    const customThemeBuilder = document.getElementById('custom-theme-builder');
+    const elCustomThemePicker = document.getElementById('custom-theme-color-picker');
+    const elCustomThemeHex = document.getElementById('custom-theme-hex-input');
+    const elCustomThemeContrast = document.getElementById('custom-theme-contrast-badge');
+    const btnSyncCustomIcon = document.getElementById('btn-sync-custom-icon');
+    const appIconPickerSection = document.getElementById('app-icon-picker-section');
     const appIconGrid = document.getElementById('app-icon-grid');
+    const elSyncIconWithTheme = document.getElementById('setting-sync-icon-theme');
+    const customIconColorBar = document.getElementById('custom-icon-color-bar');
+    const elCustomIconPicker = document.getElementById('custom-icon-color-picker');
+    const elCustomIconHex = document.getElementById('custom-icon-hex-input');
+    const btnIconUseThemeColor = document.getElementById('btn-icon-use-theme-color');
 
-    let committedTheme = localStorage.getItem('theme') || 'dark';
+    function normalizeHexUi(raw, fallback = '#3b82f6') {
+        if (window.PPColorPalette && typeof window.PPColorPalette.normalizeHexColor === 'function') {
+            return window.PPColorPalette.normalizeHexColor(raw, fallback);
+        }
+        const s = typeof raw === 'string' ? raw.trim() : '';
+        return HEX_COLOR_RE.test(s) ? s.toLowerCase() : fallback;
+    }
+
+    let systemPrefersDark = (() => {
+        try {
+            return Boolean(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        } catch (_) {
+            return true;
+        }
+    })();
+    function resolveEffectiveDark(mode) {
+        if (mode === 'light') return false;
+        if (mode === 'system') return systemPrefersDark;
+        return true;
+    }
+    let activeThemeMode = (() => {
+        const saved = localStorage.getItem('theme');
+        return (saved === 'light' || saved === 'dark' || saved === 'system') ? saved : 'dark';
+    })();
+    let committedTheme = activeThemeMode;
     let activeThemeId = (() => {
         const saved = localStorage.getItem('themeId');
         return VALID_THEME_IDS.includes(saved) ? saved : 'obsidian';
     })();
     let committedThemeId = activeThemeId;
+    let activeCustomThemeColor = normalizeHexUi(localStorage.getItem('customThemeColor'), '#3b82f6');
+    let committedCustomThemeColor = activeCustomThemeColor;
     let activeAppIcon = (() => {
         const saved = localStorage.getItem('appIcon');
         return VALID_APP_ICONS.includes(saved) ? saved : 'monochrome-dark';
     })();
     let committedAppIcon = activeAppIcon;
+    let activeCustomIconColor = normalizeHexUi(localStorage.getItem('customIconColor'), activeCustomThemeColor);
+    let committedCustomIconColor = activeCustomIconColor;
+    let syncIconWithTheme = localStorage.getItem('pp-sync-icon-theme') === 'true';
     let committedLanguage = localStorage.getItem('language') || currentLanguage || 'tr';
     let langSaveTimer = null;
     let themeSaveTimer = null;
+    let customIconSaveTimer = null;
+
+    function updateCustomContrastBadge() {
+        if (!elCustomThemeContrast || !window.PPColorPalette) return;
+        const tokens = window.PPColorPalette.buildCustomThemeTokens(activeCustomThemeColor);
+        const isDark = document.documentElement.classList.contains('dark');
+        const ratio = isDark ? tokens.darkContrast : tokens.lightContrast;
+        const level = ratio >= 7 ? 'AAA' : 'AA';
+        elCustomThemeContrast.textContent = `${t('customThemeContrast', { ratio: ratio.toFixed(1) })} · ${level}`;
+    }
+
+    function syncCustomPaletteCssAndInputs() {
+        if (typeof window.__ppApplyCustomCss === 'function') {
+            window.__ppApplyCustomCss(activeCustomThemeColor, activeCustomIconColor);
+        }
+        if (elCustomThemePicker) elCustomThemePicker.value = activeCustomThemeColor;
+        if (elCustomThemeHex && document.activeElement !== elCustomThemeHex) {
+            elCustomThemeHex.value = activeCustomThemeColor.toUpperCase();
+        }
+        if (elCustomIconPicker) elCustomIconPicker.value = activeCustomIconColor;
+        if (elCustomIconHex && document.activeElement !== elCustomIconHex) {
+            elCustomIconHex.value = activeCustomIconColor.toUpperCase();
+        }
+        updateCustomContrastBadge();
+        if (activeAppIcon === 'custom') {
+            const fav = document.getElementById('pp-favicon');
+            if (fav && window.PPColorPalette) {
+                const svg = window.PPColorPalette.buildBrandIconSvg(
+                    window.PPColorPalette.buildCustomIconPalette(activeCustomIconColor),
+                    { includeDropShadow: false }
+                );
+                fav.setAttribute('href', 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg));
+            }
+        }
+    }
+
+    function uint8ToBase64(bytes) {
+        let binary = '';
+        const chunk = 0x8000;
+        for (let i = 0; i < bytes.length; i += chunk) {
+            binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+        }
+        return btoa(binary);
+    }
+
+    function rasterizeCustomIconFrames(hex) {
+        return new Promise((resolve) => {
+            if (!window.PPColorPalette || typeof document === 'undefined') {
+                resolve([]);
+                return;
+            }
+            const svg = window.PPColorPalette.buildBrandIconSvg(
+                window.PPColorPalette.buildCustomIconPalette(hex),
+                { includeDropShadow: false }
+            );
+            const img = new Image();
+            img.onload = () => {
+                const frames = [];
+                const sizes = [16, 24, 32, 48, 64, 128, 256];
+                for (const size of sizes) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) continue;
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    ctx.clearRect(0, 0, size, size);
+                    ctx.drawImage(img, 0, 0, size, size);
+                    if (size >= 128) {
+                        const dataUrl = canvas.toDataURL('image/png');
+                        const base64 = dataUrl.replace(/^data:image\/png;base64,/, '');
+                        frames.push({ size, kind: 'png', base64 });
+                    } else {
+                        const imgData = ctx.getImageData(0, 0, size, size);
+                        frames.push({ size, kind: 'rgba', base64: uint8ToBase64(imgData.data) });
+                    }
+                }
+                resolve(frames);
+            };
+            img.onerror = () => resolve([]);
+            img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+        });
+    }
+
+    function scheduleSaveCustomIcon(hex, { apply = true, immediate = false, silent = false } = {}) {
+        const normalized = normalizeHexUi(hex, activeCustomIconColor);
+        activeCustomIconColor = normalized;
+        syncCustomPaletteCssAndInputs();
+        try { localStorage.setItem('customIconColor', normalized); } catch (_) { /* yut */ }
+        if (customIconSaveTimer) clearTimeout(customIconSaveTimer);
+        const run = async () => {
+            customIconSaveTimer = null;
+            if (!window.electronAPI || typeof window.electronAPI.saveCustomAppIcon !== 'function') {
+                committedCustomIconColor = normalized;
+                if (apply) committedAppIcon = 'custom';
+                return;
+            }
+            const frames = await rasterizeCustomIconFrames(normalized);
+            if (!frames.length) return;
+            try {
+                const res = await window.electronAPI.saveCustomAppIcon({ hex: normalized, frames, apply });
+                if (res && res.ok) {
+                    committedCustomIconColor = normalized;
+                    if (apply) committedAppIcon = 'custom';
+                    if (!silent && apply) {
+                        const count = res.iconSync && Array.isArray(res.iconSync.shortcutsUpdated)
+                            ? res.iconSync.shortcutsUpdated.length
+                            : 0;
+                        showToast(count > 0 ? t('appIconUpdatedWithShortcuts', { count }) : t('toastSettingsSaved'), 'success');
+                    }
+                    refreshAppIconStatus();
+                } else if (!silent) {
+                    showToast((res && res.message) || t('errorModeSave'), 'error');
+                }
+            } catch (_) { /* çevrimdışı */ }
+        };
+        if (immediate) run();
+        else customIconSaveTimer = setTimeout(run, 240);
+    }
 
     function applyAppIconUi(iconId) {
         const resolved = VALID_APP_ICONS.includes(iconId) ? iconId : 'monochrome-dark';
         activeAppIcon = resolved;
         document.documentElement.setAttribute('data-app-icon', resolved);
         const fav = document.getElementById('pp-favicon');
-        if (fav) fav.setAttribute('href', `assets/icons/${resolved}.png`);
-        if (appIconGrid) {
-            appIconGrid.querySelectorAll('[data-app-icon-option]').forEach((card) => {
+        if (fav) {
+            if (resolved === 'custom' && window.PPColorPalette) {
+                const svg = window.PPColorPalette.buildBrandIconSvg(
+                    window.PPColorPalette.buildCustomIconPalette(activeCustomIconColor),
+                    { includeDropShadow: false }
+                );
+                fav.setAttribute('href', 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg));
+            } else {
+                fav.setAttribute('href', `assets/icons/${resolved}.png`);
+            }
+        }
+        const rootContainer = appIconPickerSection || appIconGrid;
+        if (rootContainer) {
+            rootContainer.querySelectorAll('[data-app-icon-option]').forEach((card) => {
                 const selected = card.getAttribute('data-app-icon-option') === resolved;
                 card.classList.toggle('is-selected', selected);
                 card.setAttribute('aria-pressed', selected ? 'true' : 'false');
             });
+        }
+        if (customIconColorBar) {
+            customIconColorBar.classList.toggle('hidden', resolved !== 'custom');
+        }
+        if (elSyncIconWithTheme) {
+            elSyncIconWithTheme.checked = syncIconWithTheme;
         }
     }
 
@@ -1418,8 +1610,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    function selectAppIcon(iconId) {
+    function selectAppIcon(iconId, opts = {}) {
         if (!VALID_APP_ICONS.includes(iconId)) return;
+        if (iconId === 'custom') {
+            if (opts.customHex) activeCustomIconColor = normalizeHexUi(opts.customHex, activeCustomIconColor);
+            applyAppIconUi('custom');
+            try {
+                localStorage.setItem('appIcon', 'custom');
+                localStorage.setItem('customIconColor', activeCustomIconColor);
+            } catch (_) { /* yut */ }
+            scheduleSaveCustomIcon(activeCustomIconColor, {
+                apply: true,
+                immediate: Boolean(opts.immediate),
+                silent: Boolean(opts.silent)
+            });
+            return;
+        }
         const previous = committedAppIcon;
         applyAppIconUi(iconId);
         try { localStorage.setItem('appIcon', iconId); } catch (_) { /* yut */ }
@@ -1434,10 +1640,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return;
                 }
                 committedAppIcon = iconId;
-                const count = res && res.iconSync && Array.isArray(res.iconSync.shortcutsUpdated)
-                    ? res.iconSync.shortcutsUpdated.length
-                    : 0;
-                showToast(count > 0 ? t('appIconUpdatedWithShortcuts', { count }) : t('toastSettingsSaved'), 'success');
+                if (!opts.silent) {
+                    const count = res && res.iconSync && Array.isArray(res.iconSync.shortcutsUpdated)
+                        ? res.iconSync.shortcutsUpdated.length
+                        : 0;
+                    showToast(count > 0 ? t('appIconUpdatedWithShortcuts', { count }) : t('toastSettingsSaved'), 'success');
+                }
                 refreshAppIconStatus();
             }).catch(() => { /* çevrimdışı: localStorage yeterli */ });
         } else {
@@ -1445,42 +1653,76 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    if (appIconGrid) {
-        appIconGrid.addEventListener('click', (e) => {
+    function syncIconToCurrentTheme({ silent = true, immediate = false } = {}) {
+        if (!syncIconWithTheme) return;
+        if (activeThemeId === 'custom') {
+            selectAppIcon('custom', { customHex: activeCustomThemeColor, silent, immediate });
+            return;
+        }
+        const map = window.PPColorPalette && window.PPColorPalette.THEME_ID_TO_ICON_ID;
+        const targetIcon = (map && map[activeThemeId]) || `theme-${activeThemeId}`;
+        if (VALID_APP_ICONS.includes(targetIcon)) {
+            selectAppIcon(targetIcon, { silent, immediate });
+        }
+    }
+
+    const iconDelegateRoot = appIconPickerSection || appIconGrid;
+    if (iconDelegateRoot) {
+        iconDelegateRoot.addEventListener('click', (e) => {
             const btn = e.target && e.target.closest ? e.target.closest('[data-app-icon-option]') : null;
             if (!btn) return;
-            selectAppIcon(btn.getAttribute('data-app-icon-option'));
+            const chosen = btn.getAttribute('data-app-icon-option');
+            selectAppIcon(chosen, { immediate: true });
         });
     }
 
-    function persistThemeAsync(mode, themeId) {
+    if (elSyncIconWithTheme) {
+        elSyncIconWithTheme.checked = syncIconWithTheme;
+        elSyncIconWithTheme.addEventListener('change', () => {
+            syncIconWithTheme = Boolean(elSyncIconWithTheme.checked);
+            try { localStorage.setItem('pp-sync-icon-theme', String(syncIconWithTheme)); } catch (_) { /* yut */ }
+            if (window.electronAPI && typeof window.electronAPI.saveSettingsAtomic === 'function') {
+                window.electronAPI.saveSettingsAtomic({ settings: { syncIconWithTheme } }).catch(() => { });
+            }
+            if (syncIconWithTheme) {
+                syncIconToCurrentTheme({ silent: false, immediate: true });
+            }
+        });
+    }
+
+    function persistThemeAsync(mode, themeId, extra = {}) {
         if (themeSaveTimer) clearTimeout(themeSaveTimer);
         themeSaveTimer = setTimeout(() => {
             themeSaveTimer = null;
             if (window.electronAPI && typeof window.electronAPI.saveSettingsAtomic === 'function') {
                 Promise.resolve(
-                    window.electronAPI.saveSettingsAtomic({ settings: { theme: mode, themeId } })
+                    window.electronAPI.saveSettingsAtomic({ settings: { theme: mode, themeId, ...extra } })
                 ).then((res) => {
                     if (res && res.success === false) {
                         if (elTheme) elTheme.value = committedTheme;
                         activeThemeId = committedThemeId;
+                        activeCustomThemeColor = committedCustomThemeColor;
                         try {
                             localStorage.setItem('theme', committedTheme);
                             localStorage.setItem('themeId', committedThemeId);
+                            localStorage.setItem('customThemeColor', committedCustomThemeColor);
                         } catch (_) { /* yut */ }
+                        syncCustomPaletteCssAndInputs();
                         applyTheme(committedTheme, committedThemeId);
                         showToast(res.message || t('errorModeSave'), 'error');
                         return;
                     }
                     committedTheme = mode;
                     committedThemeId = themeId;
+                    if (extra.customThemeColor) committedCustomThemeColor = extra.customThemeColor;
                 }).catch(() => { /* çevrimdışı: localStorage yeterli */ });
             }
         }, 180);
     }
 
     function selectThemeMode(mode) {
-        const nextMode = mode === 'light' ? 'light' : 'dark';
+        const nextMode = (mode === 'light' || mode === 'system') ? mode : 'dark';
+        activeThemeMode = nextMode;
         if (elTheme) elTheme.value = nextMode;
         applyTheme(nextMode, activeThemeId);
         try { localStorage.setItem('theme', nextMode); } catch (_) { /* yut */ }
@@ -1490,21 +1732,144 @@ document.addEventListener('DOMContentLoaded', async () => {
     function selectColorTheme(id) {
         if (!VALID_THEME_IDS.includes(id)) return;
         activeThemeId = id;
-        const mode = (elTheme && elTheme.value === 'light') ? 'light' : (document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+        const mode = activeThemeMode;
+        if (id === 'custom') syncCustomPaletteCssAndInputs();
         applyTheme(mode, activeThemeId);
         try { localStorage.setItem('themeId', activeThemeId); } catch (_) { /* yut */ }
-        persistThemeAsync(mode, activeThemeId);
+        persistThemeAsync(mode, activeThemeId, id === 'custom' ? { customThemeColor: activeCustomThemeColor } : {});
+        syncIconToCurrentTheme({ silent: true, immediate: false });
+    }
+
+    function setCustomThemeColor(rawHex, { activateTheme = true } = {}) {
+        const cleaned = normalizeHexUi(rawHex, activeCustomThemeColor);
+        activeCustomThemeColor = cleaned;
+        try { localStorage.setItem('customThemeColor', cleaned); } catch (_) { /* yut */ }
+        syncCustomPaletteCssAndInputs();
+        const mode = activeThemeMode;
+        if (activateTheme) {
+            activeThemeId = 'custom';
+            applyTheme(mode, 'custom');
+            try { localStorage.setItem('themeId', 'custom'); } catch (_) { /* yut */ }
+            persistThemeAsync(mode, 'custom', { customThemeColor: cleaned });
+        } else {
+            persistThemeAsync(mode, activeThemeId, { customThemeColor: cleaned });
+        }
+        if (syncIconWithTheme) {
+            selectAppIcon('custom', { customHex: cleaned, silent: true, immediate: false });
+        }
+    }
+
+    function parseUserHexInput(raw) {
+        const trimmed = String(raw || '').trim();
+        if (!trimmed) return null;
+        const withHash = trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
+        return HEX_COLOR_RE.test(withHash) ? withHash.toLowerCase() : null;
+    }
+
+    if (elCustomThemePicker) {
+        elCustomThemePicker.addEventListener('input', () => setCustomThemeColor(elCustomThemePicker.value, { activateTheme: true }));
+        elCustomThemePicker.addEventListener('change', () => setCustomThemeColor(elCustomThemePicker.value, { activateTheme: true }));
+    }
+    if (elCustomThemeHex) {
+        elCustomThemeHex.addEventListener('input', () => {
+            const parsed = parseUserHexInput(elCustomThemeHex.value);
+            if (parsed) setCustomThemeColor(parsed, { activateTheme: true });
+        });
+        elCustomThemeHex.addEventListener('change', () => {
+            const parsed = parseUserHexInput(elCustomThemeHex.value);
+            if (parsed) {
+                elCustomThemeHex.value = parsed.toUpperCase();
+                setCustomThemeColor(parsed, { activateTheme: true });
+            } else {
+                elCustomThemeHex.value = activeCustomThemeColor.toUpperCase();
+                showToast(t('customThemeInvalidHex'), 'error');
+            }
+        });
+    }
+    if (customThemeBuilder) {
+        customThemeBuilder.addEventListener('click', (e) => {
+            const dot = e.target && e.target.closest ? e.target.closest('[data-preset-hex]') : null;
+            if (!dot) return;
+            const hex = dot.getAttribute('data-preset-hex');
+            if (hex) setCustomThemeColor(hex, { activateTheme: true });
+        });
+    }
+    if (btnSyncCustomIcon) {
+        btnSyncCustomIcon.addEventListener('click', () => {
+            selectAppIcon('custom', { customHex: activeCustomThemeColor, immediate: true });
+        });
+    }
+    if (elCustomIconPicker) {
+        elCustomIconPicker.addEventListener('input', () => {
+            selectAppIcon('custom', { customHex: elCustomIconPicker.value, immediate: false, silent: true });
+        });
+        elCustomIconPicker.addEventListener('change', () => {
+            selectAppIcon('custom', { customHex: elCustomIconPicker.value, immediate: true, silent: false });
+        });
+    }
+    if (elCustomIconHex) {
+        elCustomIconHex.addEventListener('input', () => {
+            const parsed = parseUserHexInput(elCustomIconHex.value);
+            if (parsed) selectAppIcon('custom', { customHex: parsed, immediate: false, silent: true });
+        });
+        elCustomIconHex.addEventListener('change', () => {
+            const parsed = parseUserHexInput(elCustomIconHex.value);
+            if (parsed) {
+                elCustomIconHex.value = parsed.toUpperCase();
+                selectAppIcon('custom', { customHex: parsed, immediate: true, silent: false });
+            } else {
+                elCustomIconHex.value = activeCustomIconColor.toUpperCase();
+                showToast(t('customThemeInvalidHex'), 'error');
+            }
+        });
+    }
+    if (btnIconUseThemeColor) {
+        btnIconUseThemeColor.addEventListener('click', () => {
+            const baseMap = window.PPColorPalette && window.PPColorPalette.THEME_BASE_HEX;
+            const hex = activeThemeId === 'custom'
+                ? activeCustomThemeColor
+                : ((baseMap && baseMap[activeThemeId]) || activeCustomThemeColor);
+            selectAppIcon('custom', { customHex: hex, immediate: true, silent: false });
+        });
     }
 
     // PPX-015: tüm genel ayarlar anında uygulanır ve otomatik kaydedilir.
     if (elTheme) {
         elTheme.addEventListener('change', () => selectThemeMode(elTheme.value));
     }
+    if (btnModeSystem) {
+        btnModeSystem.addEventListener('click', () => selectThemeMode('system'));
+    }
     if (btnModeLight) {
         btnModeLight.addEventListener('click', () => selectThemeMode('light'));
     }
     if (btnModeDark) {
         btnModeDark.addEventListener('click', () => selectThemeMode('dark'));
+    }
+    try {
+        const mqDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+        if (mqDark && typeof mqDark.addEventListener === 'function') {
+            mqDark.addEventListener('change', (ev) => {
+                systemPrefersDark = Boolean(ev.matches);
+                if (activeThemeMode === 'system') applyTheme('system', activeThemeId);
+            });
+        }
+    } catch (_) { /* yut */ }
+    if (window.electronAPI && typeof window.electronAPI.getSystemTheme === 'function') {
+        window.electronAPI.getSystemTheme().then((info) => {
+            if (info && typeof info.shouldUseDarkColors === 'boolean') {
+                systemPrefersDark = info.shouldUseDarkColors;
+                if (activeThemeMode === 'system') applyTheme('system', activeThemeId);
+            }
+        }).catch(() => { /* yut */ });
+    }
+    if (window.electronAPI && typeof window.electronAPI.onSystemThemeChanged === 'function') {
+        window.electronAPI.onSystemThemeChanged((info) => {
+            if (info && typeof info.shouldUseDarkColors === 'boolean') {
+                systemPrefersDark = info.shouldUseDarkColors;
+                if (activeThemeMode === 'system') applyTheme('system', activeThemeId);
+            }
+        });
     }
     if (themeColorGrid) {
         themeColorGrid.addEventListener('click', (e) => {
@@ -1636,7 +2001,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const voice = localStorage.getItem('voice') === 'true';
         let theme = localStorage.getItem('theme') || 'dark';
         let themeId = VALID_THEME_IDS.includes(localStorage.getItem('themeId')) ? localStorage.getItem('themeId') : 'obsidian';
+        let customThemeColor = normalizeHexUi(localStorage.getItem('customThemeColor'), activeCustomThemeColor);
         let appIcon = VALID_APP_ICONS.includes(localStorage.getItem('appIcon')) ? localStorage.getItem('appIcon') : 'monochrome-dark';
+        let customIconColor = normalizeHexUi(localStorage.getItem('customIconColor'), customThemeColor);
+        let syncIcon = localStorage.getItem('pp-sync-icon-theme') === 'true';
         let notifications = localStorage.getItem('notifications') !== 'false';
         const soundMode = getSoundMode();
 
@@ -1669,14 +2037,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (typeof serverSettings.autostart === 'boolean') {
                 autostart = serverSettings.autostart;
             }
-            if (!localStorage.getItem('theme') && (serverSettings.theme === 'light' || serverSettings.theme === 'dark')) {
+            if (!localStorage.getItem('theme') && (serverSettings.theme === 'light' || serverSettings.theme === 'dark' || serverSettings.theme === 'system')) {
                 theme = serverSettings.theme;
             }
             if (!localStorage.getItem('themeId') && VALID_THEME_IDS.includes(serverSettings.themeId)) {
                 themeId = serverSettings.themeId;
             }
+            if (!localStorage.getItem('customThemeColor') && typeof serverSettings.customThemeColor === 'string' && HEX_COLOR_RE.test(serverSettings.customThemeColor)) {
+                customThemeColor = serverSettings.customThemeColor.toLowerCase();
+            }
             if (VALID_APP_ICONS.includes(serverSettings.appIcon)) {
                 appIcon = serverSettings.appIcon;
+            }
+            if (typeof serverSettings.customIconColor === 'string' && HEX_COLOR_RE.test(serverSettings.customIconColor)) {
+                customIconColor = serverSettings.customIconColor.toLowerCase();
+            }
+            if (localStorage.getItem('pp-sync-icon-theme') === null && typeof serverSettings.syncIconWithTheme === 'boolean') {
+                syncIcon = serverSettings.syncIconWithTheme;
             }
             if (localStorage.getItem('pp-sidebar-collapsed') === null && typeof serverSettings.sidebarCollapsed === 'boolean') {
                 setSidebarCollapsed(serverSettings.sidebarCollapsed, { persist: false });
@@ -1725,14 +2102,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         activeThemeId = themeId;
         committedTheme = theme;
         committedThemeId = themeId;
+        activeCustomThemeColor = customThemeColor;
+        committedCustomThemeColor = customThemeColor;
         activeAppIcon = appIcon;
         committedAppIcon = appIcon;
+        activeCustomIconColor = customIconColor;
+        committedCustomIconColor = customIconColor;
+        syncIconWithTheme = syncIcon;
         committedLanguage = language;
         try {
             localStorage.setItem('themeId', themeId);
+            localStorage.setItem('customThemeColor', customThemeColor);
             localStorage.setItem('appIcon', appIcon);
+            localStorage.setItem('customIconColor', customIconColor);
+            localStorage.setItem('pp-sync-icon-theme', String(syncIcon));
         } catch (_) { /* yut */ }
 
+        const wzLangEl = document.getElementById('wz-lang');
+        if (wzLangEl && !wzLangUserEdited && wzLangEl.querySelector(`option[value="${language}"]`)) {
+            wzLangEl.value = language;
+        }
+
+        syncCustomPaletteCssAndInputs();
         applyTheme(theme, themeId);
         applyAppIconUi(appIcon);
         refreshAppIconStatus();
@@ -2081,7 +2472,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             let taskData;
             if (timeVal) {
-                // Saat seçiliyse koşul izlenmez — belirtilen saatte çalışır (dürüst anlam).
+                // Saat seçiliyse koşul izlenmez - belirtilen saatte çalışır (dürüst anlam).
                 const targetTime = nextOccurrence(timeVal);
                 if (!targetTime) { showToast(t('errorInvalidTime'), 'error'); return; }
                 taskData = {
@@ -2194,7 +2585,7 @@ document.addEventListener('DOMContentLoaded', async () => {
      *
      * Duraklatılmış görev `status='disabled'` + `enabled=false` taşır. Bu,
      * `removeTask`'ın terminal listesinde de yer aldığı için varsayılan
-     * "kaldırılabilir" sayılırdı — yani kullanıcı duraklattığı görevi
+     * "kaldırılabilir" sayılırdı - yani kullanıcı duraklattığı görevi
      * sürdürmek yerine silebilirdi. Burada açıkça ayrılır.
      */
     function isTaskPaused(task) {
@@ -2224,7 +2615,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function formatTaskRemaining(targetTime) {
         const ms = Number(targetTime) - Date.now();
-        if (!Number.isFinite(ms) || ms <= 0) return '—';
+        if (!Number.isFinite(ms) || ms <= 0) return '-';
         const total = Math.floor(ms / 1000);
         const d = Math.floor(total / 86400);
         const h = Math.floor((total % 86400) / 3600);
@@ -2322,7 +2713,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!task || !cell) return;
             const next = (task.trigger && task.trigger.targetTime)
                 ? formatTaskRemaining(task.trigger.targetTime)
-                : '—';
+                : '-';
             if (cell.textContent !== next) cell.textContent = next;
         });
     }
@@ -2378,7 +2769,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const active = isTaskActive(task);
                 // P1-6 (üçüncü tur): duraklatılmış görev ayrı eylem kümesi alır.
                 const paused = isTaskPaused(task);
-                const next = (task.trigger && task.trigger.targetTime) ? formatTaskRemaining(task.trigger.targetTime) : '—';
+                const next = (task.trigger && task.trigger.targetTime) ? formatTaskRemaining(task.trigger.targetTime) : '-';
                 const statusClass = paused
                     ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
                     : (active ? 'bg-primary/10 text-primary dark:text-primary-light' : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300');
@@ -2639,6 +3030,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         syncSidebarCollapseUi();
         if (themeColorCountEl) {
             themeColorCountEl.textContent = t('colorThemeCount', { count: VALID_THEME_IDS.length });
+        }
+        if (typeof updateCustomContrastBadge === 'function') {
+            updateCustomContrastBadge();
+        }
+        if (typeof syncWelcomeQuickControls === 'function') {
+            syncWelcomeQuickControls();
+        }
+        if (wzLastDetectedProfile && typeof paintWzDeviceProfile === 'function') {
+            paintWzDeviceProfile(wzLastDetectedProfile);
+        }
+        if (typeof updateWzSavingsPreview === 'function') {
+            updateWzSavingsPreview();
         }
     };
 
@@ -3329,7 +3732,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             body.className = 'flex-1 min-w-0';
             const title = document.createElement('p');
             title.className = 'font-semibold text-slate-800 dark:text-slate-100';
-            title.textContent = `${localizedTaskName(h.taskName, h.action)} — ${resultLabel(h.resultCode)}`;
+            title.textContent = `${localizedTaskName(h.taskName, h.action)} - ${resultLabel(h.resultCode)}`;
             const desc = document.createElement('p');
             desc.className = 'text-slate-600 dark:text-slate-400 mt-0.5 break-words';
             desc.textContent = h.detail || t('whyNoDetail');
@@ -3355,7 +3758,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Load Statistics (WBS-E6: null alanlar "—" + uyarı çipi + derin-bağ).
+    // Load Statistics (WBS-E6: null alanlar "-" + uyarı çipi + derin-bağ).
     function gotoEnergySettings() {
         switchView('nav-settings');
         setTimeout(() => {
@@ -3487,7 +3890,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const ratio = count / maxVal;
             const level = count === 0 ? 0 : (ratio >= 0.66 ? 3 : (ratio >= 0.33 ? 2 : 1));
             cell.setAttribute('data-level', String(level));
-            cell.title = `${String(hour).padStart(2, '0')}:00 — ${count}`;
+            cell.title = `${String(hour).padStart(2, '0')}:00 - ${count}`;
             const hSpan = document.createElement('span');
             hSpan.textContent = String(hour).padStart(2, '0');
             const cSpan = document.createElement('span');
@@ -3526,8 +3929,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 mk(new Date(s.downAt).toLocaleString(locale), 'px-4 py-3 font-mono text-[11px] whitespace-nowrap'),
                 mk(new Date(s.bootAt).toLocaleString(locale), 'px-4 py-3 font-mono text-[11px] whitespace-nowrap'),
                 mk(`${s.hours} h`, 'px-4 py-3 text-right font-bold tabular-nums whitespace-nowrap'),
-                mk(s.kwh == null ? '—' : `${s.kwh} kWh`, 'px-4 py-3 text-right tabular-nums whitespace-nowrap'),
-                mk(s.cost == null ? '—' : `${s.cost} ${s.currency || ''}`.trim(), 'px-4 py-3 text-right font-semibold tabular-nums whitespace-nowrap')
+                mk(s.kwh == null ? '-' : `${s.kwh} kWh`, 'px-4 py-3 text-right tabular-nums whitespace-nowrap'),
+                mk(s.cost == null ? '-' : `${s.cost} ${s.currency || ''}`.trim(), 'px-4 py-3 text-right font-semibold tabular-nums whitespace-nowrap')
             );
             return tr;
         });
@@ -3545,7 +3948,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!stats) {
                 ['stat-hours', 'stat-kwh', 'stat-cost', 'stat-co2'].forEach((id) => {
                     const el = document.getElementById(id);
-                    if (el) el.innerText = '—';
+                    if (el) el.innerText = '-';
                 });
                 return;
             }
@@ -3558,9 +3961,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const chipW = document.getElementById('chip-watt');
                 const chipP = document.getElementById('chip-price');
                 const missing = stats.missing || [];
-                kwhEl.innerText = stats.kwhSaved == null ? '—' : `${stats.kwhSaved} kWh`;
-                costEl.innerText = stats.costSavedFormatted == null ? '—' : stats.costSavedFormatted;
-                if (co2El) co2El.innerText = stats.estimatedCo2Kg == null ? '—' : `${stats.estimatedCo2Kg} kg CO₂`;
+                kwhEl.innerText = stats.kwhSaved == null ? '-' : `${stats.kwhSaved} kWh`;
+                costEl.innerText = stats.costSavedFormatted == null ? '-' : stats.costSavedFormatted;
+                if (co2El) co2El.innerText = stats.estimatedCo2Kg == null ? '-' : `${stats.estimatedCo2Kg} kg CO₂`;
                 if (rateEl) rateEl.innerText = t('statSuccessRateLine', { rate: stats.successRatePct ?? 0, total: stats.totalRuns ?? 0 });
                 chipW.classList.toggle('hidden', !missing.includes('watt'));
                 chipP.classList.toggle('hidden', !missing.includes('price'));
@@ -3591,9 +3994,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 const profSummary = document.getElementById('stat-profile-summary');
                 if (profSummary && stats.profile) {
-                    const w = stats.profile.deviceWattage != null ? `${stats.profile.deviceWattage}W` : '—W';
-                    const p = stats.profile.electricityCostPerKwh != null ? `${stats.profile.electricityCostPerKwh} ${stats.profile.currency}/kWh` : '—/kWh';
-                    // P1-6: `priceEffectiveFrom` artık gerçekten okunur — 12 aydan
+                    const w = stats.profile.deviceWattage != null ? `${stats.profile.deviceWattage}W` : '-W';
+                    const p = stats.profile.electricityCostPerKwh != null ? `${stats.profile.electricityCostPerKwh} ${stats.profile.currency}/kWh` : '-/kWh';
+                    // P1-6: `priceEffectiveFrom` artık gerçekten okunur - 12 aydan
                     // eski tarife sessizce kullanılmaz, kullanıcıya işaretlenir.
                     const stale = stats.profile.priceStale === true
                         ? ` · ${t('statPriceStale', { months: stats.profile.priceAgeMonths })}`
@@ -3626,8 +4029,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // P1-6: `statsEnabled=false` iken görünüm eski sayıları göstermeye
                 // devam ediyordu (sessiz no-op). Artık tüm alanlar sıfırlanır.
                 const zero = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
-                ['stat-hours', 'stat-kwh', 'stat-cost', 'stat-co2'].forEach((id) => zero(id, '—'));
-                zero('stat-success-rate', '—');
+                ['stat-hours', 'stat-kwh', 'stat-cost', 'stat-co2'].forEach((id) => zero(id, '-'));
+                zero('stat-success-rate', '-');
                 zero('stat-success-count', '0');
                 zero('stat-blocked-count', '0');
                 zero('stat-cancelled-count', '0');
@@ -3695,12 +4098,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!summary || !summary.totalRecords) {
             rateEl.textContent = noData;
             runsEl.textContent = '0';
-            daysEl.textContent = summary && summary.daysInstalled != null ? String(summary.daysInstalled) : '—';
+            daysEl.textContent = summary && summary.daysInstalled != null ? String(summary.daysInstalled) : '-';
             return;
         }
         rateEl.textContent = summary.successRatePercent == null ? noData : `${summary.successRatePercent}%`;
         runsEl.textContent = String((summary.successCount || 0) + (summary.failureCount || 0));
-        daysEl.textContent = summary.daysInstalled == null ? '—' : String(summary.daysInstalled);
+        daysEl.textContent = summary.daysInstalled == null ? '-' : String(summary.daysInstalled);
     }
 
     const chipWattBtn = document.getElementById('chip-watt');
@@ -3955,7 +4358,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showToast(t('errorTlsMaterialRequired'), 'error');
                 return;
             }
-            // WP-3: Tek atomik IPC (`saveSettingsAtomic`) — `localApiClientFingerprints`
+            // WP-3: Tek atomik IPC (`saveSettingsAtomic`) - `localApiClientFingerprints`
             // şema uyuşmazlığını, kısmi kaydı ve çift toast'ı tamamen giderir.
             const combinedPatch = {
                 localApiPort: port,
@@ -4173,7 +4576,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (box) {
                 box.classList.remove('hidden');
                 box.textContent = res && res.reachable
-                    ? `OK · ${res.model || ups} · ${res.charge != null ? `${res.charge}%` : '—'} · ${res.status || 'OL'}`
+                    ? `OK · ${res.model || ups} · ${res.charge != null ? `${res.charge}%` : '-'} · ${res.status || 'OL'}`
                     : `${t('upsUnreachable')} (${host} / ${ups})`;
             }
             showToast(res && res.reachable ? t('upsReachableToast') : t('upsUnreachable'), res && res.reachable ? 'success' : 'error');
@@ -4275,7 +4678,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Webhook yönetimi (WBS-5.2) — secret'lar yalnızca bellekte tutulur, ekrana basılmaz.
+    // Webhook yönetimi (WBS-5.2) - secret'lar yalnızca bellekte tutulur, ekrana basılmaz.
     const WEBHOOK_EVENTS = ['task_created', 'task_blocked', 'task_warning_started', 'task_cancelled', 'task_snoozed', 'power_action_started', 'task_cancel_too_late'];
     let webhookDraft = [];
 
@@ -4842,7 +5245,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return `${getActionString(p.action)} - ${new Date(p.trigger.targetTime).toLocaleString(getCurrentLanguage())}`;
         }
         if (p.conditionGroup) {
-            return `${getActionString(p.action)} — ${(p.conditionGroup.conditions || []).map(describeCondition).join(' + ')}`;
+            return `${getActionString(p.action)} - ${(p.conditionGroup.conditions || []).map(describeCondition).join(' + ')}`;
         }
         return getActionString(p.action);
     }
@@ -5078,7 +5481,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Sesli geri bildirim (WBS-8.4) — yerel OS motoru, varsayılan kapalı.
+    // Sesli geri bildirim (WBS-8.4) - yerel OS motoru, varsayılan kapalı.
     function aiSpeak(text) {
         try {
             if (localStorage.getItem('voice') !== 'true') return;
@@ -5090,7 +5493,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (_) { }
     }
 
-    // Setup Wizard (WBS-7.5) — bir kez gösterilir, Atla her zaman mümkün.
+    // Setup Wizard (WBS-7.5) - bir kez gösterilir, Atla her zaman mümkün.
     let wzStep = 1;
     let wzPoll = null;
     let wzPollMs = 0;
@@ -5165,7 +5568,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Etkinleştir butonu durum boyası: etkense "Devre Dışı Bırak" kipine
     // geçer (basılabilir, kırmızı-hayalet); değilse mavi "Etkinleştir".
-    // Meşgulken (yükleme sürerken) dokunulmaz — çağıran bayrağa bakar.
+    // Meşgulken (yükleme sürerken) dokunulmaz - çağıran bayrağa bakar.
     let wzLoadBusy = false;
     let setLoadBusy = false;
     const LOAD_BASE = 'flex-1 py-2 text-xs font-bold rounded-lg ';
@@ -5185,6 +5588,62 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    function renderAiTierCardsAndHardware(st, { hwTextEl, gridEl, heavyWarnEl }) {
+        const activeTier = (st && st.activeTier) || 'balanced';
+        const hw = (st && st.hardware) || null;
+        const recommendedTier = (hw && hw.recommendedTier) || 'balanced';
+        const tiers = (st && st.tiers) || {};
+
+        const tierLabelFor = (id) => {
+            if (id === 'lite') return t('aiTierLiteName');
+            if (id === 'powerful') return t('aiTierPowerfulName');
+            return t('aiTierBalancedName');
+        };
+
+        if (hwTextEl && hw) {
+            const gpuPart = hw.gpuSummary ? ` · ${hw.gpuSummary}` : '';
+            hwTextEl.textContent = t('aiHardwareDetectedLine', {
+                ram: hw.ramGb != null ? hw.ramGb : (st.ramGb || '?'),
+                cores: hw.cpuCores || 4,
+                gpu: gpuPart,
+                tier: tierLabelFor(recommendedTier)
+            });
+        }
+
+        if (gridEl) {
+            gridEl.querySelectorAll('[data-ai-tier-card]').forEach((card) => {
+                const tid = card.getAttribute('data-ai-tier-card');
+                const isSelected = tid === activeTier;
+                const info = tiers[tid] || {};
+                card.classList.toggle('ring-2', isSelected);
+                card.classList.toggle('ring-primary', isSelected);
+                card.classList.toggle('border-primary', isSelected);
+                card.classList.toggle('bg-primary/5', isSelected);
+                card.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+
+                const recBadge = card.querySelector(`[data-tier-rec="${tid}"]`);
+                if (recBadge) {
+                    recBadge.classList.toggle('hidden', tid !== recommendedTier);
+                }
+                const readyBadge = card.querySelector(`[data-tier-ready="${tid}"]`);
+                if (readyBadge) {
+                    readyBadge.classList.toggle('hidden', !info.ready);
+                }
+            });
+        }
+
+        if (heavyWarnEl) {
+            const warnCode = hw && hw.tierWarnings && hw.tierWarnings[activeTier];
+            if (warnCode) {
+                heavyWarnEl.textContent = t('aiHeavyTierWarn', { recommended: tierLabelFor(recommendedTier) });
+                heavyWarnEl.classList.remove('hidden');
+            } else {
+                heavyWarnEl.textContent = '';
+                heavyWarnEl.classList.add('hidden');
+            }
+        }
+    }
+
     /**
      * L-12: Sihirbaz ve ayarlar kartı aynı durum makinesini kullanır.
      * Yalnızca DOM elemanları ve metin anahtarları görünüme özgüdür.
@@ -5193,6 +5652,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         const { els, state, downloadingText, poll, setDownloadBtn, setLoadBtn, loadBusy } = view;
         const dl = st.download || { state: 'idle' };
         const bothPresent = !!(st.model && st.model.present && st.stt && st.stt.present);
+        const hasAnyFiles = !!(
+            (st.model && (st.model.present || st.model.partialBytes > 0)) ||
+            (st.stt && (st.stt.present || st.stt.partialBytes > 0))
+        );
+
+        renderAiTierCardsAndHardware(st, {
+            hwTextEl: els.hwText,
+            gridEl: els.tierGrid,
+            heavyWarnEl: els.heavyWarn
+        });
+
+        if (els.btnPause) {
+            els.btnPause.classList.toggle('hidden', dl.state !== 'running');
+        }
+        if (els.btnDelete) {
+            els.btnDelete.classList.toggle('hidden', dl.state === 'running' || !hasAnyFiles);
+        }
 
         if (dl.state === 'running') {
             if (!state.active) {
@@ -5230,6 +5706,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (state.active) {
             state.active = false;
             els.bar.classList.remove('pp-stripes');
+            if (dl.state === 'paused') {
+                setDownloadBtn('resume', els.btnDl, t('aiResumeDownload'));
+                poll(2000);
+                return;
+            }
             if (dl.state === 'failed') {
                 state.failed = true;
                 setDownloadBtn('idle', els.btnDl);
@@ -5260,10 +5741,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 els.line.innerText = t('wizardSttReady');
                 setDownloadBtn('resume', els.btnDl, t('downloadRemainingLlm'));
             } else {
+                const hasPartial = (st.model && st.model.partialBytes > 0) || (st.stt && st.stt.partialBytes > 0);
                 const done = st.model && st.model.partialBytes > 0 ? t('wizardPartial', { mb: Math.round(st.model.partialBytes / 1048576) }) : '';
                 const sttDone = st.stt && st.stt.present ? t('wizardVoiceDone') : '';
                 els.line.innerText = t('wizardModelMissing', { extra: done, stt: sttDone });
-                if (!state.failed) setDownloadBtn('idle', els.btnDl);
+                if (hasPartial || dl.state === 'paused') {
+                    setDownloadBtn('resume', els.btnDl, t('aiResumeDownload'));
+                } else if (!state.failed) {
+                    setDownloadBtn('idle', els.btnDl);
+                }
             }
         }
 
@@ -5286,6 +5772,170 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    let wizardReplayMode = false;
+    let wzLangUserEdited = false;
+    let wzLastDetectedProfile = null;
+
+    const THEME_LABEL_KEYS = {
+        obsidian: 'themeObsidian',
+        slate: 'themeSlate',
+        navy: 'themeNavy',
+        blue: 'themeBlue',
+        cyan: 'themeCyan',
+        indigo: 'themeIndigo',
+        purple: 'themePurple',
+        pink: 'themePink',
+        red: 'themeRed',
+        orange: 'themeOrange',
+        yellow: 'themeYellow',
+        emerald: 'themeEmerald',
+        grass: 'themeGrass',
+        lime: 'themeLime',
+        custom: 'themeCustom'
+    };
+
+    function syncWelcomeQuickControls() {
+        const isDark = document.documentElement.classList.contains('dark');
+        const wzLight = document.getElementById('btn-wz-mode-light');
+        const wzDark = document.getElementById('btn-wz-mode-dark');
+        if (wzLight) {
+            wzLight.classList.toggle('is-active', !isDark);
+            wzLight.setAttribute('aria-pressed', !isDark ? 'true' : 'false');
+        }
+        if (wzDark) {
+            wzDark.classList.toggle('is-active', isDark);
+            wzDark.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+        }
+        const swatch = document.getElementById('wz-active-color-swatch');
+        if (swatch) swatch.setAttribute('data-swatch', activeThemeId);
+        const colorLabel = document.getElementById('wz-active-color-label');
+        if (colorLabel) {
+            if (activeThemeId === 'custom') {
+                colorLabel.textContent = `${t('themeCustom')} (${activeCustomThemeColor.toUpperCase()})`;
+            } else {
+                const key = THEME_LABEL_KEYS[activeThemeId] || 'themeObsidian';
+                colorLabel.textContent = t(key);
+            }
+        }
+        const wzLangSel = document.getElementById('wz-lang');
+        const langLabel = document.getElementById('wz-active-lang-label');
+        if (langLabel && wzLangSel) {
+            const opt = wzLangSel.options[wzLangSel.selectedIndex];
+            if (opt) langLabel.textContent = opt.textContent;
+        }
+        document.querySelectorAll('[data-wz-pick-theme]').forEach((btn) => {
+            const selected = btn.getAttribute('data-wz-pick-theme') === activeThemeId;
+            btn.classList.toggle('is-selected', selected);
+            btn.setAttribute('aria-pressed', selected ? 'true' : 'false');
+        });
+        const wzCustomPicker = document.getElementById('wz-custom-color-picker');
+        const wzCustomHex = document.getElementById('wz-custom-hex-input');
+        if (wzCustomPicker && document.activeElement !== wzCustomPicker) {
+            wzCustomPicker.value = activeCustomThemeColor;
+        }
+        if (wzCustomHex && document.activeElement !== wzCustomHex) {
+            wzCustomHex.value = activeCustomThemeColor.toUpperCase();
+        }
+    }
+
+    function openWzColorPicker() {
+        syncWelcomeQuickControls();
+        const modal = document.getElementById('wz-color-picker-modal');
+        if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeWzColorPicker() {
+        const modal = document.getElementById('wz-color-picker-modal');
+        if (modal) modal.classList.add('hidden');
+        const trigger = document.getElementById('btn-wz-open-color-picker');
+        if (trigger && typeof trigger.focus === 'function') {
+            try { trigger.focus({ preventScroll: true }); } catch (_) { }
+        }
+    }
+
+    function renderWzLangGrid(filterQuery = '') {
+        const grid = document.getElementById('wz-lang-picker-grid');
+        const emptyEl = document.getElementById('wz-lang-empty');
+        const sel = document.getElementById('wz-lang');
+        if (!grid || !sel) return;
+        const q = String(filterQuery || '').trim().toLowerCase();
+        const activeCode = sel.value || getCurrentLanguage();
+        const frag = document.createDocumentFragment();
+        let shown = 0;
+        Array.from(sel.options).forEach((opt) => {
+            const code = opt.value;
+            const nativeText = opt.textContent || code;
+            if (q && !nativeText.toLowerCase().includes(q) && !code.toLowerCase().includes(q)) {
+                return;
+            }
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'pp-wz-lang-item' + (code === activeCode ? ' is-selected' : '');
+            btn.setAttribute('role', 'option');
+            btn.setAttribute('aria-selected', code === activeCode ? 'true' : 'false');
+            btn.setAttribute('data-wz-pick-lang', code);
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'truncate';
+            nameSpan.textContent = nativeText;
+            const codeSpan = document.createElement('span');
+            codeSpan.lang = 'en';
+            codeSpan.className = 'text-[10px] font-mono uppercase text-slate-600 dark:text-slate-400 shrink-0';
+            codeSpan.textContent = code;
+            btn.appendChild(nameSpan);
+            btn.appendChild(codeSpan);
+            frag.appendChild(btn);
+            shown += 1;
+        });
+        grid.replaceChildren(frag);
+        if (emptyEl) emptyEl.classList.toggle('hidden', shown > 0);
+    }
+
+    function openWzLangPicker() {
+        const search = document.getElementById('wz-lang-search');
+        if (search) search.value = '';
+        renderWzLangGrid('');
+        const modal = document.getElementById('wz-lang-picker-modal');
+        if (modal) modal.classList.remove('hidden');
+        if (search) {
+            try { search.focus({ preventScroll: true }); } catch (_) { }
+        }
+    }
+
+    function closeWzLangPicker() {
+        const modal = document.getElementById('wz-lang-picker-modal');
+        if (modal) modal.classList.add('hidden');
+        const trigger = document.getElementById('btn-wz-open-lang-picker');
+        if (trigger && typeof trigger.focus === 'function') {
+            try { trigger.focus({ preventScroll: true }); } catch (_) { }
+        }
+    }
+
+    function applyWzLanguageChoice(lang) {
+        if (!lang) return;
+        wzLangUserEdited = true;
+        const wzLangSel = document.getElementById('wz-lang');
+        if (wzLangSel && wzLangSel.querySelector(`option[value="${lang}"]`)) {
+            wzLangSel.value = lang;
+        }
+        try { localStorage.setItem('language', lang); } catch (_) { }
+        const elLang = document.getElementById('setting-language');
+        if (elLang) elLang.value = lang;
+        committedLanguage = lang;
+        if (typeof applyLanguage === 'function') {
+            applyLanguage(lang).then(() => {
+                syncWelcomeQuickControls();
+                updateWzSavingsPreview();
+            }).catch(() => { });
+        } else {
+            syncWelcomeQuickControls();
+        }
+        if (window.electronAPI && typeof window.electronAPI.saveSettingsAtomic === 'function') {
+            window.electronAPI.saveSettingsAtomic({ settings: { language: lang } }).catch(() => { });
+        } else if (window.electronAPI && window.electronAPI.saveSettings) {
+            window.electronAPI.saveSettings({ language: lang }).catch(() => { });
+        }
+    }
+
     function paintWizardDots() {
         document.querySelectorAll('#wz-dots [data-dot]').forEach(d => {
             const active = parseInt(d.getAttribute('data-dot'), 10) <= wzStep;
@@ -5302,9 +5952,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function wizardDone() {
-        try { localStorage.setItem('pp-wizard-done', '1'); } catch (_) { }
+        closeWzColorPicker();
+        closeWzLangPicker();
+        const wasReplay = wizardReplayMode;
+        wizardReplayMode = false;
+        if (!wasReplay) {
+            try { localStorage.setItem('pp-wizard-done', '1'); } catch (_) { }
+            if (window.electronAPI && typeof window.electronAPI.saveSettingsAtomic === 'function') {
+                window.electronAPI.saveSettingsAtomic({ settings: { onboardingCompleted: true } }).catch(() => { });
+            }
+        }
         document.getElementById('wizard-overlay').classList.add('hidden');
         wizardStopTimers();
+    }
+
+    function openWelcomeTour() {
+        wizardReplayMode = true;
+        try {
+            const sel = document.getElementById('wz-lang');
+            const activeLang = getCurrentLanguage();
+            if (sel && sel.querySelector(`option[value="${activeLang}"]`)) {
+                sel.value = activeLang;
+            }
+        } catch (_) { }
+        syncWelcomeQuickControls();
+        wzStep = 1;
+        paintWizardDots();
+        wizardTickClock();
+        if (!wzClock) wzClock = setInterval(wizardTickClock, 1000);
+        const overlay = document.getElementById('wizard-overlay');
+        if (overlay) overlay.classList.remove('hidden');
     }
 
     // Canlılık kanıtı: karttaki saat her saniye işler.
@@ -5329,7 +6006,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     txt: document.getElementById('wz-progress-text'),
                     wrap: document.getElementById('wz-progress-wrap'),
                     btnDl: document.getElementById('btn-wz-download'),
-                    btnLoad: document.getElementById('btn-wz-load')
+                    btnPause: document.getElementById('btn-wz-pause'),
+                    btnLoad: document.getElementById('btn-wz-load'),
+                    btnDelete: document.getElementById('btn-wz-delete'),
+                    hwText: document.getElementById('wz-ai-hw-text'),
+                    tierGrid: document.getElementById('wz-ai-tier-grid'),
+                    heavyWarn: document.getElementById('wz-ai-heavy-warn')
                 },
                 state: wzDlState,
                 downloadingText: t('wizardAiDownloading'),
@@ -5347,23 +6029,374 @@ document.addEventListener('DOMContentLoaded', async () => {
         let done = null;
         try { done = localStorage.getItem('pp-wizard-done'); } catch (_) { }
         if (done) return;
+        wizardReplayMode = false;
         try {
-            const sys = (navigator.language || 'en').split('-')[0];
+            const saved = localStorage.getItem('language');
+            const sys = (navigator.language || 'en').split('-')[0].toLowerCase();
             const sel = document.getElementById('wz-lang');
-            if (sel.querySelector(`option[value="${sys}"]`)) {
+            if (sel && saved && sel.querySelector(`option[value="${saved}"]`)) {
+                sel.value = saved;
+            } else if (sel && sel.querySelector(`option[value="${sys}"]`)) {
                 sel.value = sys;
-            } else {
+            } else if (sel) {
                 // Desteklenmeyen sistem dili → evrensel varsayılan İngilizce
-                // (listenin ilk sırasındaki Türkçe'ye düşmek yerine).
                 sel.value = 'en';
             }
         } catch (_) { }
+        syncWelcomeQuickControls();
         wzStep = 1;
         paintWizardDots();
         wizardTickClock();
         if (!wzClock) wzClock = setInterval(wizardTickClock, 1000);
         document.getElementById('wizard-overlay').classList.remove('hidden');
     }
+
+    const wzLangSelectEl = document.getElementById('wz-lang');
+    if (wzLangSelectEl) {
+        wzLangSelectEl.addEventListener('change', () => applyWzLanguageChoice(wzLangSelectEl.value));
+    }
+    const btnWzModeLight = document.getElementById('btn-wz-mode-light');
+    if (btnWzModeLight) btnWzModeLight.addEventListener('click', () => selectThemeMode('light'));
+    const btnWzModeDark = document.getElementById('btn-wz-mode-dark');
+    if (btnWzModeDark) btnWzModeDark.addEventListener('click', () => selectThemeMode('dark'));
+
+    const btnWzOpenColorPicker = document.getElementById('btn-wz-open-color-picker');
+    if (btnWzOpenColorPicker) btnWzOpenColorPicker.addEventListener('click', openWzColorPicker);
+    const btnWzColorClose = document.getElementById('btn-wz-color-close');
+    if (btnWzColorClose) btnWzColorClose.addEventListener('click', closeWzColorPicker);
+    const btnWzColorBack = document.getElementById('btn-wz-color-back');
+    if (btnWzColorBack) btnWzColorBack.addEventListener('click', closeWzColorPicker);
+    const wzColorModalEl = document.getElementById('wz-color-picker-modal');
+    if (wzColorModalEl) {
+        wzColorModalEl.addEventListener('click', (e) => {
+            if (e.target === wzColorModalEl) {
+                closeWzColorPicker();
+                return;
+            }
+            const pickBtn = e.target && e.target.closest ? e.target.closest('[data-wz-pick-theme]') : null;
+            if (!pickBtn) return;
+            const chosenTheme = pickBtn.getAttribute('data-wz-pick-theme');
+            if (chosenTheme) {
+                selectColorTheme(chosenTheme);
+                closeWzColorPicker();
+            }
+        });
+    }
+    const wzCustomColorPicker = document.getElementById('wz-custom-color-picker');
+    const wzCustomHexInput = document.getElementById('wz-custom-hex-input');
+    const btnWzApplyCustomColor = document.getElementById('btn-wz-apply-custom-color');
+    if (wzCustomColorPicker && wzCustomHexInput) {
+        wzCustomColorPicker.addEventListener('input', () => {
+            wzCustomHexInput.value = String(wzCustomColorPicker.value || '#3b82f6').toUpperCase();
+        });
+        wzCustomHexInput.addEventListener('input', () => {
+            const parsed = parseUserHexInput(wzCustomHexInput.value);
+            if (parsed) wzCustomColorPicker.value = parsed;
+        });
+    }
+    if (btnWzApplyCustomColor) {
+        btnWzApplyCustomColor.addEventListener('click', () => {
+            const raw = (wzCustomHexInput && wzCustomHexInput.value) || (wzCustomColorPicker && wzCustomColorPicker.value) || '#3b82f6';
+            const parsed = parseUserHexInput(raw);
+            if (!parsed) {
+                showToast(t('customThemeInvalidHex'), 'error');
+                return;
+            }
+            setCustomThemeColor(parsed, { activateTheme: true });
+            closeWzColorPicker();
+        });
+    }
+
+    const btnWzOpenLangPicker = document.getElementById('btn-wz-open-lang-picker');
+    if (btnWzOpenLangPicker) btnWzOpenLangPicker.addEventListener('click', openWzLangPicker);
+    const btnWzLangClose = document.getElementById('btn-wz-lang-close');
+    if (btnWzLangClose) btnWzLangClose.addEventListener('click', closeWzLangPicker);
+    const btnWzLangBack = document.getElementById('btn-wz-lang-back');
+    if (btnWzLangBack) btnWzLangBack.addEventListener('click', closeWzLangPicker);
+    const wzLangSearchEl = document.getElementById('wz-lang-search');
+    if (wzLangSearchEl) {
+        wzLangSearchEl.addEventListener('input', () => renderWzLangGrid(wzLangSearchEl.value));
+    }
+    const wzLangModalEl = document.getElementById('wz-lang-picker-modal');
+    if (wzLangModalEl) {
+        wzLangModalEl.addEventListener('click', (e) => {
+            if (e.target === wzLangModalEl) {
+                closeWzLangPicker();
+                return;
+            }
+            const pickBtn = e.target && e.target.closest ? e.target.closest('[data-wz-pick-lang]') : null;
+            if (!pickBtn) return;
+            const langCode = pickBtn.getAttribute('data-wz-pick-lang');
+            if (langCode) {
+                applyWzLanguageChoice(langCode);
+                closeWzLangPicker();
+            }
+        });
+    }
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        if (wzColorModalEl && !wzColorModalEl.classList.contains('hidden')) {
+            e.stopPropagation();
+            closeWzColorPicker();
+        } else if (wzLangModalEl && !wzLangModalEl.classList.contains('hidden')) {
+            e.stopPropagation();
+            closeWzLangPicker();
+        }
+    });
+
+    const btnOpenWelcomeTour = document.getElementById('btn-open-welcome-tour');
+    if (btnOpenWelcomeTour) btnOpenWelcomeTour.addEventListener('click', openWelcomeTour);
+    const btnAboutWelcomeTour = document.getElementById('btn-about-welcome-tour');
+    if (btnAboutWelcomeTour) btnAboutWelcomeTour.addEventListener('click', openWelcomeTour);
+    const btnAboutCopySysinfo = document.getElementById('btn-about-copy-sysinfo');
+    if (btnAboutCopySysinfo) {
+        btnAboutCopySysinfo.addEventListener('click', async () => {
+            let text = `Power Pilot (${navigator.platform || 'Windows'})`;
+            let copied = false;
+            if (window.electronAPI && typeof window.electronAPI.getSystemDiagnosticText === 'function') {
+                try {
+                    const res = await window.electronAPI.getSystemDiagnosticText({ copy: true });
+                    if (res && res.ok && typeof res.text === 'string' && res.text.trim()) {
+                        text = res.text;
+                        copied = Boolean(res.copied);
+                    }
+                } catch (_) { /* fallback */ }
+            }
+            if (copied) {
+                showToast(t('toastSystemInfoCopied'), 'success');
+                return;
+            }
+            try {
+                if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                    await navigator.clipboard.writeText(text);
+                } else {
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    ta.remove();
+                }
+                showToast(t('toastSystemInfoCopied'), 'success');
+            } catch (_) {
+                showToast(t('errorSaveFailed'), 'error');
+            }
+        });
+    }
+
+    // Yazilim Guncellemeleri UI (Dagitim Kanalina Duyarli: Store / Portable / Direct NSIS)
+    let latestUpdateState = null;
+
+    function localizeUpdateErrorUi(code) {
+        switch (code) {
+            case 'STORE_MANAGED': return t('updateStatusStoreManaged');
+            case 'PORTABLE_MANUAL_ONLY': return t('updateStatusAvailablePortableDetail');
+            case 'OFFLINE_OR_NETWORK': return t('updateErrOffline');
+            case 'SIGNATURE_OR_HASH_ERROR': return t('updateErrIntegrity');
+            case 'RATE_LIMITED': return t('updateErrRateLimit');
+            case 'UNPACKAGED_DEV': return t('updateErrDevBuild');
+            default: return t('updateErrGeneric');
+        }
+    }
+
+    function renderUpdateCard(state) {
+        if (!state || typeof state !== 'object') return;
+        latestUpdateState = state;
+        const titleEl = document.getElementById('update-status-title');
+        const detailEl = document.getElementById('update-status-detail');
+        const badgeEl = document.getElementById('update-channel-badge');
+        const btnCheck = document.getElementById('btn-update-check');
+        const progWrap = document.getElementById('update-progress-wrap');
+        const progBar = document.getElementById('update-progress-bar');
+        const progTxt = document.getElementById('update-progress-text');
+        const notesBox = document.getElementById('update-notes-box');
+        const notesText = document.getElementById('update-notes-text');
+        const boxAvail = document.getElementById('update-actions-available');
+        const boxPortable = document.getElementById('update-actions-portable');
+        const boxDownloaded = document.getElementById('update-actions-downloaded');
+        const btnInstallLater = document.getElementById('btn-update-install-later');
+        const autoRow = document.getElementById('update-autocheck-row');
+
+        if (badgeEl) {
+            const key = state.mode === 'store'
+                ? 'updateChannelStore'
+                : (state.mode === 'portable' ? 'updateChannelPortable' : 'updateChannelNsis');
+            badgeEl.textContent = t(key);
+            badgeEl.classList.toggle('pp-onedrive-badge--on', state.status === 'available' || state.status === 'downloaded');
+            badgeEl.classList.toggle('pp-onedrive-badge--off', state.status !== 'available' && state.status !== 'downloaded');
+        }
+
+        const isStore = state.mode === 'store' || state.status === 'store-managed';
+        if (btnCheck) {
+            btnCheck.classList.toggle('hidden', isStore);
+            btnCheck.disabled = state.status === 'checking' || state.status === 'downloading';
+        }
+        if (autoRow) autoRow.classList.toggle('hidden', isStore);
+
+        if (progWrap) progWrap.classList.toggle('hidden', state.status !== 'downloading');
+        if (state.status === 'downloading' && state.progress) {
+            const pct = Math.min(100, Math.max(0, Math.round(Number(state.progress.percent) || 0)));
+            if (progBar) progBar.value = pct;
+            if (progTxt) progTxt.textContent = t('updateStatusDownloading', { percent: pct });
+        }
+
+        const hasNotes = typeof state.releaseNotes === 'string' && state.releaseNotes.trim().length > 0;
+        if (notesBox) notesBox.classList.toggle('hidden', !hasNotes || isStore);
+        if (notesText) notesText.textContent = hasNotes ? state.releaseNotes : '';
+
+        if (boxAvail) boxAvail.classList.toggle('hidden', !(state.status === 'available' && state.mode === 'nsis'));
+        if (boxPortable) boxPortable.classList.toggle('hidden', !(state.status === 'available' && state.mode === 'portable'));
+        if (boxDownloaded) boxDownloaded.classList.toggle('hidden', !(state.status === 'downloaded' && state.mode === 'nsis'));
+        if (btnInstallLater) btnInstallLater.disabled = state.installOnQuit === true;
+
+        if (detailEl) {
+            detailEl.classList.remove('text-red-600', 'dark:text-red-400', 'text-emerald-700', 'dark:text-emerald-400', 'text-slate-600', 'dark:text-slate-400');
+            if (state.status === 'error') detailEl.classList.add('text-red-600', 'dark:text-red-400');
+            else if (state.status === 'downloaded' || state.installOnQuit) detailEl.classList.add('text-emerald-700', 'dark:text-emerald-400');
+            else detailEl.classList.add('text-slate-600', 'dark:text-slate-400');
+        }
+
+        if (!titleEl || !detailEl) return;
+        if (isStore) {
+            titleEl.textContent = t('updateStatusStoreManaged');
+            detailEl.textContent = t('updateStatusStoreDetail');
+        } else if (state.status === 'checking') {
+            titleEl.textContent = t('updateStatusChecking');
+            detailEl.textContent = t('updatePrivacyHint');
+        } else if (state.status === 'up-to-date') {
+            titleEl.textContent = t('updateStatusUpToDate', { version: state.currentVersion || '1.0.0' });
+            detailEl.textContent = t('updatePrivacyHint');
+        } else if (state.status === 'available') {
+            titleEl.textContent = t('updateStatusAvailable', { version: state.availableVersion || '' });
+            detailEl.textContent = state.mode === 'portable'
+                ? t('updateStatusAvailablePortableDetail')
+                : t('updateStatusAvailableNsisDetail');
+        } else if (state.status === 'downloading') {
+            const pct = state.progress ? Math.round(Number(state.progress.percent) || 0) : 0;
+            titleEl.textContent = t('updateStatusAvailable', { version: state.availableVersion || '' });
+            detailEl.textContent = t('updateStatusDownloading', { percent: pct });
+        } else if (state.status === 'downloaded') {
+            titleEl.textContent = t('updateStatusDownloaded', { version: state.availableVersion || '' });
+            detailEl.textContent = state.installOnQuit
+                ? t('updateStatusInstallOnQuitScheduled', { version: state.availableVersion || '' })
+                : t('updateStatusDownloadedDetail');
+        } else if (state.status === 'error') {
+            titleEl.textContent = t('updatesTitle');
+            detailEl.textContent = localizeUpdateErrorUi(state.errorCode);
+        } else {
+            titleEl.textContent = t('updateStatusIdle');
+            detailEl.textContent = t('updatePrivacyHint');
+        }
+    }
+
+    (function bindUpdateControls() {
+        const btnCheck = document.getElementById('btn-update-check');
+        const btnDownload = document.getElementById('btn-update-download');
+        const btnOpenRelease = document.getElementById('btn-update-open-release');
+        const btnPortableRelease = document.getElementById('btn-update-portable-release');
+        const btnInstallNow = document.getElementById('btn-update-install-now');
+        const btnInstallLater = document.getElementById('btn-update-install-later');
+        const elAutoCheck = document.getElementById('setting-auto-check-updates');
+
+        if (btnCheck) {
+            btnCheck.addEventListener('click', async () => {
+                if (!window.electronAPI || typeof window.electronAPI.checkForUpdates !== 'function') return;
+                btnCheck.disabled = true;
+                try {
+                    const res = await window.electronAPI.checkForUpdates();
+                    if (res && res.state) renderUpdateCard(res.state);
+                    if (res && !res.ok) {
+                        showToast(res.message || localizeUpdateErrorUi(res.code), 'error');
+                    } else if (res && res.state && res.state.status === 'up-to-date') {
+                        showToast(t('updateToastUpToDate'), 'success');
+                    }
+                } finally {
+                    btnCheck.disabled = false;
+                }
+            });
+        }
+        if (btnDownload) {
+            btnDownload.addEventListener('click', async () => {
+                if (!window.electronAPI || typeof window.electronAPI.downloadUpdate !== 'function') return;
+                btnDownload.disabled = true;
+                try {
+                    const res = await window.electronAPI.downloadUpdate();
+                    if (res && res.state) renderUpdateCard(res.state);
+                    if (res && !res.ok) {
+                        showToast(res.message || localizeUpdateErrorUi(res.code), 'error');
+                    }
+                } finally {
+                    btnDownload.disabled = false;
+                }
+            });
+        }
+        const openRelease = () => {
+            if (window.electronAPI && typeof window.electronAPI.openUpdateReleasePage === 'function') {
+                window.electronAPI.openUpdateReleasePage().catch(() => { });
+            }
+        };
+        if (btnOpenRelease) btnOpenRelease.addEventListener('click', openRelease);
+        if (btnPortableRelease) btnPortableRelease.addEventListener('click', openRelease);
+
+        if (btnInstallLater) {
+            btnInstallLater.addEventListener('click', async () => {
+                if (!window.electronAPI || typeof window.electronAPI.setInstallUpdateOnQuit !== 'function') return;
+                const res = await window.electronAPI.setInstallUpdateOnQuit(true);
+                if (res && res.state) renderUpdateCard(res.state);
+                if (res && res.ok) {
+                    showToast(res.message || t('updateToastInstallOnQuit'), 'success');
+                } else if (res) {
+                    showToast(res.message || localizeUpdateErrorUi(res.code), 'error');
+                }
+            });
+        }
+        if (btnInstallNow) {
+            btnInstallNow.addEventListener('click', async () => {
+                if (!window.electronAPI || typeof window.electronAPI.installUpdateNow !== 'function') return;
+                const res = await window.electronAPI.installUpdateNow();
+                if (res && res.code === 'PIN_REQUIRED' && typeof requestPin === 'function') {
+                    requestPin(t('pinPromptCancel'), {
+                        run: (pin) => window.electronAPI.installUpdateNow(pin),
+                        done: (final) => {
+                            if (final && final.ok === false) {
+                                showToast(final.message || localizeUpdateErrorUi(final.code), 'error');
+                            }
+                        }
+                    });
+                    return;
+                }
+                if (res && res.state) renderUpdateCard(res.state);
+                if (res && !res.ok) {
+                    showToast(res.message || localizeUpdateErrorUi(res.code), 'error');
+                }
+            });
+        }
+        if (elAutoCheck) {
+            elAutoCheck.addEventListener('change', async () => {
+                const enabled = Boolean(elAutoCheck.checked);
+                if (window.electronAPI && typeof window.electronAPI.saveSettingsAtomic === 'function') {
+                    const res = await window.electronAPI.saveSettingsAtomic({ settings: { autoCheckUpdates: enabled } }).catch(() => null);
+                    if (res && res.success === false) {
+                        elAutoCheck.checked = !enabled;
+                        showToast(res.message || t('errorSaveFailed'), 'error');
+                    }
+                }
+            });
+        }
+        if (window.electronAPI && typeof window.electronAPI.onUpdateStateChanged === 'function') {
+            window.electronAPI.onUpdateStateChanged((state) => renderUpdateCard(state));
+        }
+        document.addEventListener('pp-language-applied', () => {
+            if (latestUpdateState) renderUpdateCard(latestUpdateState);
+        });
+        if (window.electronAPI && typeof window.electronAPI.getUpdateStatus === 'function') {
+            window.electronAPI.getUpdateStatus().then((res) => {
+                if (res && res.ok && res.state) renderUpdateCard(res.state);
+            }).catch(() => { });
+        }
+    })();
 
     // Türkçe ondalık ("3,24") dahil güvenli sayı ayrıştırma (WBS-E4/A2).
     function parseDecimalInput(raw) {
@@ -5386,16 +6419,75 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const wzWattInputEl = document.getElementById('wz-watt');
     const wzBillInputEl = document.getElementById('wz-bill');
+
+    function updateWzSavingsPreview() {
+        const box = document.getElementById('wz-savings-preview');
+        const txt = document.getElementById('wz-savings-preview-text');
+        const unitEl = document.getElementById('wz-currency-unit');
+        const lang = (document.getElementById('wz-lang') && document.getElementById('wz-lang').value) || getCurrentLanguage();
+        const defTariff = getDefaultElectricityProfile(lang);
+        const currency = (wzBillInputEl && wzBillInputEl.dataset.autoCurrency) || defTariff.currency;
+        if (unitEl) unitEl.textContent = `${currency} / kWh`;
+        if (!box || !txt) return;
+        const watt = parseInt(wzWattInputEl ? wzWattInputEl.value : '', 10);
+        if (!Number.isInteger(watt) || watt < 5 || watt > 2000) {
+            box.classList.add('hidden');
+            return;
+        }
+        // Günde 3 saat × 30 gün = 90 saatlik tahmini aylık tasarruf
+        const monthlyKwh = Math.round((watt * 90) / 100) / 10;
+        const rate = parseDecimalInput(wzBillInputEl ? wzBillInputEl.value : '');
+        const localeFmt = (n) => (lang === 'tr' || lang === 'de' ? String(n).replace('.', ',') : String(n));
+        if (rate !== null && rate > 0) {
+            const monthlyCost = Math.round(monthlyKwh * rate * 10) / 10;
+            txt.textContent = t('welcomeSavingsPreview', {
+                kwh: localeFmt(monthlyKwh),
+                cost: localeFmt(monthlyCost),
+                currency
+            });
+        } else {
+            txt.textContent = t('welcomeSavingsPreviewKwhOnly', { kwh: localeFmt(monthlyKwh) });
+        }
+        box.classList.remove('hidden');
+    }
+
     if (wzWattInputEl) {
-        wzWattInputEl.addEventListener('input', () => { wzWattInputEl.dataset.userEdited = '1'; });
+        wzWattInputEl.addEventListener('input', () => {
+            wzWattInputEl.dataset.userEdited = '1';
+            updateWzSavingsPreview();
+        });
     }
     if (wzBillInputEl) {
-        wzBillInputEl.addEventListener('input', () => { wzBillInputEl.dataset.userEdited = '1'; });
+        wzBillInputEl.addEventListener('input', () => {
+            wzBillInputEl.dataset.userEdited = '1';
+            updateWzSavingsPreview();
+        });
+    }
+
+    function paintWzDeviceProfile(p) {
+        const card = document.getElementById('wz-auto-card');
+        const srcEl = document.getElementById('wz-device-source');
+        const badgeEl = document.getElementById('wz-watt-badge');
+        const glyphEl = document.getElementById('wz-device-icon-glyph');
+        if (!card || !p) return;
+        const classTr = { laptop: t('wizardLaptop'), desktop: t('wizardDesktop'), server: t('wizardServer'), unknown: t('wizardUnknownDevice') }[p.deviceClass] || p.deviceClass;
+        const srcTr = p.wattSource === 'measured' ? t('wizardMeasuredFromBattery') : t('wizardEstimatedFromHardware');
+        const glyphMap = { laptop: 'laptop_mac', desktop: 'desktop_windows', server: 'dns', unknown: 'devices' };
+        if (glyphEl) glyphEl.textContent = glyphMap[p.deviceClass] || 'devices';
+        card.textContent = t('welcomeDeviceDetected', { deviceClass: classTr });
+        card.setAttribute('title', t('wizardDetectedInfo', { deviceClass: classTr, watt: p.wattW, source: srcTr }));
+        if (srcEl) srcEl.textContent = srcTr;
+        if (badgeEl) {
+            badgeEl.textContent = `~${Math.round(Number(p.wattW))} W`;
+            badgeEl.classList.remove('hidden');
+        }
     }
 
     // WBS-E4: Otomatik cihaz kartı + otomatik doldurulan watt ve tarife varsayılanı (kullanıcı isterse değiştirebilir).
     async function wizardRefreshDevice() {
         const card = document.getElementById('wz-auto-card');
+        const srcEl = document.getElementById('wz-device-source');
+        const badgeEl = document.getElementById('wz-watt-badge');
         if (!card) return;
         const lang = (document.getElementById('wz-lang') && document.getElementById('wz-lang').value) || getCurrentLanguage();
         const defTariff = getDefaultElectricityProfile(lang);
@@ -5404,11 +6496,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             wzBillInputEl.dataset.autoBill = String(defTariff.rate);
             wzBillInputEl.dataset.autoCurrency = defTariff.currency;
         }
+        updateWzSavingsPreview();
         if (!window.electronAPI || !window.electronAPI.deviceEstimate) {
             card.innerText = t('wizardAutoUnavailable');
+            if (srcEl) srcEl.textContent = '';
+            if (badgeEl) badgeEl.classList.add('hidden');
             return;
         }
         card.innerText = t('wizardDetecting');
+        if (srcEl) srcEl.textContent = '';
+        if (badgeEl) badgeEl.classList.add('hidden');
         try {
             const res = await window.electronAPI.deviceEstimate();
             if (!res || !res.ok || !res.profile) {
@@ -5416,9 +6513,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
             const p = res.profile;
-            const classTr = { laptop: t('wizardLaptop'), desktop: t('wizardDesktop'), server: t('wizardServer'), unknown: t('wizardUnknownDevice') }[p.deviceClass] || p.deviceClass;
-            const srcTr = p.wattSource === 'measured' ? t('wizardMeasuredFromBattery') : t('wizardEstimatedFromHardware');
-            card.innerText = t('wizardDetectedInfo', { deviceClass: classTr, watt: p.wattW, source: srcTr });
+            wzLastDetectedProfile = p;
+            paintWzDeviceProfile(p);
             const roundedWatt = Math.round(Number(p.wattW));
             if (wzWattInputEl && Number.isInteger(roundedWatt) && roundedWatt >= 5 && roundedWatt <= 2000) {
                 wzWattInputEl.placeholder = String(roundedWatt);
@@ -5428,6 +6524,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     wzWattInputEl.dataset.autoWattSource = p.wattSource === 'measured' ? 'measured' : 'estimated';
                 }
             }
+            updateWzSavingsPreview();
         } catch (_) {
             card.innerText = t('wizardNotDetectedBlank');
         }
@@ -5497,8 +6594,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     const btnWzSkip = document.getElementById('btn-wz-skip');
     if (btnWzSkip) btnWzSkip.addEventListener('click', () => {
-        // PPX-016: sihirbazı atlayan kullanıcı onboarding'i görmez.
-        try { localStorage.setItem('pp-wizard-skipped', '1'); } catch (_) { }
+        // PPX-016: sihirbazı atlayan kullanıcı onboarding'i görmez (tekrar turda yazılmaz).
+        if (!wizardReplayMode) {
+            try { localStorage.setItem('pp-wizard-skipped', '1'); } catch (_) { }
+        }
         wizardDone();
     });
     const btnWzFinish = document.getElementById('btn-wz-finish');
@@ -5575,7 +6674,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             txt: document.getElementById('set-ai-progress-text'),
             wrap: document.getElementById('set-ai-progress-wrap'),
             btnDl: document.getElementById('btn-set-ai-download'),
-            btnLoad: document.getElementById('btn-set-ai-load')
+            btnPause: document.getElementById('btn-set-ai-pause'),
+            btnLoad: document.getElementById('btn-set-ai-load'),
+            btnDelete: document.getElementById('btn-set-ai-delete'),
+            hwText: document.getElementById('set-ai-hw-text'),
+            tierGrid: document.getElementById('set-ai-tier-grid'),
+            heavyWarn: document.getElementById('set-ai-heavy-warn')
         };
     }
 
@@ -5672,6 +6776,77 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
+
+    // WP-5.1: 3 Kademeli AI Kart Seçimi, İndirme Duraklatma, Paket Silme ve Sesli Dikte HUD Kontrolleri
+    async function handleSelectAiTier(tierId) {
+        if (!tierId || !window.electronAPI || typeof window.electronAPI.aiSelectTier !== 'function') return;
+        try {
+            await window.electronAPI.aiSelectTier(tierId);
+            await Promise.all([wizardRefreshAi(), settingsRefreshAi()]);
+        } catch (_) {}
+    }
+
+    document.querySelectorAll('[data-ai-tier-card]').forEach((card) => {
+        card.addEventListener('click', () => {
+            const tid = card.getAttribute('data-ai-tier-card');
+            handleSelectAiTier(tid);
+        });
+    });
+
+    async function handlePauseAiDownload() {
+        if (!window.electronAPI || typeof window.electronAPI.aiModelCancel !== 'function') return;
+        try {
+            await window.electronAPI.aiModelCancel();
+            wzDlState.active = false;
+            setDlState.active = false;
+            showToast(t('aiDownloadPausedToast'), 'info');
+            await Promise.all([wizardRefreshAi(), settingsRefreshAi()]);
+        } catch (_) {}
+    }
+
+    const btnWzPause = document.getElementById('btn-wz-pause');
+    if (btnWzPause) btnWzPause.addEventListener('click', handlePauseAiDownload);
+    const btnSetPause = document.getElementById('btn-set-ai-pause');
+    if (btnSetPause) btnSetPause.addEventListener('click', handlePauseAiDownload);
+
+    async function handleDeleteAiPackage() {
+        if (!window.electronAPI || typeof window.electronAPI.aiModelDelete !== 'function') return;
+        try {
+            const res = await window.electronAPI.aiModelDelete();
+            if (res && res.ok) {
+                const mb = Math.max(1, Math.round((res.freedBytes || 0) / 1048576));
+                showToast(t('aiPackageDeletedToast', { mb }), 'info');
+            }
+            await Promise.all([wizardRefreshAi(), settingsRefreshAi()]);
+        } catch (_) {}
+    }
+
+    const btnWzDelete = document.getElementById('btn-wz-delete');
+    if (btnWzDelete) btnWzDelete.addEventListener('click', handleDeleteAiPackage);
+    const btnSetDelete = document.getElementById('btn-set-ai-delete');
+    if (btnSetDelete) btnSetDelete.addEventListener('click', handleDeleteAiPackage);
+
+    const btnOpenVoiceHudTest = document.getElementById('btn-open-voice-hud-test');
+    if (btnOpenVoiceHudTest) {
+        btnOpenVoiceHudTest.addEventListener('click', async () => {
+            if (window.electronAPI && typeof window.electronAPI.openVoiceHud === 'function') {
+                await window.electronAPI.openVoiceHud();
+            }
+        });
+    }
+
+    const elVoiceHudEnabled = document.getElementById('setting-voice-hud-enabled');
+    if (elVoiceHudEnabled) {
+        elVoiceHudEnabled.addEventListener('change', () => {
+            persistSingleSetting('voiceHudEnabled', Boolean(elVoiceHudEnabled.checked));
+        });
+    }
+    const elVoiceReplyTts = document.getElementById('setting-voice-reply-tts');
+    if (elVoiceReplyTts) {
+        elVoiceReplyTts.addEventListener('change', () => {
+            persistSingleSetting('voiceReplyTtsEnabled', Boolean(elVoiceReplyTts.checked));
+        });
+    }
     wizardMaybeShow();
 
     // WP-15/WP-13: Pencere yenilendiğinde aktif zamanlayıcı ve uyarı
@@ -5744,7 +6919,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const b = document.getElementById('warning-banner');
             if (!b || !data) return;
             activeWarningTaskId = data.taskId || null;
-            document.getElementById('warning-banner-text').textContent = `${localizedTaskName(data.taskName, data.action)} — ${getActionString(data.action)}`;
+            document.getElementById('warning-banner-text').textContent = `${localizedTaskName(data.taskName, data.action)} - ${getActionString(data.action)}`;
             document.getElementById('warning-banner-count').textContent = (data.secondsLeft != null ? t('secondsShort', { seconds: data.secondsLeft }) : '');
             b.classList.remove('hidden');
             // D-05: sessiz modda ses çıkmaz; banner yine görünür.
@@ -6035,18 +7210,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function applyTheme(theme, themeId) {
-        const isDark = theme !== 'light';
+        const mode = (theme === 'light' || theme === 'dark' || theme === 'system') ? theme : 'dark';
+        activeThemeMode = mode;
+        const isDark = resolveEffectiveDark(mode);
         const resolvedId = VALID_THEME_IDS.includes(themeId) ? themeId : activeThemeId;
         activeThemeId = resolvedId;
         document.documentElement.classList.toggle('dark', isDark);
         document.documentElement.setAttribute('data-theme', resolvedId);
+        document.documentElement.setAttribute('data-theme-mode', mode);
+        if (btnModeSystem) {
+            btnModeSystem.classList.toggle('is-active', mode === 'system');
+            btnModeSystem.setAttribute('aria-pressed', mode === 'system' ? 'true' : 'false');
+        }
         if (btnModeLight) {
-            btnModeLight.classList.toggle('is-active', !isDark);
-            btnModeLight.setAttribute('aria-pressed', !isDark ? 'true' : 'false');
+            btnModeLight.classList.toggle('is-active', mode === 'light');
+            btnModeLight.setAttribute('aria-pressed', mode === 'light' ? 'true' : 'false');
         }
         if (btnModeDark) {
-            btnModeDark.classList.toggle('is-active', isDark);
-            btnModeDark.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+            btnModeDark.classList.toggle('is-active', mode === 'dark');
+            btnModeDark.setAttribute('aria-pressed', mode === 'dark' ? 'true' : 'false');
         }
         if (themeColorGrid) {
             themeColorGrid.querySelectorAll('[data-theme-option]').forEach((card) => {
@@ -6054,6 +7236,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 card.classList.toggle('is-selected', selected);
                 card.setAttribute('aria-pressed', selected ? 'true' : 'false');
             });
+        }
+        if (customThemeBuilder) {
+            customThemeBuilder.classList.toggle('hidden', resolvedId !== 'custom');
+        }
+        if (typeof updateCustomContrastBadge === 'function') {
+            updateCustomContrastBadge();
+        }
+        if (typeof syncWelcomeQuickControls === 'function') {
+            syncWelcomeQuickControls();
         }
     }
 
@@ -6221,7 +7412,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                         language: defaultLang,
                         theme: 'dark',
                         themeId: 'obsidian',
+                        customThemeColor: '#3b82f6',
                         appIcon: 'monochrome-dark',
+                        customIconColor: '#3b82f6',
+                        syncIconWithTheme: false,
+                        uiZoom: 100,
+                        fontScale: 'normal',
+                        highContrast: false,
+                        enhancedFocus: false,
+                        readableSpacing: false,
+                        reduceMotion: false,
                         wakeMode: 'run',
                         wakeToleranceMinutes: 10,
                         // P1-6 (beşinci tur): `notifications` artık arka uçta
@@ -6245,8 +7445,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     activeThemeId = 'obsidian';
                     committedTheme = 'dark';
                     committedThemeId = 'obsidian';
+                    activeCustomThemeColor = '#3b82f6';
+                    committedCustomThemeColor = '#3b82f6';
                     activeAppIcon = 'monochrome-dark';
                     committedAppIcon = 'monochrome-dark';
+                    activeCustomIconColor = '#3b82f6';
+                    committedCustomIconColor = '#3b82f6';
+                    syncIconWithTheme = false;
                     committedLanguage = defaultLang;
                     if (elNotifications) elNotifications.checked = true;
                     if (elSoundMode) elSoundMode.value = 'auto';
@@ -6260,7 +7465,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                         localStorage.setItem('voice', 'false');
                         localStorage.setItem('theme', 'dark');
                         localStorage.setItem('themeId', 'obsidian');
+                        localStorage.setItem('customThemeColor', '#3b82f6');
                         localStorage.setItem('appIcon', 'monochrome-dark');
+                        localStorage.setItem('customIconColor', '#3b82f6');
+                        localStorage.setItem('pp-sync-icon-theme', 'false');
+                        localStorage.setItem('pp-ui-zoom', '100');
+                        localStorage.setItem('pp-font-scale', 'normal');
+                        localStorage.setItem('pp-high-contrast', 'false');
+                        localStorage.setItem('pp-enhanced-focus', 'false');
+                        localStorage.setItem('pp-readable-spacing', 'false');
+                        localStorage.setItem('pp-reduce-motion', 'false');
                         localStorage.setItem('notifications', 'true');
                         localStorage.setItem('soundMode', 'auto');
                         localStorage.setItem('language', defaultLang);
@@ -6270,8 +7484,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (window.electronAPI && window.electronAPI.setAutostart) {
                         window.electronAPI.setAutostart(false);
                     }
+                    syncCustomPaletteCssAndInputs();
                     applyTheme('dark', 'obsidian');
                     applyAppIconUi('monochrome-dark');
+                    if (typeof applyUiZoom === 'function') applyUiZoom(100, { persist: false });
+                    if (typeof applyExtendedUiPrefs === 'function') applyExtendedUiPrefs();
                     await applyLanguage(defaultLang);
                     showToast(t('toastDefaultsLoaded'), 'success');
                 }
@@ -6310,6 +7527,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             if (subpage.id === 'settings-sec-diagnostics' && typeof loadDiagnostics === 'function') {
                 loadDiagnostics();
+            } else if ((subpage.id === 'settings-sec-backup' || subpage.id === 'settings-sec-security') && typeof refreshOneDriveStatus === 'function') {
+                refreshOneDriveStatus({ checkRecovery: false });
+            } else if (subpage.id === 'settings-sec-shortcuts' && typeof refreshGlobalShortcutStatusUi === 'function') {
+                refreshGlobalShortcutStatusUi();
             } else if (subpage.id === 'int-sec-mcp' && typeof loadMcpPanel === 'function') {
                 loadMcpPanel();
             } else if (subpage.id === 'int-sec-wol' && typeof loadWolDevices === 'function') {
@@ -6679,7 +7900,77 @@ document.addEventListener('DOMContentLoaded', async () => {
     const elDefaultAction = document.getElementById('setting-default-action');
     const elDefaultMinutes = document.getElementById('setting-default-minutes');
     const elUiDensity = document.getElementById('setting-ui-density');
+    const elUiZoom = document.getElementById('setting-ui-zoom');
+    const btnZoomOut = document.getElementById('btn-zoom-out');
+    const btnZoomIn = document.getElementById('btn-zoom-in');
+    const btnZoomReset = document.getElementById('btn-zoom-reset');
+    const elFontScale = document.getElementById('setting-font-scale');
+    const elHighContrast = document.getElementById('setting-high-contrast');
+    const elEnhancedFocus = document.getElementById('setting-enhanced-focus');
+    const elReadableSpacing = document.getElementById('setting-readable-spacing');
     const elReduceMotion = document.getElementById('setting-reduce-motion');
+    const ZOOM_STEPS = [75, 80, 90, 100, 110, 125, 135, 150];
+    let activeUiZoom = 100;
+
+    function applyUiZoom(zoomPercent, { persist = true } = {}) {
+        const parsed = parseInt(zoomPercent, 10);
+        const clamped = Number.isInteger(parsed) ? Math.min(150, Math.max(75, parsed)) : 100;
+        activeUiZoom = clamped;
+        if (elUiZoom) {
+            const asStr = String(clamped);
+            if (!Array.from(elUiZoom.options).some((o) => o.value === asStr)) {
+                const opt = document.createElement('option');
+                opt.value = asStr;
+                opt.textContent = `${clamped}%`;
+                elUiZoom.appendChild(opt);
+            }
+            elUiZoom.value = asStr;
+        }
+        if (btnZoomOut) btnZoomOut.disabled = clamped <= 75;
+        if (btnZoomIn) btnZoomIn.disabled = clamped >= 150;
+        try { localStorage.setItem('pp-ui-zoom', String(clamped)); } catch (_) { /* yut */ }
+        if (window.electronAPI && typeof window.electronAPI.setUiZoom === 'function') {
+            window.electronAPI.setUiZoom(clamped).catch(() => { /* çevrimdışı */ });
+        }
+        if (persist) {
+            persistSingleSetting('uiZoom', clamped);
+        }
+    }
+
+    function stepUiZoom(dir) {
+        if (dir < 0) {
+            const prev = [...ZOOM_STEPS].reverse().find((z) => z < activeUiZoom);
+            applyUiZoom(prev || ZOOM_STEPS[0], { persist: true });
+        } else {
+            const next = ZOOM_STEPS.find((z) => z > activeUiZoom);
+            applyUiZoom(next || ZOOM_STEPS[ZOOM_STEPS.length - 1], { persist: true });
+        }
+    }
+
+    if (elUiZoom) {
+        elUiZoom.addEventListener('change', () => applyUiZoom(elUiZoom.value, { persist: true }));
+    }
+    if (btnZoomOut) btnZoomOut.addEventListener('click', () => stepUiZoom(-1));
+    if (btnZoomIn) btnZoomIn.addEventListener('click', () => stepUiZoom(1));
+    if (btnZoomReset) btnZoomReset.addEventListener('click', () => applyUiZoom(100, { persist: true }));
+
+    document.addEventListener('keydown', (e) => {
+        if (!e.ctrlKey || e.altKey || e.metaKey) return;
+        const active = document.activeElement;
+        if (active && (active.classList.contains('pp-shortcut-recording') || /^shortcut-/.test(active.id || ''))) {
+            return;
+        }
+        if (e.key === '+' || e.key === '=' || e.code === 'NumpadAdd') {
+            e.preventDefault();
+            stepUiZoom(1);
+        } else if (e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract') {
+            e.preventDefault();
+            stepUiZoom(-1);
+        } else if (e.key === '0' || e.code === 'Numpad0') {
+            e.preventDefault();
+            applyUiZoom(100, { persist: true });
+        }
+    });
     const elClockFormat = document.getElementById('setting-clock-format');
     const elToastPosition = document.getElementById('setting-toast-position');
     const elToastDuration = document.getElementById('setting-toast-duration');
@@ -6701,7 +7992,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const elStatsEnabled = document.getElementById('setting-stats-enabled');
     const elAssumedOffHours = document.getElementById('setting-assumed-off-hours');
     const elBootGuardSeconds = document.getElementById('setting-boot-guard-seconds');
-    // P1-6: güvenlik politikası — arka uçta uygulanıyordu, arayüzde yoktu.
+    // P1-6: güvenlik politikası - arka uçta uygulanıyordu, arayüzde yoktu.
     const elForceCloseApps = document.getElementById('setting-force-close-apps');
     const elRemoteApproval = document.getElementById('setting-remote-approval');
     const elProtectedApps = document.getElementById('setting-protected-apps');
@@ -6717,8 +8008,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.body.classList.toggle('pp-density-compact', density === 'compact');
         if (elUiDensity) elUiDensity.value = density;
 
+        const savedFontScale = localStorage.getItem('pp-font-scale') || 'normal';
+        const fontScale = ['normal', 'large', 'xlarge'].includes(savedFontScale) ? savedFontScale : 'normal';
+        document.documentElement.setAttribute('data-font-scale', fontScale);
+        if (elFontScale) elFontScale.value = fontScale;
+
+        const highContrast = localStorage.getItem('pp-high-contrast') === 'true';
+        document.documentElement.classList.toggle('pp-high-contrast', highContrast);
+        if (elHighContrast) elHighContrast.checked = highContrast;
+
+        const enhancedFocus = localStorage.getItem('pp-enhanced-focus') === 'true';
+        document.documentElement.classList.toggle('pp-enhanced-focus', enhancedFocus);
+        if (elEnhancedFocus) elEnhancedFocus.checked = enhancedFocus;
+
+        const readableSpacing = localStorage.getItem('pp-readable-spacing') === 'true';
+        document.documentElement.classList.toggle('pp-readable-spacing', readableSpacing);
+        if (elReadableSpacing) elReadableSpacing.checked = readableSpacing;
+
         const reduceMotion = localStorage.getItem('pp-reduce-motion') === 'true';
         document.body.classList.toggle('pp-reduce-motion', reduceMotion);
+        document.documentElement.classList.toggle('pp-reduce-motion', reduceMotion);
         if (elReduceMotion) elReduceMotion.checked = reduceMotion;
 
         const toastPos = localStorage.getItem('pp-toast-position') || 'bottom-right';
@@ -6786,6 +8095,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         syncVal(elDefaultAction, 'pp-default-action', s.defaultAction);
         syncVal(elDefaultMinutes, 'pp-default-minutes', s.defaultMinutes);
         syncVal(elUiDensity, 'pp-ui-density', s.uiDensity);
+        if (Number.isInteger(s.uiZoom) && s.uiZoom >= 75 && s.uiZoom <= 150) {
+            applyUiZoom(s.uiZoom, { persist: false });
+        }
+        syncVal(elFontScale, 'pp-font-scale', s.fontScale);
+        syncBool(elHighContrast, 'pp-high-contrast', s.highContrast);
+        syncBool(elEnhancedFocus, 'pp-enhanced-focus', s.enhancedFocus);
+        syncBool(elReadableSpacing, 'pp-readable-spacing', s.readableSpacing);
+        syncBool(elReduceMotion, 'pp-reduce-motion', s.reduceMotion);
+        if (s.onboardingCompleted === true && !wizardReplayMode) {
+            try { localStorage.setItem('pp-wizard-done', '1'); } catch (_) { }
+            const wzOverlay = document.getElementById('wizard-overlay');
+            if (wzOverlay && !wzOverlay.classList.contains('hidden')) {
+                wzOverlay.classList.add('hidden');
+                wizardStopTimers();
+            }
+        }
         syncVal(elClockFormat, 'pp-clock-format', s.clockFormat);
         syncVal(elToastPosition, 'pp-toast-position', s.toastPosition);
         syncVal(elSoundMode, 'soundMode', s.soundMode);
@@ -6846,6 +8171,41 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
         }
+        const elGsEnabled = document.getElementById('setting-global-shortcuts-enabled');
+        const elGsToggle = document.getElementById('global-shortcut-toggle-window');
+        const elGsQuick = document.getElementById('global-shortcut-quickstart');
+        const elGsCancel = document.getElementById('global-shortcut-cancel');
+        const elGsVoiceHud = document.getElementById('global-shortcut-voice-hud');
+        if (elGsEnabled && typeof s.globalShortcutsEnabled === 'boolean') {
+            elGsEnabled.checked = s.globalShortcutsEnabled;
+        }
+        if (elGsToggle && typeof s.globalShortcutToggleWindow === 'string' && s.globalShortcutToggleWindow.trim()) {
+            elGsToggle.value = s.globalShortcutToggleWindow.trim();
+        }
+        if (elGsQuick && typeof s.globalShortcutQuickStart === 'string' && s.globalShortcutQuickStart.trim()) {
+            elGsQuick.value = s.globalShortcutQuickStart.trim();
+        }
+        if (elGsCancel && typeof s.globalShortcutCancel === 'string' && s.globalShortcutCancel.trim()) {
+            elGsCancel.value = s.globalShortcutCancel.trim();
+        }
+        if (elGsVoiceHud && typeof s.globalShortcutVoiceHud === 'string' && s.globalShortcutVoiceHud.trim()) {
+            elGsVoiceHud.value = s.globalShortcutVoiceHud.trim();
+        }
+        const elVhEnabled = document.getElementById('setting-voice-hud-enabled');
+        if (elVhEnabled && typeof s.voiceHudEnabled === 'boolean') {
+            elVhEnabled.checked = s.voiceHudEnabled;
+        }
+        const elVhTts = document.getElementById('setting-voice-reply-tts');
+        if (elVhTts && typeof s.voiceReplyTtsEnabled === 'boolean') {
+            elVhTts.checked = s.voiceReplyTtsEnabled;
+        }
+        if (typeof refreshGlobalShortcutStatusUi === 'function') {
+            refreshGlobalShortcutStatusUi();
+        }
+        const elAutoCheckUpd = document.getElementById('setting-auto-check-updates');
+        if (elAutoCheckUpd && typeof s.autoCheckUpdates === 'boolean') {
+            elAutoCheckUpd.checked = s.autoCheckUpdates;
+        }
         if (s.defaultAction) {
             const btn = document.querySelector(`.action-btn[data-action="${s.defaultAction}"]`);
             if (btn && !isTimerActive) btn.click();
@@ -6875,7 +8235,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }, 'defaultMinutes', toInt);
     bindLocalPref(elUiDensity, 'pp-ui-density', () => applyExtendedUiPrefs(), 'uiDensity');
-    bindLocalPref(elReduceMotion, 'pp-reduce-motion', () => applyExtendedUiPrefs());
+    bindLocalPref(elFontScale, 'pp-font-scale', () => applyExtendedUiPrefs(), 'fontScale');
+    bindLocalPref(elHighContrast, 'pp-high-contrast', () => applyExtendedUiPrefs(), 'highContrast');
+    bindLocalPref(elEnhancedFocus, 'pp-enhanced-focus', () => applyExtendedUiPrefs(), 'enhancedFocus');
+    bindLocalPref(elReadableSpacing, 'pp-readable-spacing', () => applyExtendedUiPrefs(), 'readableSpacing');
+    bindLocalPref(elReduceMotion, 'pp-reduce-motion', () => applyExtendedUiPrefs(), 'reduceMotion');
+    {
+        const initialZoom = parseInt(localStorage.getItem('pp-ui-zoom'), 10);
+        if (Number.isInteger(initialZoom) && initialZoom >= 75 && initialZoom <= 150) {
+            applyUiZoom(initialZoom, { persist: false });
+        } else {
+            applyUiZoom(100, { persist: false });
+        }
+    }
     // Saat biçimi değişince görünür zaman damgaları yeniden çizilir (aksi halde
     // ayar bir sonraki gezinmeye kadar etkisiz görünürdü).
     bindLocalPref(elClockFormat, 'pp-clock-format', () => {
@@ -6896,7 +8268,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // `isQuietHours()` anahtarı anlık okur; ek yeniden çizim gerekmez.
         // Sadece test bildirimi düğmesi durumu yansıtsın diye sessiz geçilir.
     }, 'quietHoursEnabled');
-    // P1-6: güvenlik politikası — gerçek davranışı olan ayarlar.
+    // P1-6: güvenlik politikası - gerçek davranışı olan ayarlar.
     bindLocalPref(elForceCloseApps, 'pp-force-close-apps', null, 'forceCloseApps');
     bindLocalPref(elRemoteApproval, 'pp-remote-approval', null, 'remoteApprovalRequired');
     // `protectedApps` bir listeydi; metin alanı virgülle ayrılmış .exe adları
@@ -7019,6 +8391,132 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // Global Klavye Kisayollari (Arka Plan / Sistem Tepsisi)
+    const DEFAULT_GLOBAL_SHORTCUT_UI = Object.freeze({
+        toggleWindow: 'Ctrl+Alt+P',
+        quickStart: 'Ctrl+Alt+S',
+        cancel: 'Ctrl+Alt+X',
+        voiceHud: 'Ctrl+Shift+Space'
+    });
+    const GLOBAL_SHORTCUT_KEY_RE = /^([A-Z0-9]|F[1-9]|F1[0-2]|Space|Tab|Enter|Return|Up|Down|Left|Right|Home|End|PageUp|PageDown|Insert|Delete|Plus|Minus|Backspace)$/i;
+
+    function buildGlobalComboFromEvent(e) {
+        const rawKey = String(e.key || '');
+        if (['Control', 'Shift', 'Alt', 'Meta'].includes(rawKey)) return null;
+        const parts = [];
+        if (e.ctrlKey) parts.push('Ctrl');
+        if (e.altKey) parts.push('Alt');
+        if (e.shiftKey) parts.push('Shift');
+        if (e.metaKey) parts.push('Super');
+        if (parts.length === 0) return { invalid: true };
+        const keyLabel = rawKey === ' ' ? 'Space' : (rawKey.length === 1 ? rawKey.toUpperCase() : rawKey);
+        if (!GLOBAL_SHORTCUT_KEY_RE.test(keyLabel)) return { invalid: true };
+        parts.push(keyLabel);
+        return { combo: parts.join('+') };
+    }
+
+    async function refreshGlobalShortcutStatusUi() {
+        const statusEl = document.getElementById('global-shortcut-status');
+        const fieldsEl = document.getElementById('global-shortcuts-fields');
+        const enabledEl = document.getElementById('setting-global-shortcuts-enabled');
+        if (fieldsEl && enabledEl) {
+            fieldsEl.classList.toggle('opacity-60', !enabledEl.checked);
+        }
+        if (!statusEl) return;
+        if (!window.electronAPI || typeof window.electronAPI.getGlobalShortcutStatus !== 'function') {
+            statusEl.textContent = '';
+            return;
+        }
+        try {
+            const res = await window.electronAPI.getGlobalShortcutStatus();
+            const st = res && res.status;
+            statusEl.classList.remove('text-amber-600', 'dark:text-amber-400', 'text-emerald-700', 'dark:text-emerald-400', 'text-slate-600', 'dark:text-slate-400');
+            if (!st || !st.enabled) {
+                statusEl.textContent = '';
+                statusEl.classList.add('text-slate-600', 'dark:text-slate-400');
+                return;
+            }
+            if (Array.isArray(st.failed) && st.failed.length > 0) {
+                const combos = st.failed.map((f) => f.combo || f.slot).join(', ');
+                statusEl.textContent = t('globalShortcutsConflict', { combos });
+                statusEl.classList.add('text-amber-600', 'dark:text-amber-400');
+                return;
+            }
+            const count = Array.isArray(st.registered) ? st.registered.length : 0;
+            statusEl.textContent = t('globalShortcutsActiveCount', { count });
+            statusEl.classList.add('text-emerald-700', 'dark:text-emerald-400');
+        } catch (_) { /* yut */ }
+    }
+
+    (function bindGlobalShortcutControls() {
+        const elEnabled = document.getElementById('setting-global-shortcuts-enabled');
+        const fields = [
+            { id: 'global-shortcut-toggle-window', key: 'globalShortcutToggleWindow', def: DEFAULT_GLOBAL_SHORTCUT_UI.toggleWindow },
+            { id: 'global-shortcut-quickstart', key: 'globalShortcutQuickStart', def: DEFAULT_GLOBAL_SHORTCUT_UI.quickStart },
+            { id: 'global-shortcut-cancel', key: 'globalShortcutCancel', def: DEFAULT_GLOBAL_SHORTCUT_UI.cancel },
+            { id: 'global-shortcut-voice-hud', key: 'globalShortcutVoiceHud', def: DEFAULT_GLOBAL_SHORTCUT_UI.voiceHud }
+        ];
+        if (elEnabled) {
+            elEnabled.addEventListener('change', async () => {
+                const enabled = Boolean(elEnabled.checked);
+                if (window.electronAPI && typeof window.electronAPI.saveSettingsAtomic === 'function') {
+                    await window.electronAPI.saveSettingsAtomic({ settings: { globalShortcutsEnabled: enabled } }).catch(() => { });
+                }
+                await refreshGlobalShortcutStatusUi();
+            });
+        }
+        fields.forEach(({ id, key }) => {
+            const inp = document.getElementById(id);
+            if (!inp) return;
+            inp.readOnly = true;
+            inp.addEventListener('focus', () => inp.classList.add('pp-shortcut-recording'));
+            inp.addEventListener('blur', () => inp.classList.remove('pp-shortcut-recording'));
+            inp.addEventListener('keydown', async (e) => {
+                if (e.key === 'Tab') return;
+                e.preventDefault();
+                e.stopPropagation();
+                const parsed = buildGlobalComboFromEvent(e);
+                if (!parsed) return;
+                if (parsed.invalid) {
+                    showToast(t('globalShortcutInvalid'), 'error');
+                    return;
+                }
+                inp.value = parsed.combo;
+                inp.blur();
+                if (window.electronAPI && typeof window.electronAPI.saveSettingsAtomic === 'function') {
+                    const res = await window.electronAPI.saveSettingsAtomic({ settings: { [key]: parsed.combo } }).catch(() => null);
+                    if (res && res.success === false) {
+                        showToast(res.message || t('globalShortcutInvalid'), 'error');
+                        return;
+                    }
+                }
+                await refreshGlobalShortcutStatusUi();
+                showToast(t('toastShortcutSaved', { combo: parsed.combo }), 'success');
+            });
+        });
+        const btnResetGlobal = document.getElementById('btn-reset-global-shortcuts');
+        if (btnResetGlobal) {
+            btnResetGlobal.addEventListener('click', async () => {
+                const patch = {
+                    globalShortcutToggleWindow: DEFAULT_GLOBAL_SHORTCUT_UI.toggleWindow,
+                    globalShortcutQuickStart: DEFAULT_GLOBAL_SHORTCUT_UI.quickStart,
+                    globalShortcutCancel: DEFAULT_GLOBAL_SHORTCUT_UI.cancel,
+                    globalShortcutVoiceHud: DEFAULT_GLOBAL_SHORTCUT_UI.voiceHud
+                };
+                fields.forEach(({ id, def }) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = def;
+                });
+                if (window.electronAPI && typeof window.electronAPI.saveSettingsAtomic === 'function') {
+                    await window.electronAPI.saveSettingsAtomic({ settings: patch }).catch(() => { });
+                }
+                await refreshGlobalShortcutStatusUi();
+                showToast(t('toastDefaultsLoaded'), 'success');
+            });
+        }
+        refreshGlobalShortcutStatusUi();
+    })();
+
     const btnExportSettingsJson = document.getElementById('btn-export-settings-json');
     if (btnExportSettingsJson) {
         btnExportSettingsJson.addEventListener('click', async () => {
@@ -7049,6 +8547,422 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // Microsoft OneDrive Bulut Yedekleme ve Esitleme UI + Format Sonrasi Kurtarma
+    let latestOneDriveStatus = null;
+    let oneDriveRecoveryPrompted = false;
+
+    function formatOneDriveTime(iso) {
+        if (!iso) return t('oneDriveSummaryNotSynced');
+        try {
+            const d = new Date(iso);
+            if (!Number.isFinite(d.getTime())) return t('oneDriveSummaryNotSynced');
+            return `${d.toLocaleDateString(getCurrentLanguage())} ${formatClock(d)}`;
+        } catch (_) {
+            return t('oneDriveSummaryNotSynced');
+        }
+    }
+
+    function applyRestoredSettingsToLocalStorage(s) {
+        if (!s || typeof s !== 'object') return;
+        if (s.theme === 'light' || s.theme === 'dark' || s.theme === 'system') localStorage.setItem('theme', s.theme);
+        if (VALID_THEME_IDS.includes(s.themeId)) localStorage.setItem('themeId', s.themeId);
+        if (typeof s.customThemeColor === 'string' && HEX_COLOR_RE.test(s.customThemeColor)) {
+            localStorage.setItem('customThemeColor', s.customThemeColor.toLowerCase());
+        }
+        if (VALID_APP_ICONS.includes(s.appIcon)) localStorage.setItem('appIcon', s.appIcon);
+        if (typeof s.customIconColor === 'string' && HEX_COLOR_RE.test(s.customIconColor)) {
+            localStorage.setItem('customIconColor', s.customIconColor.toLowerCase());
+        }
+        if (typeof s.syncIconWithTheme === 'boolean') localStorage.setItem('pp-sync-icon-theme', String(s.syncIconWithTheme));
+        if (typeof s.language === 'string' && s.language) localStorage.setItem('language', s.language);
+        if (typeof s.notifications === 'boolean') localStorage.setItem('notifications', String(s.notifications));
+        if (typeof s.autostart === 'boolean') localStorage.setItem('autostart', String(s.autostart));
+        if (Number.isInteger(s.uiZoom)) localStorage.setItem('pp-ui-zoom', String(s.uiZoom));
+        if (typeof s.fontScale === 'string') localStorage.setItem('pp-font-scale', s.fontScale);
+        if (typeof s.highContrast === 'boolean') localStorage.setItem('pp-high-contrast', String(s.highContrast));
+        if (typeof s.enhancedFocus === 'boolean') localStorage.setItem('pp-enhanced-focus', String(s.enhancedFocus));
+        if (typeof s.readableSpacing === 'boolean') localStorage.setItem('pp-readable-spacing', String(s.readableSpacing));
+        if (typeof s.reduceMotion === 'boolean') localStorage.setItem('pp-reduce-motion', String(s.reduceMotion));
+        if (typeof s.clockFormat === 'string') localStorage.setItem('pp-clock-format', s.clockFormat);
+        if (typeof s.uiDensity === 'string') localStorage.setItem('pp-ui-density', s.uiDensity);
+        if (s.onboardingCompleted === true) {
+            localStorage.setItem('pp-wizard-completed', '1');
+            localStorage.setItem('onboardingDone', '1');
+            localStorage.removeItem('pp-wizard-skipped');
+            const wz = document.getElementById('wizard-overlay');
+            if (wz) wz.classList.add('hidden');
+            const ob = document.getElementById('onboarding');
+            if (ob) ob.classList.add('hidden');
+        }
+    }
+
+    async function refreshViewsAfterOneDriveRestore(serverSettings) {
+        applyRestoredSettingsToLocalStorage(serverSettings);
+        await loadSettings();
+        try { if (typeof loadTasks === 'function') await loadTasks(); } catch (_) { /* yut */ }
+        try { if (typeof loadHistory === 'function') await loadHistory(); } catch (_) { /* yut */ }
+        try { if (typeof loadTemplates === 'function') await loadTemplates(); } catch (_) { /* yut */ }
+        try { if (typeof loadStatistics === 'function') await loadStatistics(); } catch (_) { /* yut */ }
+    }
+
+    function setOneDriveInlineStatus(msg, isError = false) {
+        const el = document.getElementById('onedrive-inline-status');
+        if (!el) return;
+        if (!msg) {
+            el.textContent = '';
+            el.classList.add('hidden');
+            return;
+        }
+        el.textContent = msg;
+        el.classList.remove('hidden', 'text-red-600', 'dark:text-red-400', 'text-emerald-700', 'dark:text-emerald-400', 'text-slate-600', 'dark:text-slate-300');
+        if (isError) el.classList.add('text-red-600', 'dark:text-red-400');
+        else el.classList.add('text-emerald-700', 'dark:text-emerald-400');
+    }
+
+    function renderOneDriveCard(status) {
+        if (!status || typeof status !== 'object') return;
+        latestOneDriveStatus = status;
+
+        const badge = document.getElementById('onedrive-status-badge');
+        const dirEl = document.getElementById('onedrive-dir-path');
+        const fallbackNote = document.getElementById('onedrive-fallback-note');
+        const summaryEl = document.getElementById('onedrive-sync-summary');
+        const offBox = document.getElementById('onedrive-actions-disconnected');
+        const onBox = document.getElementById('onedrive-actions-connected');
+        const autoRow = document.getElementById('onedrive-autosync-row');
+        const autoChk = document.getElementById('setting-onedrive-autosync');
+        const resetOff = document.getElementById('btn-onedrive-reset-folder-off');
+        const resetOn = document.getElementById('btn-onedrive-reset-folder');
+
+        if (badge) {
+            badge.textContent = status.connected ? t('oneDriveStatusConnected') : t('oneDriveStatusDisconnected');
+            badge.classList.toggle('pp-onedrive-badge--on', status.connected === true);
+            badge.classList.toggle('pp-onedrive-badge--off', status.connected !== true);
+        }
+        if (dirEl) {
+            dirEl.textContent = status.syncDir || '-';
+            dirEl.title = status.syncDir || '';
+        }
+        if (fallbackNote) {
+            fallbackNote.classList.toggle('hidden', !(status.isFallback && !status.isCustomDir));
+        }
+        if (summaryEl) {
+            const counts = status.remoteSummary || status.localSummary || { tasks: 0, templates: 0, profiles: 0 };
+            if (status.lastSyncAt) {
+                summaryEl.textContent = t('oneDriveSummaryLine', {
+                    time: formatOneDriveTime(status.lastSyncAt),
+                    tasks: counts.tasks || 0,
+                    templates: counts.templates || 0,
+                    profiles: counts.profiles || 0,
+                    backups: status.dailyBackupCount || 0,
+                    max: status.maxDailyBackups || 15
+                });
+            } else {
+                summaryEl.textContent = t('oneDriveSummaryNoSync', {
+                    backups: status.dailyBackupCount || 0,
+                    max: status.maxDailyBackups || 15
+                });
+            }
+        }
+        if (offBox) offBox.classList.toggle('hidden', status.connected === true);
+        if (onBox) onBox.classList.toggle('hidden', status.connected !== true);
+        if (autoRow) autoRow.classList.toggle('hidden', status.connected !== true);
+        if (autoChk) autoChk.checked = status.autoSync !== false;
+        if (resetOff) resetOff.classList.toggle('hidden', !status.isCustomDir);
+        if (resetOn) resetOn.classList.toggle('hidden', !status.isCustomDir);
+
+        const providerRow = document.getElementById('onedrive-provider-chips');
+        if (providerRow) {
+            const providers = Array.isArray(status.detectedProviders) ? status.detectedProviders : [];
+            providerRow.textContent = '';
+            if (providers.length > 0) {
+                providerRow.classList.remove('hidden');
+                const lbl = document.createElement('span');
+                lbl.className = 'text-[11px] text-slate-600 dark:text-slate-400 mr-1';
+                lbl.textContent = t('oneDriveProvidersLabel');
+                providerRow.appendChild(lbl);
+                providers.forEach((p) => {
+                    const chip = document.createElement('button');
+                    chip.type = 'button';
+                    const isActive = status.activeProviderId === p.id;
+                    chip.className = isActive ? 'pp-cloud-provider-chip is-active' : 'pp-cloud-provider-chip';
+                    chip.setAttribute('data-cloud-provider', p.id);
+                    chip.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+                    chip.title = p.syncDir || '';
+                    chip.textContent = p.label;
+                    providerRow.appendChild(chip);
+                });
+            } else {
+                providerRow.classList.add('hidden');
+            }
+        }
+    }
+
+    function maybePromptOneDriveRecovery(status) {
+        if (oneDriveRecoveryPrompted) return;
+        if (!status || status.shouldPromptRecovery !== true || !status.remoteSummary) return;
+        oneDriveRecoveryPrompted = true;
+        const dirEl = document.getElementById('onedrive-recovery-dir');
+        const statsEl = document.getElementById('onedrive-recovery-stats');
+        const errEl = document.getElementById('onedrive-recovery-error');
+        if (dirEl) {
+            dirEl.textContent = status.syncDir || '-';
+            dirEl.title = status.syncDir || '';
+        }
+        if (statsEl) {
+            const rs = status.remoteSummary;
+            statsEl.textContent = t('oneDriveRecoverySummaryLine', {
+                time: formatOneDriveTime(rs.exportedAt),
+                tasks: rs.tasks || 0,
+                templates: rs.templates || 0,
+                profiles: rs.profiles || 0,
+                backups: rs.backupCount || 1
+            });
+        }
+        if (errEl) {
+            errEl.textContent = '';
+            errEl.classList.add('hidden');
+        }
+        // Kurulum sihirbazi veya rehber aciksa once kurtarma secenegini netce goster.
+        const wz = document.getElementById('wizard-overlay');
+        if (wz) wz.classList.add('hidden');
+        const ob = document.getElementById('onboarding');
+        if (ob) ob.classList.add('hidden');
+        openModal('modal-onedrive-recovery');
+    }
+
+    async function refreshOneDriveStatus({ checkRecovery = false } = {}) {
+        if (!window.electronAPI || typeof window.electronAPI.getOneDriveStatus !== 'function') return null;
+        try {
+            const res = await window.electronAPI.getOneDriveStatus();
+            if (res && res.ok && res.status) {
+                renderOneDriveCard(res.status);
+                if (checkRecovery) maybePromptOneDriveRecovery(res.status);
+                return res.status;
+            }
+        } catch (_) { /* arka plan denetimi kullaniciyi bloklamaz */ }
+        return null;
+    }
+
+    (function bindOneDriveControls() {
+        const setBusy = (btn, busy) => { if (btn) btn.disabled = busy; };
+
+        const btnConnect = document.getElementById('btn-onedrive-connect');
+        const providerRowEl = document.getElementById('onedrive-provider-chips');
+        if (providerRowEl) {
+            providerRowEl.addEventListener('click', async (e) => {
+                const chip = e.target && e.target.closest ? e.target.closest('[data-cloud-provider]') : null;
+                if (!chip) return;
+                const providerId = chip.getAttribute('data-cloud-provider');
+                if (!providerId || !window.electronAPI || typeof window.electronAPI.useCloudProvider !== 'function') return;
+                chip.disabled = true;
+                try {
+                    const res = await window.electronAPI.useCloudProvider(providerId);
+                    if (res && res.ok) {
+                        if (res.status) renderOneDriveCard(res.status);
+                        const msg = res.message || t('oneDriveToastFolderUpdated');
+                        setOneDriveInlineStatus(msg, false);
+                        showToast(msg, 'success');
+                    } else if (res) {
+                        const msg = res.message || t('oneDriveErrInvalidFolder');
+                        setOneDriveInlineStatus(msg, true);
+                        showToast(msg, 'error');
+                    }
+                } finally {
+                    chip.disabled = false;
+                }
+            });
+        }
+        if (btnConnect) {
+            btnConnect.addEventListener('click', async () => {
+                if (!window.electronAPI || typeof window.electronAPI.connectOneDrive !== 'function') return;
+                setBusy(btnConnect, true);
+                try {
+                    const res = await window.electronAPI.connectOneDrive();
+                    if (res && res.ok) {
+                        if (res.status) renderOneDriveCard(res.status);
+                        if (res.action === 'restored' && res.settings) {
+                            await refreshViewsAfterOneDriveRestore(res.settings);
+                        }
+                        const msg = res.message || t('oneDriveToastConnectedSynced');
+                        setOneDriveInlineStatus(msg, false);
+                        showToast(msg, 'success');
+                    } else {
+                        const msg = (res && res.message) || t('oneDriveErrWriteFailed');
+                        setOneDriveInlineStatus(msg, true);
+                        showToast(msg, 'error');
+                    }
+                } finally {
+                    setBusy(btnConnect, false);
+                }
+            });
+        }
+
+        const btnSyncNow = document.getElementById('btn-onedrive-sync-now');
+        if (btnSyncNow) {
+            btnSyncNow.addEventListener('click', async () => {
+                if (!window.electronAPI || typeof window.electronAPI.syncOneDriveNow !== 'function') return;
+                setBusy(btnSyncNow, true);
+                try {
+                    const res = await window.electronAPI.syncOneDriveNow();
+                    if (res && res.status) renderOneDriveCard(res.status);
+                    if (res && res.ok) {
+                        const msg = res.message || t('oneDriveToastSynced');
+                        setOneDriveInlineStatus(msg, false);
+                        showToast(msg, 'success');
+                    } else {
+                        const msg = (res && res.message) || t('oneDriveErrWriteFailed');
+                        setOneDriveInlineStatus(msg, true);
+                        showToast(msg, 'error');
+                    }
+                } finally {
+                    setBusy(btnSyncNow, false);
+                }
+            });
+        }
+
+        const btnRestore = document.getElementById('btn-onedrive-restore');
+        if (btnRestore) {
+            btnRestore.addEventListener('click', async () => {
+                if (!window.electronAPI || typeof window.electronAPI.restoreOneDrive !== 'function') return;
+                setBusy(btnRestore, true);
+                try {
+                    const res = await window.electronAPI.restoreOneDrive({ connect: true });
+                    if (res && res.status) renderOneDriveCard(res.status);
+                    if (res && res.ok) {
+                        if (res.settings) await refreshViewsAfterOneDriveRestore(res.settings);
+                        const msg = res.message || t('oneDriveToastRestored', { tasks: 0, templates: 0, settings: 0 });
+                        setOneDriveInlineStatus(msg, false);
+                        showToast(msg, 'success');
+                    } else {
+                        const msg = (res && res.message) || t('oneDriveErrRestoreFailed');
+                        setOneDriveInlineStatus(msg, true);
+                        showToast(msg, 'error');
+                    }
+                } finally {
+                    setBusy(btnRestore, false);
+                }
+            });
+        }
+
+        const btnDisconnect = document.getElementById('btn-onedrive-disconnect');
+        if (btnDisconnect) {
+            btnDisconnect.addEventListener('click', async () => {
+                if (!window.electronAPI || typeof window.electronAPI.disconnectOneDrive !== 'function') return;
+                const res = await window.electronAPI.disconnectOneDrive();
+                if (res && res.ok) {
+                    if (res.status) renderOneDriveCard(res.status);
+                    const msg = res.message || t('oneDriveToastDisconnected');
+                    setOneDriveInlineStatus(msg, false);
+                    showToast(msg, 'info');
+                }
+            });
+        }
+
+        const bindOpenFolder = (btn) => {
+            if (!btn) return;
+            btn.addEventListener('click', async () => {
+                if (!window.electronAPI || typeof window.electronAPI.openOneDriveFolder !== 'function') return;
+                const res = await window.electronAPI.openOneDriveFolder();
+                if (!res || !res.ok) {
+                    showToast((res && res.message) || t('errorOpenFolder'), 'error');
+                }
+            });
+        };
+        bindOpenFolder(document.getElementById('btn-onedrive-open-folder'));
+        bindOpenFolder(document.getElementById('btn-onedrive-open-folder-off'));
+
+        const bindSelectFolder = (btn) => {
+            if (!btn) return;
+            btn.addEventListener('click', async () => {
+                if (!window.electronAPI || typeof window.electronAPI.selectOneDriveFolder !== 'function') return;
+                const res = await window.electronAPI.selectOneDriveFolder();
+                if (res && res.ok) {
+                    if (res.status) renderOneDriveCard(res.status);
+                    const msg = res.message || t('oneDriveToastFolderUpdated');
+                    setOneDriveInlineStatus(msg, false);
+                    showToast(msg, 'success');
+                } else if (res && res.code !== 'CANCELLED') {
+                    const msg = (res && res.message) || t('oneDriveErrInvalidFolder');
+                    setOneDriveInlineStatus(msg, true);
+                    showToast(msg, 'error');
+                }
+            });
+        };
+        bindSelectFolder(document.getElementById('btn-onedrive-select-folder'));
+        bindSelectFolder(document.getElementById('btn-onedrive-select-folder-off'));
+
+        const bindResetFolder = (btn) => {
+            if (!btn) return;
+            btn.addEventListener('click', async () => {
+                if (!window.electronAPI || typeof window.electronAPI.resetOneDriveFolder !== 'function') return;
+                const res = await window.electronAPI.resetOneDriveFolder();
+                if (res && res.ok) {
+                    if (res.status) renderOneDriveCard(res.status);
+                    const msg = res.message || t('oneDriveToastFolderReset');
+                    setOneDriveInlineStatus(msg, false);
+                    showToast(msg, 'info');
+                }
+            });
+        };
+        bindResetFolder(document.getElementById('btn-onedrive-reset-folder'));
+        bindResetFolder(document.getElementById('btn-onedrive-reset-folder-off'));
+
+        const autoChk = document.getElementById('setting-onedrive-autosync');
+        if (autoChk) {
+            autoChk.addEventListener('change', async () => {
+                if (!window.electronAPI || typeof window.electronAPI.setOneDriveAutoSync !== 'function') return;
+                const enabled = Boolean(autoChk.checked);
+                const res = await window.electronAPI.setOneDriveAutoSync(enabled);
+                if (res && res.ok) {
+                    if (res.status) renderOneDriveCard(res.status);
+                    showToast(res.message || (enabled ? t('oneDriveToastAutoSyncOn') : t('oneDriveToastAutoSyncOff')), 'info');
+                }
+            });
+        }
+
+        // Format sonrasi otomatik kurtarma modali butonlari
+        const btnRecRestore = document.getElementById('btn-onedrive-recovery-restore');
+        if (btnRecRestore) {
+            btnRecRestore.addEventListener('click', async () => {
+                if (!window.electronAPI || typeof window.electronAPI.restoreOneDrive !== 'function') return;
+                setBusy(btnRecRestore, true);
+                try {
+                    const res = await window.electronAPI.restoreOneDrive({ connect: true });
+                    if (res && res.ok) {
+                        closeModal('modal-onedrive-recovery');
+                        if (res.status) renderOneDriveCard(res.status);
+                        if (res.settings) await refreshViewsAfterOneDriveRestore(res.settings);
+                        showToast(res.message || t('oneDriveToastConnectedRestored'), 'success');
+                    } else {
+                        const errEl = document.getElementById('onedrive-recovery-error');
+                        const msg = (res && res.message) || t('oneDriveErrRestoreFailed');
+                        if (errEl) {
+                            errEl.textContent = msg;
+                            errEl.classList.remove('hidden');
+                        }
+                    }
+                } finally {
+                    setBusy(btnRecRestore, false);
+                }
+            });
+        }
+
+        const dismissRecoveryFlow = async () => {
+            closeModal('modal-onedrive-recovery');
+            try {
+                if (window.electronAPI && typeof window.electronAPI.dismissOneDriveRecovery === 'function') {
+                    const res = await window.electronAPI.dismissOneDriveRecovery();
+                    if (res && res.status) renderOneDriveCard(res.status);
+                }
+            } catch (_) { /* yut */ }
+        };
+        const btnRecFresh = document.getElementById('btn-onedrive-recovery-fresh');
+        const btnRecClose = document.getElementById('modal-onedrive-recovery-close');
+        if (btnRecFresh) btnRecFresh.addEventListener('click', dismissRecoveryFlow);
+        if (btnRecClose) btnRecClose.addEventListener('click', dismissRecoveryFlow);
+    })();
+
 
     // ── Legal Modals ──
     // Erişilebilirlik katmanı (WCAG 2.4.3 / 4.1.2). Öncesinde modallerde
@@ -7061,6 +8975,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         'modal-confirm-link': 'modal-confirm-link-cancel',
         'modal-confirm-action': 'modal-confirm-action-cancel',
         'modal-delete-data': 'modal-delete-data-cancel',
+        'modal-onedrive-recovery': 'btn-onedrive-recovery-fresh',
         'modal-template-editor': 'modal-template-editor-close',
         'modal-restore-templates': 'modal-restore-templates-close',
         'modal-eula': 'modal-eula-close',
@@ -7364,12 +9279,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.electronAPI && window.electronAPI.onTaskFailed) {
         window.electronAPI.onTaskFailed((payload) => handleTaskResult(payload, false));
     }
-    // A6: kapatma engellendi — toast + kalıcı uyarı satırı.
+    // A6: kapatma engellendi - toast + kalıcı uyarı satırı.
     if (window.electronAPI && window.electronAPI.onShutdownVetoed) {
         window.electronAPI.onShutdownVetoed((payload) => {
             const title = t('shutdownVetoedTitle');
             const detail = (payload && payload.message) || t('shutdownVetoedDetail');
-            showToast(`${title} — ${detail}`, 'error');
+            showToast(`${title} - ${detail}`, 'error');
             const box = document.getElementById('shutdown-veto-notice');
             if (box) {
                 const titleEl = box.querySelector('[data-veto-title]');
@@ -7418,16 +9333,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Y-02: tepsi duraklat/çıkış PIN'li akışı ana pencerede tamamlanır.
+    // Y-02: tepsi duraklat/çıkış ve Jump List/global iptal PIN'li akışı ana pencerede tamamlanır.
     if (window.electronAPI && window.electronAPI.onRequestTrayPinAction) {
         window.electronAPI.onRequestTrayPinAction(async (reason) => {
-            const action = reason === 'quit' ? 'quit-app' : 'toggle-pause-all';
-            const run = (pin) => window.electronAPI[reason === 'quit' ? 'quitApp' : 'togglePauseAll'](pin);
+            const action = reason === 'quit'
+                ? 'quit-app'
+                : (reason === 'cancel' ? 'cancel-action' : 'toggle-pause-all');
+            const run = (pin) => {
+                if (reason === 'quit') return window.electronAPI.quitApp(pin);
+                if (reason === 'cancel') return window.electronAPI.cancelAction(pin);
+                return window.electronAPI.togglePauseAll(pin);
+            };
             requestPin(t('pinPromptCancel'), {
                 run,
                 done: (final) => {
                     if (final && final.success === false) {
                         showToast(final.message || t('errorSaveFailed'), 'error');
+                    } else if (action === 'cancel-action') {
+                        showToast((final && final.message) || t('toastActionCancelled'), 'success');
+                        if (typeof loadTasks === 'function') loadTasks();
                     } else if (action === 'toggle-pause-all') {
                         showToast(t('toastSettingsSaved'), 'success');
                     }
@@ -7436,7 +9360,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Initial Load — aktif durum tek yoldan (restoreActiveState) yukarıda yüklendi.
+    // Initial Load - aktif durum tek yoldan (restoreActiveState) yukarıda yüklendi.
     // ── First-run onboarding (3 adım) ─────────────────────────────
     // Normal kullanıcı ilk görevi ≤2 tıkla kursun: senaryo → ayrıntı →
     // oluştur. Seçimler mevcut IPC sözleşmesini kullanır (yeni yol yok).
@@ -7550,6 +9474,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
         } catch (_) { /* görev listesi okunamadıysa rehber gösterilir */ }
+        if (oneDriveRecoveryPrompted) return;
         overlay.classList.remove('hidden');
         const step1 = document.getElementById('onboarding-step-1');
         const step2 = document.getElementById('onboarding-step-2');
@@ -7580,7 +9505,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (skip) skip.addEventListener('click', finishOnboarding);
     }
 
-    loadSettings();
+    loadSettings().then(() => {
+        refreshOneDriveStatus({ checkRecovery: true });
+    });
     if (typeof initOnboarding === 'function') initOnboarding();
 
     // A6: kapatma engellendi bildirimi kapatılabilir olmalı.
@@ -7626,7 +9553,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     })();
 
     // Veri kurtarma bildirimi: bozuk dosya karantinaya alındıysa
-    // sessiz sıfırlama YAPILMAZ — kullanıcı ne olduğunu ve özgün
+    // sessiz sıfırlama YAPILMAZ - kullanıcı ne olduğunu ve özgün
     // dosyanın nerede olduğunu görmeli.
     (async () => {
         try {

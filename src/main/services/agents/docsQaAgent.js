@@ -1,5 +1,5 @@
 /**
- * agents/docsQaAgent.js — WP-8
+ * agents/docsQaAgent.js - WP-8
  * Yerel Doküman RAG Ajanı:
  * 1. DocsKnowledgeBase (BM25 + TR/EN eşanlamlı genişletme) ile en alakalı
  *    doküman parçacıklarını çeker.
@@ -21,12 +21,20 @@ function buildGroundedPrompt(question, chunks, language) {
         .map((c, idx) => `[${idx + 1}] ${c.title}\n${c.body}${c.command ? `\nKomut: ${c.command}` : ''}`)
         .join('\n\n');
     const system = isTr
-        ? 'Sen Power Pilot resmi uygulama dokümantasyon asistanısın. SADECE verilen kaynak bağlama dayanarak kısa, net ve doğru Türkçe yanıt ver. Kaynakta olmayan özellik veya komut uydurma.'
-        : 'You are the official Power Pilot documentation assistant. Answer concisely and accurately ONLY from the provided context. Never invent features or commands not in the context.';
+        ? 'Sen Power Pilot resmi uygulama dokümantasyon asistanısın. SADECE verilen kaynak bağlama dayanarak kısa, net ve doğru Türkçe yanıt ver. Kaynakta olmayan özellik veya komut uydurma. /no_think'
+        : 'You are the official Power Pilot documentation assistant. Answer concisely and accurately ONLY from the provided context. Never invent features or commands not in the context. /no_think';
     const user = isTr
-        ? `Kaynak Bağlam:\n${context}\n\nKullanıcı Sorusu: ${question}\nYanıt:`
-        : `Context:\n${context}\n\nUser Question: ${question}\nAnswer:`;
+        ? `Kaynak Bağlam:\n${context}\n\nKullanıcı Sorusu: ${question}\nYanıt: /no_think`
+        : `Context:\n${context}\n\nUser Question: ${question}\nAnswer: /no_think`;
     return { system, user };
+}
+
+function stripThinkingBlocks(raw) {
+    return String(raw || '')
+        .replace(/<think>[\s\S]*?<\/think>/gi, '')
+        .replace(/^[\s\S]*?<\/think>/i, '')
+        .replace(/<think>[\s\S]*$/i, '')
+        .trim();
 }
 
 async function synthesizeWithLlm(backend, question, chunks, language) {
@@ -44,7 +52,7 @@ async function synthesizeWithLlm(backend, question, chunks, language) {
             maxTokens: RAG_MAX_TOKENS
         });
         const text = typeof res === 'string' ? res : String(res && res.text !== undefined ? res.text : '');
-        const clean = text.trim();
+        const clean = stripThinkingBlocks(text);
         return clean.length >= 12 ? clean : null;
     } catch (err) {
         log.warn('[docsQaAgent] LLM RAG sentezi başarısız, deterministik özet kullanılıyor:', err && err.message);

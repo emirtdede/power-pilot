@@ -1,5 +1,5 @@
 /**
- * agents/recommenderAgent.js — F9.1 + WP-8
+ * agents/recommenderAgent.js - F9.1 + WP-8
  * Proaktif önerici (TR / EN): 7 günlük desen + katı sessizlik kuralları.
  */
 'use strict';

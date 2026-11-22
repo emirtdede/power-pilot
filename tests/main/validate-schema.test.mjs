@@ -1,5 +1,5 @@
 /**
- * validate-schema.test.mjs — IPC doğrulama katmanı (saf fonksiyonlar)
+ * validate-schema.test.mjs - IPC doğrulama katmanı (saf fonksiyonlar)
  *
  * Kapsam hedefi: ayar şeması türleri, IP/CIDR normalizasyonu, görev/koşul/
  * zincir doğrulaması, webhook SSRF kapısı ve PIN biçimi. Electron gerekmez.
@@ -24,7 +24,7 @@ import {
     MAX_DURATION_MS
 } from '../../src/main/ipc/validate.js';
 
-describe('validateSettings — şema türleri', () => {
+describe('validateSettings - şema türleri', () => {
     it('boş / dizi / null gövde reddedilir', () => {
         expect(validateSettings({}).code).toBe('INVALID_BODY');
         expect(validateSettings([]).code).toBe('INVALID_BODY');
@@ -125,7 +125,7 @@ describe('validateSettings — şema türleri', () => {
     });
 });
 
-describe('validateSettings — LAN / TLS çapraz kuralları', () => {
+describe('validateSettings - LAN / TLS çapraz kuralları', () => {
     // Güvenlik bayrakları normal şemada yazılamaz; çapraz kurallar MEVCUT
     // ayarlarla birleşik etki üzerinden çalışır (bu yüzden currentSettings kullanılır).
     const cert = { localApiCertFile: 'C:\\c\\a.crt', localApiKeyFile: 'C:\\c\\a.key' };

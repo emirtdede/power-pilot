@@ -1,5 +1,5 @@
 /**
- * mcp-server.test.mjs — Built-in MCP Server JSON-RPC 2.0 unit tests
+ * mcp-server.test.mjs - Built-in MCP Server JSON-RPC 2.0 unit tests
  */
 import { describe, it, expect, vi } from 'vitest';
 import { createRequire } from 'node:module';
@@ -37,20 +37,38 @@ describe('Power Pilot MCP Server (JSON-RPC 2.0)', () => {
         expect(SERVER_INFO.publisher).toBe('Vellium');
     });
 
-    it('tools/list 8 otomasyon aracını listeler', async () => {
+    it('tools/list tam arayuzsuz kontrol araclarini (62 tool) listeler', async () => {
         const res = await handleRpcRequest({
             jsonrpc: '2.0',
             id: 2,
             method: 'tools/list'
         });
         expect(res.result.tools).toHaveLength(TOOLS.length);
+        expect(TOOLS.length).toBeGreaterThanOrEqual(62);
         const names = res.result.tools.map((t) => t.name);
-        expect(names).toContain('powerpilot_status');
-        expect(names).toContain('powerpilot_schedule_timer');
-        expect(names).toContain('powerpilot_cancel_timer');
-        expect(names).toContain('powerpilot_list_tasks');
-        expect(names).toContain('powerpilot_power_action');
-        expect(names).toContain('powerpilot_audit_verify');
+        for (const expected of [
+            'powerpilot_status', 'powerpilot_schedule_timer', 'powerpilot_create_task',
+            'powerpilot_cancel_timer', 'powerpilot_pause_task', 'powerpilot_resume_task',
+            'powerpilot_snooze_task', 'powerpilot_pause_all', 'powerpilot_list_tasks',
+            'powerpilot_warning_status', 'powerpilot_warning_action',
+            'powerpilot_power_action', 'powerpilot_list_templates', 'powerpilot_run_template',
+            'powerpilot_reset_template', 'powerpilot_restore_templates',
+            'powerpilot_get_settings', 'powerpilot_update_settings', 'powerpilot_update_security_settings',
+            'powerpilot_cancel_pin', 'powerpilot_rotate_api_key',
+            'powerpilot_export_data', 'powerpilot_import_data',
+            'powerpilot_get_history', 'powerpilot_get_statistics', 'powerpilot_get_health',
+            'powerpilot_device_estimate', 'powerpilot_console_sync',
+            'powerpilot_wol_send', 'powerpilot_webhooks_list', 'powerpilot_ups_test',
+            'powerpilot_cloud_status', 'powerpilot_cloud_action', 'powerpilot_cloud_folder',
+            'powerpilot_ai_status', 'powerpilot_ai_model', 'powerpilot_ai_insights',
+            'powerpilot_ai_parse', 'powerpilot_ai_assist', 'powerpilot_ai_diagnose', 'powerpilot_docs_search',
+            'powerpilot_diagnostics', 'powerpilot_updates', 'powerpilot_updates_manage',
+            'powerpilot_audit_log', 'powerpilot_audit_verify', 'powerpilot_submit_order',
+            'powerpilot_manage_exemptions', 'powerpilot_manage_maintenance_windows'
+        ]) {
+            expect(names).toContain(expected);
+        }
+        expect(RESOURCES).toHaveLength(11);
     });
 
     it('tools/call powerpilot_schedule_timer dakikayı ms olarak yerel API’ye iletir', async () => {

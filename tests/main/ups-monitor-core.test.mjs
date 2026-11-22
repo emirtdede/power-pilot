@@ -1,5 +1,5 @@
 /**
- * ups-monitor-core.test.mjs — NUT UPS istemcisi (sahte socket ile)
+ * ups-monitor-core.test.mjs - NUT UPS istemcisi (sahte socket ile)
  * Gerçek TCP bağlantısı YOK; net modülü enjekte edilir.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -31,7 +31,7 @@ const responder = (payload) => ({ sock, onConnect }) => {
     });
 };
 
-describe('UpsMonitor — ayrıştırıcılar ve doğrulama', () => {
+describe('UpsMonitor - ayrıştırıcılar ve doğrulama', () => {
     it('parseVarLine / parseListVars', () => {
         expect(parseVarLine('VAR ups battery.charge "100"', 'ups', 'battery.charge')).toBe('100');
         expect(parseVarLine('VAR ups battery.charge "100"', 'baska', 'battery.charge')).toBeNull();
@@ -58,7 +58,7 @@ describe('UpsMonitor — ayrıştırıcılar ve doğrulama', () => {
     });
 });
 
-describe('UpsMonitor — sorgu akışı', () => {
+describe('UpsMonitor - sorgu akışı', () => {
     const PAYLOAD = [
         'BEGIN LIST VAR ups',
         'VAR ups battery.charge "87"',

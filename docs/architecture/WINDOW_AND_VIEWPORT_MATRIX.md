@@ -22,8 +22,8 @@ Power Pilot, Windows 10 (1809+) ve Windows 11 masaüstü ortamları için tasarl
 | Genişlik Aralığı | Kenar Çubuğu (Sidebar) Kipi | Genişlik | Davranış |
 |---|---|---|---|
 | **≥ 1120 px** | Geniş (`wide`) | `248 px` (`15.5rem`) | İkon + tam metin etiketleri + alt bilgi kartı görünür. |
-| **900 px – 1119 px** | İkon Rayı (`rail`) | `72 px` (`4.5rem`) | Yalnız ikonlar görünür; her düğmede aktif dilde `aria-label`, `title` ve `data-tip` bulunur. |
-| **720 px – 899 px** | Çekmece (`drawer`) | `272 px` (`17rem`) | Kenar çubuğu ekran dışındadır (`visibility: hidden`); başlık çubuğundaki `#btn-nav-toggle` düğmesiyle açılır, arka plan `inert` olur ve odak çekmece içinde tutulur. |
+| **900 px - 1119 px** | İkon Rayı (`rail`) | `72 px` (`4.5rem`) | Yalnız ikonlar görünür; her düğmede aktif dilde `aria-label`, `title` ve `data-tip` bulunur. |
+| **720 px - 899 px** | Çekmece (`drawer`) | `272 px` (`17rem`) | Kenar çubuğu ekran dışındadır (`visibility: hidden`); başlık çubuğundaki `#btn-nav-toggle` düğmesiyle açılır, arka plan `inert` olur ve odak çekmece içinde tutulur. |
 
 ### Kısa Pencere Yüksekliği (`≤ 640 px`)
 - Pano (`#view-dashboard`) görünümünde dikey boşluklar otomatik sıkılaştırılır; böylece `720 × 520` ve `1024 × 600` pencerelerde ilk boyamada (`scrollTop = 0`) süre girişleri ve adımlayıcı düğmeler alttaki yapışkan (sticky) başlatma çubuğu tarafından örtülmez.

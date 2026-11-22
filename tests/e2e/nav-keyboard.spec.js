@@ -1,5 +1,5 @@
 /**
- * nav-keyboard.spec.js — PPX-001 / PPX-011 / PPX-012 /
+ * nav-keyboard.spec.js - PPX-001 / PPX-011 / PPX-012 /
  * PPX-004 (drawer) / PPX-017 (filtre) klavye sözleşmesi.
  * TC-01…TC-07, TC-13…TC-17, TC-53.
  */
@@ -75,7 +75,7 @@ test('PPX-001/011/012: nav klavyeyle erişilir, görünüm odağı ve başlığ�
             await window.evaluate((navId) => document.getElementById(navId).click(), id);
             await waitForStable(window, 80);
             const title = await window.evaluate(() => document.title);
-            expect(title, `PPX-011: ${id} başlığı`).toMatch(/ — Power Pilot$/);
+            expect(title, `PPX-011: ${id} başlığı`).toMatch(/ - Power Pilot$/);
             expect(title, `PPX-011: ${id} ham i18n anahtarı içermez`).not.toMatch(/^[a-zA-Z]+\.[a-zA-Z]+/);
             titles.push(title);
         }

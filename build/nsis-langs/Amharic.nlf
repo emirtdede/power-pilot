@@ -1,0 +1,191 @@
+﻿# Header, don't edit
+NLF v6
+# Start editing here
+# Language ID
+1118
+# Font and size - dash (-) means default
+-
+-
+# Codepage - dash (-) means ASCII code page
+1200
+# RTL - anything else than RTL means LTR
+-
+# Power Pilot custom NLF table
+# ^Branding
+Nullsoft Install System %s
+# ^SetupCaption
+$(^Name) መጫኛ
+# ^UninstallCaption
+$(^Name) ማራገፊያ
+# ^LicenseSubCaption
+: License
+# ^ComponentsSubCaption
+: የመጫኛ አቃፊ
+# ^DirSubCaption
+: የመጫኛ አቃፊ
+# ^InstallingSubCaption
+: በመጫን ላይ
+# ^CompletedSubCaption
+: ተጠናቋል
+# ^UnComponentsSubCaption
+: በማራገፍ ላይ
+# ^UnDirSubCaption
+: የመጫኛ አቃፊ
+# ^ConfirmSubCaption
+: በማራገፍ ላይ
+# ^UninstallingSubCaption
+: በማራገፍ ላይ
+# ^UnCompletedSubCaption
+: ተጠናቋል
+# ^BackBtn
+< &ተመለስ
+# ^NextBtn
+&ቀጣይ >
+# ^AgreeBtn
+&እስማማለሁ
+# ^AcceptBtn
+&እስማማለሁ
+# ^DontAcceptBtn
+ሰርዝ
+# ^InstallBtn
+&ጫን
+# ^UninstallBtn
+&አራግፍ
+# ^CancelBtn
+ሰርዝ
+# ^CloseBtn
+&ዝጋ
+# ^BrowseBtn
+&አስስ...
+# ^ShowDetailsBtn
+&ዝርዝሮችን አሳይ
+# ^ClickNext
+ለመቀጠል ቀጣይ ጠቅ ያድርጉ።
+# ^ClickInstall
+መጫን ለመጀመር ጫን ጠቅ ያድርጉ።
+# ^ClickUninstall
+ማራገፍ ለመጀመር አራግፍ ጠቅ ያድርጉ።
+# ^Name
+Name
+# ^Completed
+ተጠናቋል
+# ^LicenseText
+ለመቀጠል ቀጣይ ጠቅ ያድርጉ።
+# ^LicenseTextCB
+ለመቀጠል ቀጣይ ጠቅ ያድርጉ።
+# ^LicenseTextRB
+ለመቀጠል ቀጣይ ጠቅ ያድርጉ።
+# ^UnLicenseText
+ለመቀጠል ቀጣይ ጠቅ ያድርጉ።
+# ^UnLicenseTextCB
+ለመቀጠል ቀጣይ ጠቅ ያድርጉ።
+# ^UnLicenseTextRB
+ለመቀጠል ቀጣይ ጠቅ ያድርጉ።
+# ^Custom
+Custom
+# ^ComponentsText
+ለመቀጠል ቀጣይ ጠቅ ያድርጉ።
+# ^ComponentsSubText1
+ለመቀጠል ቀጣይ ጠቅ ያድርጉ።
+# ^ComponentsSubText2_NoInstTypes
+ለመቀጠል ቀጣይ ጠቅ ያድርጉ።
+# ^ComponentsSubText2
+ለመቀጠል ቀጣይ ጠቅ ያድርጉ።
+# ^UnComponentsText
+ለመቀጠል ቀጣይ ጠቅ ያድርጉ።
+# ^UnComponentsSubText1
+ለመቀጠል ቀጣይ ጠቅ ያድርጉ።
+# ^UnComponentsSubText2_NoInstTypes
+ለመቀጠል ቀጣይ ጠቅ ያድርጉ።
+# ^UnComponentsSubText2
+ለመቀጠል ቀጣይ ጠቅ ያድርጉ።
+# ^DirText
+መጫኛው $(^NameDA) ን በሚከተለው አቃፊ ውስጥ ይጭናል። ሌላ አቃፊ ለመምረጥ አስስ ጠቅ ያድርጉ። $_CLICK
+# ^DirSubText
+መድረሻ አቃፊ
+# ^DirBrowseText
+$(^NameDA) የሚጫንበትን አቃፊ ይምረጡ:
+# ^UnDirText
+$(^NameDA) ከሚከተለው አቃፊ ይወገዳል። $_CLICK
+# ^UnDirSubText
+""
+# ^UnDirBrowseText
+$(^NameDA) የሚጫንበትን አቃፊ ይምረጡ:
+# ^SpaceAvailable
+"ያለው ቦታ: "
+# ^SpaceRequired
+"የሚያስፈልገው ቦታ: "
+# ^UninstallingText
+$(^NameDA) ከሚከተለው አቃፊ ይወገዳል። $_CLICK
+# ^UninstallingSubText
+የሚወገድበት ቦታ:
+# ^FileError
+Error: \r\n\r\n$0
+# ^FileError_NoIgnore
+Error: \r\n\r\n$0
+# ^CantWrite
+"Error: "
+# ^CopyFailed
+Error
+# ^CopyTo
+"-> "
+# ^Registering
+"... "
+# ^Unregistering
+"... "
+# ^SymbolNotFound
+"Error: "
+# ^CouldNotLoad
+"Error: "
+# ^CreateFolder
+"+ "
+# ^CreateShortcut
+"+ "
+# ^CreatedUninstaller
+"+ "
+# ^Delete
+"- "
+# ^DeleteOnReboot
+"- "
+# ^ErrorCreatingShortcut
+"Error: "
+# ^ErrorCreating
+"Error: "
+# ^ErrorDecompressing
+ፋይሎችን መፍታት አልተሳካም። እባክዎ መጫኛውን እንደገና ያስጀምሩ።
+# ^ErrorRegistering
+DLL Error
+# ^ExecShell
+"Exec: "
+# ^Exec
+"Exec: "
+# ^Extract
+"-> "
+# ^ErrorWriting
+"Error: "
+# ^InvalidOpcode
+ፋይሎችን መፍታት አልተሳካም። እባክዎ መጫኛውን እንደገና ያስጀምሩ።
+# ^NoOLE
+"OLE: "
+# ^OutputFolder
+"-> "
+# ^RemoveFolder
+"- "
+# ^RenameOnReboot
+"-> "
+# ^Rename
+"-> "
+# ^Skipped
+"... "
+# ^CopyDetails
+ዝርዝሮችን ቅዳ
+# ^LogInstall
+Log
+# ^Byte
+B
+# ^Kilo
+ K
+# ^Mega
+ M
+# ^Giga
+ G

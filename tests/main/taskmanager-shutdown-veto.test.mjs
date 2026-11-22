@@ -1,5 +1,5 @@
 /**
- * taskmanager-shutdown-veto.test.mjs — A6 entegrasyon
+ * taskmanager-shutdown-veto.test.mjs - A6 entegrasyon
  *
  * Gerçek `TaskManager` + gerçek `TerminalActionVerifier` (enjekte edilmiş
  * timer). OS güç çağrısı ASLA yapılmaz: `PowerService` yerine sahte nesne.
@@ -38,7 +38,7 @@ function spawnWith({ powerResult = { success: true } } = {}) {
 
 const flush = async (ms = 60) => new Promise((resolve) => setTimeout(resolve, ms));
 
-describe('TaskManager A6 — kapatma engellendi raporu', () => {
+describe('TaskManager A6 - kapatma engellendi raporu', () => {
     it('kapatma komutu başarılı ama süreç ayaktaysa veto raporlanır', async () => {
         const { tm, power, timers } = spawnWith();
         const veto = vi.fn();

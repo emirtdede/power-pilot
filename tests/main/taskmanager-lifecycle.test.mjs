@@ -1,5 +1,5 @@
 /**
- * taskmanager-lifecycle.test.mjs — TaskManager yaşam döngüsü (WP-02/06/08/11)
+ * taskmanager-lifecycle.test.mjs - TaskManager yaşam döngüsü (WP-02/06/08/11)
  *
  * Tüm OS ve UI etkileşimleri enjekte edilir (power, warning, history, webhook,
  * schedulerBridge, storage). Gerçek görev yürütme/kapatma YOK.
@@ -68,7 +68,7 @@ function metrics(over = {}) {
 const flush = async (ms = 40) => new Promise((r) => setTimeout(r, ms));
 const durationTask = (over = {}) => Object.assign({ name: 'g', action: 'lock', trigger: { type: 'duration', durationMs: 60000 } }, over);
 
-describe('TaskManager — claim yaşam döngüsü', () => {
+describe('TaskManager - claim yaşam döngüsü', () => {
     it('claimTask: yok/paused/not-runnable/occupied', () => {
         const h = makeHarness();
         expect(h.tm.claimTask('yok')).toEqual({ ok: false, code: 'NOT_FOUND' });
@@ -115,7 +115,7 @@ describe('TaskManager — claim yaşam döngüsü', () => {
     });
 });
 
-describe('TaskManager — açılış kurtarma ve tekrarlama', () => {
+describe('TaskManager - açılış kurtarma ve tekrarlama', () => {
     it('EXECUTING/WARNING açılışta FAILED olur ve history yazılır', () => {
         const h = makeHarness();
         const a = h.tm.createTask(durationTask({ name: 'a' }));
@@ -183,7 +183,7 @@ describe('TaskManager — açılış kurtarma ve tekrarlama', () => {
     });
 });
 
-describe('TaskManager — değerlendirme döngüsü', () => {
+describe('TaskManager - değerlendirme döngüsü', () => {
     it('pausedAll iken evaluateTasks hiçbir şey yapmaz', async () => {
         const h = makeHarness();
         h.tm.pausedAll = true;
@@ -296,7 +296,7 @@ describe('TaskManager — değerlendirme döngüsü', () => {
     });
 });
 
-describe('TaskManager — yürütme akışı', () => {
+describe('TaskManager - yürütme akışı', () => {
     async function runTask(over = {}, taskOver = {}, tmPoke = null) {
         const h = makeHarness(over);
         const t = h.tm.createTask(durationTask(taskOver));
@@ -437,7 +437,7 @@ describe('TaskManager — yürütme akışı', () => {
     });
 });
 
-describe('TaskManager — iptal / erteleme / duraklatma', () => {
+describe('TaskManager - iptal / erteleme / duraklatma', () => {
     it('cancelTask: yok / zaten iptal / başarılı / persist hatası', () => {
         const h = makeHarness();
         expect(h.tm.cancelTask('yok')).toMatchObject({ ok: false, code: 'NOT_FOUND' });
@@ -563,7 +563,7 @@ describe('TaskManager — iptal / erteleme / duraklatma', () => {
     });
 });
 
-describe('TaskManager — runTaskNow, zincir, sorgular', () => {
+describe('TaskManager - runTaskNow, zincir, sorgular', () => {
     it('runTaskNow: yok / disabled / paused / expired', async () => {
         const h = makeHarness();
         expect(h.tm.runTaskNow('yok')).toBe(false);

@@ -1,5 +1,5 @@
 /**
- * OrderQueue.js — FAZ B.
+ * OrderQueue.js - FAZ B.
  * Konsol emirleri için kalıcı, idempotent kuyruk (çevrimdışı → bekliyor).
  * - Tekrar-gönderim aynı idempotencyKey/nonce ile gelirse TEK kayıt tutulur.
  * - Durumlar: pending → acked (sonuçla) ; eski acked kayıtlar purge ile temizlenir.
@@ -47,7 +47,7 @@ class OrderQueue {
      * Doğrulanmış imzalı emri kuyruğa alır. Aynı anahtar varsa mevcut kayıt döner
      * (yeniden oluşturulmaz) → idempotent.
      * K6: kapasite dolunca önce acked kayıtlar budanır; bekleyen (pending) emir
-     * ASLA otomatik düşürülmez — yer yoksa QUEUE_FULL ile reddedilir.
+     * ASLA otomatik düşürülmez - yer yoksa QUEUE_FULL ile reddedilir.
      */
     enqueue(signed, { idempotencyKey = null } = {}) {
         if (!signed || typeof signed !== 'object' || !signed.order) {
@@ -89,7 +89,7 @@ class OrderQueue {
     }
 
     /**
-     * K6: Yer açma — süresi dolmuş acked kayıtlar (purge), sonra en eski
+     * K6: Yer açma - süresi dolmuş acked kayıtlar (purge), sonra en eski
      * acked kayıtlar. Pending'e dokunulmaz. Yeni listeyi döner (persist eder).
      */
     makeRoom(list) {

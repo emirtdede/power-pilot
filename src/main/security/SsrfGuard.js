@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * SsrfGuard.js — WP-12.T1/T2
+ * SsrfGuard.js - WP-12.T1/T2
  * Webhook hedeflerini yalnızca genel HTTPS + genel unicast IP ile sınırlar.
  * DNS sonucu pinlenir; `https.request` ikinci kez DNS çözmez.
  */

@@ -1,6 +1,6 @@
 /**
  * MetricCollector.js
- * WBS-1.1: Gerçek sistem ölçümü — placeholder YASAK.
+ * WBS-1.1: Gerçek sistem ölçümü - placeholder YASAK.
  * CPU: os.cpus() delta (yerleşik, ek bağımlılıksız).
  * Network/Disk/Battery: systeminformation@5.31.0 (MIT, sıfır bağımlılık).
  *   - systeminformation dokümanı gereği per-second değerler (rx_sec, rIO_sec)
@@ -159,7 +159,7 @@ class MetricCollector {
                 this.currentMetrics.processListStale = true;
             }
             const idleTask = this.sampleIdle();
-            // O-10: kaynaklar hâlâ uçuştaysa atlanır — üst üste WMI/PowerShell
+            // O-10: kaynaklar hâlâ uçuştaysa atlanır - üst üste WMI/PowerShell
             // çağrısı yok. Atlanan kaynak bu tick için başarısız sayılır.
             const networkTask = this._startSource('network', () => this.sampleNetwork());
             const disksTask = this._startSource('disks', () => this.sampleDisks());

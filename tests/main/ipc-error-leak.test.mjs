@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const mainSrc = fs.readFileSync(path.join(root, 'main.js'), 'utf8');
 
-describe('IPC hata yönetimi — kullanıcıya ham hata metni gitmez', () => {
+describe('IPC hata yönetimi - kullanıcıya ham hata metni gitmez', () => {
     it('hiçbir IPC yanıtı ham err.message taşımıyor', () => {
         const offenders = [];
         mainSrc.split(/\r?\n/).forEach((line, i) => {

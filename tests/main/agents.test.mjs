@@ -1,7 +1,7 @@
 /**
- * agents.test.mjs — F9.1 / TS-9.1
+ * agents.test.mjs - F9.1 / TS-9.1
  * Orkestratör yönlendirme + 4 ajan + susturma + kuyruk + denetim.
- * LLM teması yok (sahte AiService) — tam deterministik.
+ * LLM teması yok (sahte AiService) - tam deterministik.
  */
 import { describe, it, expect, vi } from 'vitest';
 import { createRequire } from 'node:module';
@@ -299,7 +299,7 @@ describe('HistoryService.recordAgentRun (F9.5)', () => {
     });
 });
 
-describe('WP-8 Ajanları — docsQaAgent, templateAgent, connectionAgent, diagnoseAgent ve runAssistant tam kapsam', () => {
+describe('WP-8 Ajanları - docsQaAgent, templateAgent, connectionAgent, diagnoseAgent ve runAssistant tam kapsam', () => {
     it('docsQaAgent: boş sorgu, eşleşmeyen sorgu, yerel RAG ve LLM RAG sentezi (TR + EN)', async () => {
 
         expect((await docsQaAgent.execute({ text: '   ', language: 'tr' })).code).toBe('EMPTY');

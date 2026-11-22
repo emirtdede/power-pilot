@@ -74,7 +74,7 @@ const TRIGGER_TYPE = {
 // Denetim kusuru: enum 13 tür ilan ediyordu ve doğrulayıcı hepsini kabul
 // ediyordu; ama `TaskManager` yalnızca duration/scheduled_time dağıtıyordu.
 // Diğer 10 türle gelen görev `draft` durumunda kalıyor, hiçbir zaman
-// tetiklenmiyor ve hiçbir hata da üretmiyordu — sessiz no-op.
+// tetiklenmiyor ve hiçbir hata da üretmiyordu - sessiz no-op.
 const DISPATCHABLE_TRIGGER_TYPES = new Set([
     TRIGGER_TYPE.DURATION,
     TRIGGER_TYPE.SCHEDULED_TIME
@@ -227,7 +227,7 @@ class AutomationTask {
         // P1-6 KÖK NEDEN: Eskiden burada yalnızca "safetyPolicy yoksa varsayılanı
         // yaz" vardı. Sonuç: HER görev tam bir politika nesnesi taşıyordu, yani
         // kalıcı ayarlarlar (`forceCloseApps`, `remoteApprovalRequired`) hiçbir
-        // zaman uygulanamıyordu — görev düzeyi "false" onları eziyordu. Ayar
+        // zaman uygulanamıyordu - görev düzeyi "false" onları eziyordu. Ayar
         // arayüzde vardı, davranışta yoktu (plasebo).
         //
         // Çözüm: `safetyPolicyExplicit` yalnızca çağıranın GERÇEKTEN seçtiği
@@ -288,7 +288,7 @@ class AutomationTask {
             timeOfDay: '00:00'
         };
 
-        // WBS-11.1: Zincir — bu görev bitince sırayla kurulacak halkalar.
+        // WBS-11.1: Zincir - bu görev bitince sırayla kurulacak halkalar.
         // [{action, delayMinutes}] en fazla 5 halka; kalıcıdır (toJSON).
         this.chain = Array.isArray(data.chain)
             ? data.chain.slice(0, 5).map(link => ({

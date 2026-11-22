@@ -1,6 +1,6 @@
 /**
- * taskmanager.test.mjs — WBS-0.1 / WBS-0.2 / TS-0.2
- * GÜVENLİK: OS çağrısı ASLA gerçek modüle gitmez — sahte `power` nesnesi
+ * taskmanager.test.mjs - WBS-0.1 / WBS-0.2 / TS-0.2
+ * GÜVENLİK: OS çağrısı ASLA gerçek modüle gitmez - sahte `power` nesnesi
  * constructor enjeksiyonuyla verilir (vi.mock kayıt-eşleşmesine güvenilmez).
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -244,7 +244,7 @@ describe('TaskManager Smart Finish kablolama (WBS-0.1)', () => {
 
     it('motor enjekte edilmezse koşullu görev güvenli atlanır (crash yok)', async () => {
         const d = makeDeps();
-        // Motor yok (null, null) ama güç sahte — tetikleme olmasa bile OS riski sıfır.
+        // Motor yok (null, null) ama güç sahte - tetikleme olmasa bile OS riski sıfır.
         const tm = new TaskManager(d.storage, d.warning, d.safety, d.history, d.webhook, null, null, d.power);
         live.push(tm);
         const task = tm.createTask({

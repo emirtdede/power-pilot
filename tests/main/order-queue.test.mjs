@@ -1,5 +1,5 @@
 /**
- * order-queue.test.mjs — FAZ B
+ * order-queue.test.mjs - FAZ B
  * Idempotent kuyruk: tekrar-gönderim tek kayıt, ack, purge.
  */
 import { describe, it, expect } from 'vitest';

@@ -170,7 +170,7 @@ class SafetyPolicyEngine {
             ? this.getFullscreenState()
             : null;
 
-        // 1. Protected Applications Check — ölçüm hatası fail-closed.
+        // 1. Protected Applications Check - ölçüm hatası fail-closed.
         if (policy.checkProtectedApps) {
             const procResult = await processesPromise;
             if (!procResult.ok) {
@@ -250,7 +250,7 @@ class SafetyPolicyEngine {
             }
         }
 
-        // 5. FAZ B: Kurumsal muafiyet — YALNIZCA konsol görevleri (yerel görevler etkilenmez).
+        // 5. FAZ B: Kurumsal muafiyet - YALNIZCA konsol görevleri (yerel görevler etkilenmez).
         if ((task.source === 'console' || task.policyId) && this.storage) {
             try {
                 const svc = new ExemptionService(this.storage);
@@ -262,7 +262,7 @@ class SafetyPolicyEngine {
                 });
                 if (hit) {
                     log.info(`[SafetyPolicyEngine] Konsol görevi muafiyetle engellendi: ${hit.id}`);
-                    return deny('EXEMPTION_ACTIVE', `Muafiyet devrede (${hit.reason} — onay: ${hit.approvedBy}).`);
+                    return deny('EXEMPTION_ACTIVE', `Muafiyet devrede (${hit.reason} - onay: ${hit.approvedBy}).`);
                 }
             } catch (err) {
                 log.error('[SafetyPolicyEngine] muafiyet kontrolü yapılamadı:', err && err.message);
@@ -284,7 +284,7 @@ class SafetyPolicyEngine {
             }
         }
 
-        // 7. FAZ D: Sunucu profili — konsoldan uyku/hazırda-beklet/kapatma YASAK.
+        // 7. FAZ D: Sunucu profili - konsoldan uyku/hazırda-beklet/kapatma YASAK.
         // Yeniden başlatma yalnızca bakım-penceresi bayrağıyla + pencere içinde.
         if (task.source === 'console' && this.storage && typeof this.storage.getSettings === 'function') {
             try {
@@ -372,7 +372,7 @@ class SafetyPolicyEngine {
         return { available: cap.available, checkedAt: cap.checkedAt, code: cap.code };
     }
 
-    // WBS-11.5: Açılış koruması — uptime eşik altındaysa idle-tetikleme atlanır.
+    // WBS-11.5: Açılış koruması - uptime eşik altındaysa idle-tetikleme atlanır.
     isBootGuardActive() {
         let guardSec = 120;
         try {

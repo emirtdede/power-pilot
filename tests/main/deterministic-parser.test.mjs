@@ -1,5 +1,5 @@
 /**
- * deterministic-parser.test.mjs — K1b
+ * deterministic-parser.test.mjs - K1b
  * Türkçe güç cümleleri LLM'siz çözülür; koşul cümleleri LLM'e bırakılır (null).
  */
 import { describe, it, expect } from 'vitest';

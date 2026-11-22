@@ -1,5 +1,5 @@
 /**
- * localapi-extra.test.mjs — LocalApiService kalan yardımcı dallar
+ * localapi-extra.test.mjs - LocalApiService kalan yardımcı dallar
  */
 import { describe, it, expect, vi } from 'vitest';
 import crypto from 'node:crypto';
@@ -42,7 +42,7 @@ const resStub = () => ({
     end(chunk) { if (chunk !== undefined) this.body += String(chunk); this.writableEnded = true; }
 });
 
-describe('LocalApiService — yanıt yardımcıları', () => {
+describe('LocalApiService - yanıt yardımcıları', () => {
     it('sendJson başlık gönderildiyse ikinci kez yazmaz', () => {
         const { svc } = svcWith();
         const res = resStub();
@@ -80,7 +80,7 @@ describe('LocalApiService — yanıt yardımcıları', () => {
     });
 });
 
-describe('LocalApiService — hız sınırı budama', () => {
+describe('LocalApiService - hız sınırı budama', () => {
     it('pruneRateLimit eski zaman damgalarını temizler', () => {
         const { svc } = svcWith();
         const old = Date.now() - 120000;
@@ -122,7 +122,7 @@ describe('LocalApiService — hız sınırı budama', () => {
     });
 });
 
-describe('LocalApiService — TLS/mTLS yardımcıları', () => {
+describe('LocalApiService - TLS/mTLS yardımcıları', () => {
     it('PFX materyali passphrase ile çözülür', () => {
         const { svc } = svcWith();
         const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-pfx-'));

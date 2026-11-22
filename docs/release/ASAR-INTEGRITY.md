@@ -1,4 +1,4 @@
-# ASAR Integrity — paket regresyonu ve düzeltmesi
+# ASAR Integrity - paket regresyonu ve düzeltmesi
 
 ## Belirti
 

@@ -1,5 +1,5 @@
 /**
- * templates.test.mjs — TemplateService: 10 hazır şablon + kullanıcı birleşimi + karantina.
+ * templates.test.mjs - TemplateService: 10 hazır şablon + kullanıcı birleşimi + karantina.
  * Kural: ölü şablon yasaktır (koşul destekli YA DA zamanlamalı olmalı).
  */
 import { describe, it, expect, vi } from 'vitest';

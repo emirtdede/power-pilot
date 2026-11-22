@@ -1,5 +1,5 @@
 /**
- * audit-fixes.test.mjs — Denetim turu düzeltmeleri:
+ * audit-fixes.test.mjs - Denetim turu düzeltmeleri:
  * kill-switch (konsol→ajan→motor), makbuz döngüsü, GPO rozeti, TLS sıkı kip.
  */
 import { describe, it, expect, vi } from 'vitest';

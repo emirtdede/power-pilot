@@ -1,0 +1,191 @@
+﻿# Header, don't edit
+NLF v6
+# Start editing here
+# Language ID
+1115
+# Font and size - dash (-) means default
+-
+-
+# Codepage - dash (-) means ASCII code page
+1200
+# RTL - anything else than RTL means LTR
+-
+# Power Pilot custom NLF table
+# ^Branding
+Nullsoft Install System %s
+# ^SetupCaption
+$(^Name) ස්ථාපනය
+# ^UninstallCaption
+$(^Name) ඉවත් කිරීම
+# ^LicenseSubCaption
+: License
+# ^ComponentsSubCaption
+: ස්ථාපන ෆෝල්ඩරය
+# ^DirSubCaption
+: ස්ථාපන ෆෝල්ඩරය
+# ^InstallingSubCaption
+: ස්ථාපනය වෙමින් පවතී
+# ^CompletedSubCaption
+: සම්පූර්ණයි
+# ^UnComponentsSubCaption
+: ඉවත් කෙරෙමින් පවතී
+# ^UnDirSubCaption
+: ස්ථාපන ෆෝල්ඩරය
+# ^ConfirmSubCaption
+: ඉවත් කෙරෙමින් පවතී
+# ^UninstallingSubCaption
+: ඉවත් කෙරෙමින් පවතී
+# ^UnCompletedSubCaption
+: සම්පූර්ණයි
+# ^BackBtn
+< &ආපසු
+# ^NextBtn
+&ඊළඟ >
+# ^AgreeBtn
+මම &එකඟ වෙමි
+# ^AcceptBtn
+මම &එකඟ වෙමි
+# ^DontAcceptBtn
+අවලංගු කරන්න
+# ^InstallBtn
+&ස්ථාපනය කරන්න
+# ^UninstallBtn
+&ඉවත් කරන්න
+# ^CancelBtn
+අවලංගු කරන්න
+# ^CloseBtn
+&වසන්න
+# ^BrowseBtn
+&පිරික්සන්න...
+# ^ShowDetailsBtn
+&විස්තර පෙන්වන්න
+# ^ClickNext
+ඉදිරියට යාමට ඊළඟ ක්ලික් කරන්න.
+# ^ClickInstall
+ස්ථාපනය ඇරඹීමට ස්ථාපනය කරන්න ක්ලික් කරන්න.
+# ^ClickUninstall
+ඉවත් කිරීම ඇරඹීමට ඉවත් කරන්න ක්ලික් කරන්න.
+# ^Name
+Name
+# ^Completed
+සම්පූර්ණයි
+# ^LicenseText
+ඉදිරියට යාමට ඊළඟ ක්ලික් කරන්න.
+# ^LicenseTextCB
+ඉදිරියට යාමට ඊළඟ ක්ලික් කරන්න.
+# ^LicenseTextRB
+ඉදිරියට යාමට ඊළඟ ක්ලික් කරන්න.
+# ^UnLicenseText
+ඉදිරියට යාමට ඊළඟ ක්ලික් කරන්න.
+# ^UnLicenseTextCB
+ඉදිරියට යාමට ඊළඟ ක්ලික් කරන්න.
+# ^UnLicenseTextRB
+ඉදිරියට යාමට ඊළඟ ක්ලික් කරන්න.
+# ^Custom
+Custom
+# ^ComponentsText
+ඉදිරියට යාමට ඊළඟ ක්ලික් කරන්න.
+# ^ComponentsSubText1
+ඉදිරියට යාමට ඊළඟ ක්ලික් කරන්න.
+# ^ComponentsSubText2_NoInstTypes
+ඉදිරියට යාමට ඊළඟ ක්ලික් කරන්න.
+# ^ComponentsSubText2
+ඉදිරියට යාමට ඊළඟ ක්ලික් කරන්න.
+# ^UnComponentsText
+ඉදිරියට යාමට ඊළඟ ක්ලික් කරන්න.
+# ^UnComponentsSubText1
+ඉදිරියට යාමට ඊළඟ ක්ලික් කරන්න.
+# ^UnComponentsSubText2_NoInstTypes
+ඉදිරියට යාමට ඊළඟ ක්ලික් කරන්න.
+# ^UnComponentsSubText2
+ඉදිරියට යාමට ඊළඟ ක්ලික් කරන්න.
+# ^DirText
+ස්ථාපකය $(^NameDA) පහත ෆෝල්ඩරයේ ස්ථාපනය කරනු ඇත. වෙනත් ෆෝල්ඩරයක් සඳහා පිරික්සන්න ක්ලික් කරන්න. $_CLICK
+# ^DirSubText
+ගමනාන්ත ෆෝල්ඩරය
+# ^DirBrowseText
+$(^NameDA) ස්ථාපනය කිරීමට ෆෝල්ඩරය තෝරන්න:
+# ^UnDirText
+$(^NameDA) පහත ෆෝල්ඩරයෙන් ඉවත් කරනු ලැබේ. $_CLICK
+# ^UnDirSubText
+""
+# ^UnDirBrowseText
+$(^NameDA) ස්ථාපනය කිරීමට ෆෝල්ඩරය තෝරන්න:
+# ^SpaceAvailable
+"තිබෙන ඉඩ: "
+# ^SpaceRequired
+"අවශ්‍ය ඉඩ: "
+# ^UninstallingText
+$(^NameDA) පහත ෆෝල්ඩරයෙන් ඉවත් කරනු ලැබේ. $_CLICK
+# ^UninstallingSubText
+ඉවත් කරන ස්ථානය:
+# ^FileError
+Error: \r\n\r\n$0
+# ^FileError_NoIgnore
+Error: \r\n\r\n$0
+# ^CantWrite
+"Error: "
+# ^CopyFailed
+Error
+# ^CopyTo
+"-> "
+# ^Registering
+"... "
+# ^Unregistering
+"... "
+# ^SymbolNotFound
+"Error: "
+# ^CouldNotLoad
+"Error: "
+# ^CreateFolder
+"+ "
+# ^CreateShortcut
+"+ "
+# ^CreatedUninstaller
+"+ "
+# ^Delete
+"- "
+# ^DeleteOnReboot
+"- "
+# ^ErrorCreatingShortcut
+"Error: "
+# ^ErrorCreating
+"Error: "
+# ^ErrorDecompressing
+ගොනු විවෘත කිරීමට අසමත් විය. ස්ථාපකය නැවත ධාවනය කරන්න.
+# ^ErrorRegistering
+DLL Error
+# ^ExecShell
+"Exec: "
+# ^Exec
+"Exec: "
+# ^Extract
+"-> "
+# ^ErrorWriting
+"Error: "
+# ^InvalidOpcode
+ගොනු විවෘත කිරීමට අසමත් විය. ස්ථාපකය නැවත ධාවනය කරන්න.
+# ^NoOLE
+"OLE: "
+# ^OutputFolder
+"-> "
+# ^RemoveFolder
+"- "
+# ^RenameOnReboot
+"-> "
+# ^Rename
+"-> "
+# ^Skipped
+"... "
+# ^CopyDetails
+විස්තර පිටපත් කරන්න
+# ^LogInstall
+Log
+# ^Byte
+B
+# ^Kilo
+ K
+# ^Mega
+ M
+# ^Giga
+ G

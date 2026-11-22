@@ -1,5 +1,5 @@
 /**
- * DbWorkerTask.js — WP-11.T11 / WP-03.T8
+ * DbWorkerTask.js - WP-11.T11 / WP-03.T8
  * utilityProcess içinde çalışan yedek görevi. Ana süreç yalnızca kısa
  * mesajlaşır; VACUUM/şifreleme burada yapılır.
  */

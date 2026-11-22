@@ -1,5 +1,5 @@
 /**
- * storage-status.test.mjs — bakım modu görünürlüğü (sessiz veri kaybı kapısı)
+ * storage-status.test.mjs - bakım modu görünürlüğü (sessiz veri kaybı kapısı)
  *
  * Depo açılamadığında (bozuk DB / migrasyon hatası / denetim zinciri kırığı)
  * her yazma sessizce reddediliyordu ve arayüz normal görünüyordu. Kullanıcı
@@ -45,7 +45,7 @@ afterEach(() => {
     for (const d of dirs.splice(0)) fs.rmSync(d, { recursive: true, force: true });
 });
 
-describe('StorageService — bakım modu salt-okunur erişim', () => {
+describe('StorageService - bakım modu salt-okunur erişim', () => {
     it('sağlıklı depoda maintenanceMode false, gerekçe null', () => {
         const s = open(freshDir());
         expect(s.isMaintenanceMode()).toBe(false);
@@ -57,7 +57,7 @@ describe('StorageService — bakım modu salt-okunur erişim', () => {
         s.enterMaintenance('Veritabanı bozuk; son yedekten geri yükleyin.');
         expect(s.isMaintenanceMode()).toBe(true);
         expect(s.getMaintenanceReason()).toMatch(/bozuk/i);
-        // Bakım modu yazmayı reddeder — sessiz kabul yok.
+        // Bakım modu yazmayı reddeder - sessiz kabul yok.
         expect(s.save()).toBe(false);
     });
 

@@ -1,5 +1,5 @@
 /**
- * ai-backend.test.mjs — WBS-7.1 / TS-7.1
+ * ai-backend.test.mjs - WBS-7.1 / TS-7.1
  * AiBackend: fail-closed davranışlar + yaşam döngüsü (sahte importer).
  * Gerçek model dosyası gerekmez; tek test gerçek dinamik importu doğrular.
  */

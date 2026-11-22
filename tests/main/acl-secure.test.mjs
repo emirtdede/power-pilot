@@ -1,5 +1,5 @@
 /**
- * acl-secure.test.mjs — Windows ACL sıkılaştırması
+ * acl-secure.test.mjs - Windows ACL sıkılaştırması
  *
  * Yalnızca testin kendi oluşturduğu GEÇİCİ dizin/dosya üzerinde çalışır;
  * sistem dizinlerine dokunulmaz. Windows dışında testler atlanır.
@@ -49,7 +49,7 @@ afterAll(() => {
     try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch (_) { /* yut */ }
 });
 
-describe('Acl — platform ve SID', () => {
+describe('Acl - platform ve SID', () => {
     it('isWindows platformla tutarlı', () => {
         expect(isWindows()).toBe(process.platform === 'win32');
     });
@@ -71,7 +71,7 @@ describe('Acl — platform ve SID', () => {
     });
 });
 
-describe('Acl — geçersiz girdiler (OS çağrısı yok)', () => {
+describe('Acl - geçersiz girdiler (OS çağrısı yok)', () => {
     it('boş/geçersiz yol INVALID_PATH', async () => {
         expect(securePath('')).toMatchObject({ ok: false, code: 'INVALID_PATH' });
         expect(securePath(null)).toMatchObject({ ok: false, code: 'INVALID_PATH' });
@@ -112,7 +112,7 @@ describe('Acl — geçersiz girdiler (OS çağrısı yok)', () => {
     });
 });
 
-describe.skipIf(!isWin)('Acl — Windows üzerinde geçici dizin', () => {
+describe.skipIf(!isWin)('Acl - Windows üzerinde geçici dizin', () => {
     it('secureDirectory geçici dizinde başarılı olur (sahip+SYSTEM+Administrators)', () => {
         const r = secureDirectory(tmpDir);
         expect(r.ok).toBe(true);
@@ -156,13 +156,13 @@ describe.skipIf(!isWin)('Acl — Windows üzerinde geçici dizin', () => {
 });
 
 /**
- * P0 REGRESYON — v1.1.0 ve öncesi `icacls <dizin> ... /T` kullanıyordu.
+ * P0 REGRESYON - v1.1.0 ve öncesi `icacls <dizin> ... /T` kullanıyordu.
  * `/T` + `(OI)(CI)F` kombinasyonu dosyalara hiç ACE yazmadığı için
  * `powerpilot.db` sahibi tarafından bile açılamıyor, uygulama bakım moduna
  * düşüyor ve kullanıcının tüm görev/ayarları kayboluyordu.
  * Bu testler o hatanın geri gelmesini engeller.
  */
-describe.skipIf(!isWin)('Acl — P0 regresyon: dosya erişimi korunur', () => {
+describe.skipIf(!isWin)('Acl - P0 regresyon: dosya erişimi korunur', () => {
     let dir = null;
     const makeDir = () => {
         const d = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-acl-p0-'));

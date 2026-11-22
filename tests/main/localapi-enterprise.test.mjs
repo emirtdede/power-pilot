@@ -1,5 +1,5 @@
 /**
- * localapi-enterprise.test.mjs — FAZ B
+ * localapi-enterprise.test.mjs - FAZ B
  * Kurumsal uçlar: envanter, imzalı emir alımı, muafiyet RBAC, denetim.
  */
 import { describe, it, expect, vi } from 'vitest';

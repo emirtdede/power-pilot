@@ -1,5 +1,5 @@
 /**
- * ConsoleStore.js — WP-03.T1/T2/T3/T4/T7/T8
+ * ConsoleStore.js - WP-03.T1/T2/T3/T4/T7/T8
  * Şirket konsolunun SQLite deposu (`console.db`). Tek dosya yazımı yoktur;
  * heartbeat tek transaction'da ajan upsert + due select + delivered_at + audit
  * yapar. Kuyruk durum makinesi: pending → inflight → acked/expired.
@@ -510,7 +510,7 @@ class ConsoleStore {
     }
 
     /**
-     * WP-03.T5: operasyonel görünürlük — emir geçmişi + hata nedeni.
+     * WP-03.T5: operasyonel görünürlük - emir geçmişi + hata nedeni.
      * Bellek modunda kuyruk nesnelerinden, DB modunda receipts JOIN'i ile.
      */
     orders({ limit = 200, agentId = null } = {}) {

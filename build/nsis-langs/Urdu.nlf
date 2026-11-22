@@ -1,0 +1,191 @@
+﻿# Header, don't edit
+NLF v6
+# Start editing here
+# Language ID
+1056
+# Font and size - dash (-) means default
+-
+-
+# Codepage - dash (-) means ASCII code page
+1200
+# RTL - anything else than RTL means LTR
+RTL
+# Power Pilot custom NLF table
+# ^Branding
+Nullsoft Install System %s
+# ^SetupCaption
+$(^Name) سیٹ اپ
+# ^UninstallCaption
+$(^Name) ان انسٹال
+# ^LicenseSubCaption
+: License
+# ^ComponentsSubCaption
+: انسٹالیشن فولڈر
+# ^DirSubCaption
+: انسٹالیشن فولڈر
+# ^InstallingSubCaption
+: انسٹال ہو رہا ہے
+# ^CompletedSubCaption
+: مکمل
+# ^UnComponentsSubCaption
+: ان انسٹال ہو رہا ہے
+# ^UnDirSubCaption
+: انسٹالیشن فولڈر
+# ^ConfirmSubCaption
+: ان انسٹال ہو رہا ہے
+# ^UninstallingSubCaption
+: ان انسٹال ہو رہا ہے
+# ^UnCompletedSubCaption
+: مکمل
+# ^BackBtn
+< &پیچھے
+# ^NextBtn
+&اگلا >
+# ^AgreeBtn
+میں &متفق ہوں
+# ^AcceptBtn
+میں &متفق ہوں
+# ^DontAcceptBtn
+منسوخ کریں
+# ^InstallBtn
+&انسٹال کریں
+# ^UninstallBtn
+&ان انسٹال کریں
+# ^CancelBtn
+منسوخ کریں
+# ^CloseBtn
+&بند کریں
+# ^BrowseBtn
+&براؤز کریں...
+# ^ShowDetailsBtn
+&تفصیلات دکھائیں
+# ^ClickNext
+جاری رکھنے کے لیے اگلا پر کلک کریں۔
+# ^ClickInstall
+انسٹالیشن شروع کرنے کے لیے انسٹال کریں پر کلک کریں۔
+# ^ClickUninstall
+ان انسٹال شروع کرنے کے لیے ان انسٹال کریں پر کلک کریں۔
+# ^Name
+Name
+# ^Completed
+مکمل
+# ^LicenseText
+جاری رکھنے کے لیے اگلا پر کلک کریں۔
+# ^LicenseTextCB
+جاری رکھنے کے لیے اگلا پر کلک کریں۔
+# ^LicenseTextRB
+جاری رکھنے کے لیے اگلا پر کلک کریں۔
+# ^UnLicenseText
+جاری رکھنے کے لیے اگلا پر کلک کریں۔
+# ^UnLicenseTextCB
+جاری رکھنے کے لیے اگلا پر کلک کریں۔
+# ^UnLicenseTextRB
+جاری رکھنے کے لیے اگلا پر کلک کریں۔
+# ^Custom
+Custom
+# ^ComponentsText
+جاری رکھنے کے لیے اگلا پر کلک کریں۔
+# ^ComponentsSubText1
+جاری رکھنے کے لیے اگلا پر کلک کریں۔
+# ^ComponentsSubText2_NoInstTypes
+جاری رکھنے کے لیے اگلا پر کلک کریں۔
+# ^ComponentsSubText2
+جاری رکھنے کے لیے اگلا پر کلک کریں۔
+# ^UnComponentsText
+جاری رکھنے کے لیے اگلا پر کلک کریں۔
+# ^UnComponentsSubText1
+جاری رکھنے کے لیے اگلا پر کلک کریں۔
+# ^UnComponentsSubText2_NoInstTypes
+جاری رکھنے کے لیے اگلا پر کلک کریں۔
+# ^UnComponentsSubText2
+جاری رکھنے کے لیے اگلا پر کلک کریں۔
+# ^DirText
+سیٹ اپ $(^NameDA) کو درج ذیل فولڈر میں انسٹال کرے گا۔ کسی اور فولڈر کے لیے براؤز پر کلک کریں۔ $_CLICK
+# ^DirSubText
+منزل فولڈر
+# ^DirBrowseText
+$(^NameDA) انسٹال کرنے کے لیے فولڈر منتخب کریں:
+# ^UnDirText
+$(^NameDA) کو درج ذیل فولڈر سے ان انسٹال کیا جائے گا۔ $_CLICK
+# ^UnDirSubText
+""
+# ^UnDirBrowseText
+$(^NameDA) انسٹال کرنے کے لیے فولڈر منتخب کریں:
+# ^SpaceAvailable
+"دستیاب جگہ: "
+# ^SpaceRequired
+"درکار جگہ: "
+# ^UninstallingText
+$(^NameDA) کو درج ذیل فولڈر سے ان انسٹال کیا جائے گا۔ $_CLICK
+# ^UninstallingSubText
+یہاں سے ہٹایا جا رہا ہے:
+# ^FileError
+Error: \r\n\r\n$0
+# ^FileError_NoIgnore
+Error: \r\n\r\n$0
+# ^CantWrite
+"Error: "
+# ^CopyFailed
+Error
+# ^CopyTo
+"-> "
+# ^Registering
+"... "
+# ^Unregistering
+"... "
+# ^SymbolNotFound
+"Error: "
+# ^CouldNotLoad
+"Error: "
+# ^CreateFolder
+"+ "
+# ^CreateShortcut
+"+ "
+# ^CreatedUninstaller
+"+ "
+# ^Delete
+"- "
+# ^DeleteOnReboot
+"- "
+# ^ErrorCreatingShortcut
+"Error: "
+# ^ErrorCreating
+"Error: "
+# ^ErrorDecompressing
+فائلیں نکالنے میں ناکامی۔ براہ کرم انسٹالر دوبارہ چلائیں۔
+# ^ErrorRegistering
+DLL Error
+# ^ExecShell
+"Exec: "
+# ^Exec
+"Exec: "
+# ^Extract
+"-> "
+# ^ErrorWriting
+"Error: "
+# ^InvalidOpcode
+فائلیں نکالنے میں ناکامی۔ براہ کرم انسٹالر دوبارہ چلائیں۔
+# ^NoOLE
+"OLE: "
+# ^OutputFolder
+"-> "
+# ^RemoveFolder
+"- "
+# ^RenameOnReboot
+"-> "
+# ^Rename
+"-> "
+# ^Skipped
+"... "
+# ^CopyDetails
+تفصیلات کاپی کریں
+# ^LogInstall
+Log
+# ^Byte
+B
+# ^Kilo
+ K
+# ^Mega
+ M
+# ^Giga
+ G

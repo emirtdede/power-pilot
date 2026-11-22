@@ -1,5 +1,5 @@
 /**
- * Portable.js — taşınabilir (portable) dağıtım farkları.
+ * Portable.js - taşınabilir (portable) dağıtım farkları.
  *
  * electron-builder'ın `portable` hedefi uygulamayı geçici bir dizine açar ve
  * iki ortam değişkeni verir:

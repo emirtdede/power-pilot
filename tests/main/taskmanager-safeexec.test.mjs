@@ -1,5 +1,5 @@
 /**
- * taskmanager-safeexec.test.mjs — P0/BLOCKER-001 uçtan uca
+ * taskmanager-safeexec.test.mjs - P0/BLOCKER-001 uçtan uca
  *
  * Gerçek `SafetyPolicyEngine` (exec enjeksiyonu) + gerçek `TaskManager`.
  * OS güç çağrısı ASLA yapılmaz: `PowerService` yerine sahte nesne verilir.

@@ -1,5 +1,5 @@
 /**
- * storage-v3.test.mjs — WP-11.T12
+ * storage-v3.test.mjs - WP-11.T12
  * T-STO-01..06: delta yazma, v2 fixture migrasyonu, bozuk JSON,
  * yarım migrasyon, geri dönüş ve boot dedupe.
  */
@@ -35,7 +35,7 @@ afterEach(() => {
     for (const d of dirs.splice(0)) fs.rmSync(d, { recursive: true, force: true });
 });
 
-describe('StorageService v3 — WP-11', () => {
+describe('StorageService v3 - WP-11', () => {
     it('T-STO-01: 1000 görevden biri güncellenince yalnızca o satır yazılır', () => {
         const s = open(freshDir());
         const tasks = Array.from({ length: 1000 }, (_, i) => ({ id: `t${i}`, name: `gorev-${i}` }));
@@ -177,7 +177,7 @@ function migrationTemps(dir) {
     return fs.readdirSync(dir).filter((name) => name.includes('.migrating-'));
 }
 
-describe('StorageService v3 — Y-10 hedef DB doğrulaması', () => {
+describe('StorageService v3 - Y-10 hedef DB doğrulaması', () => {
     it('aynı kaynaktan üretilmiş sağlam hedef korunur, kaynak temizlenir', () => {
         const dir = freshDir();
         const data = { version: 2, tasks: [{ id: 't1', name: 'A' }] };

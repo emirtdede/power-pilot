@@ -1,5 +1,5 @@
 /**
- * tests/setup/main-setup.mjs — WBS-4.1
+ * tests/setup/main-setup.mjs - WBS-4.1
  * NODE_ENV=test => src/main/logger.js no-op olur (dosyaya yazmaz).
  */
 process.env.NODE_ENV = 'test';

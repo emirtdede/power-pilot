@@ -1,0 +1,191 @@
+﻿# Header, don't edit
+NLF v6
+# Start editing here
+# Language ID
+2092
+# Font and size - dash (-) means default
+-
+-
+# Codepage - dash (-) means ASCII code page
+1200
+# RTL - anything else than RTL means LTR
+-
+# Power Pilot custom NLF table
+# ^Branding
+Nullsoft Install System %s
+# ^SetupCaption
+$(^Name) Quraşdırıcısı
+# ^UninstallCaption
+$(^Name) Silinməsi
+# ^LicenseSubCaption
+: License
+# ^ComponentsSubCaption
+: Quraşdırma Qovluğu
+# ^DirSubCaption
+: Quraşdırma Qovluğu
+# ^InstallingSubCaption
+: Quraşdırılır
+# ^CompletedSubCaption
+: Tamamlandı
+# ^UnComponentsSubCaption
+: Silinir
+# ^UnDirSubCaption
+: Quraşdırma Qovluğu
+# ^ConfirmSubCaption
+: Silinir
+# ^UninstallingSubCaption
+: Silinir
+# ^UnCompletedSubCaption
+: Tamamlandı
+# ^BackBtn
+< &Geri
+# ^NextBtn
+&İrəli >
+# ^AgreeBtn
+&Razıyam
+# ^AcceptBtn
+&Razıyam
+# ^DontAcceptBtn
+Ləğv et
+# ^InstallBtn
+&Quraşdır
+# ^UninstallBtn
+&Sil
+# ^CancelBtn
+Ləğv et
+# ^CloseBtn
+&Bağla
+# ^BrowseBtn
+&Bax...
+# ^ShowDetailsBtn
+&Təfərrüatları göstər
+# ^ClickNext
+Davam etmək üçün İrəli düyməsini sıxın.
+# ^ClickInstall
+Quraşdırmaya başlamaq üçün Quraşdır düyməsini sıxın.
+# ^ClickUninstall
+Silməyə başlamaq üçün Sil düyməsini sıxın.
+# ^Name
+Name
+# ^Completed
+Tamamlandı
+# ^LicenseText
+Davam etmək üçün İrəli düyməsini sıxın.
+# ^LicenseTextCB
+Davam etmək üçün İrəli düyməsini sıxın.
+# ^LicenseTextRB
+Davam etmək üçün İrəli düyməsini sıxın.
+# ^UnLicenseText
+Davam etmək üçün İrəli düyməsini sıxın.
+# ^UnLicenseTextCB
+Davam etmək üçün İrəli düyməsini sıxın.
+# ^UnLicenseTextRB
+Davam etmək üçün İrəli düyməsini sıxın.
+# ^Custom
+Custom
+# ^ComponentsText
+Davam etmək üçün İrəli düyməsini sıxın.
+# ^ComponentsSubText1
+Davam etmək üçün İrəli düyməsini sıxın.
+# ^ComponentsSubText2_NoInstTypes
+Davam etmək üçün İrəli düyməsini sıxın.
+# ^ComponentsSubText2
+Davam etmək üçün İrəli düyməsini sıxın.
+# ^UnComponentsText
+Davam etmək üçün İrəli düyməsini sıxın.
+# ^UnComponentsSubText1
+Davam etmək üçün İrəli düyməsini sıxın.
+# ^UnComponentsSubText2_NoInstTypes
+Davam etmək üçün İrəli düyməsini sıxın.
+# ^UnComponentsSubText2
+Davam etmək üçün İrəli düyməsini sıxın.
+# ^DirText
+Quraşdırıcı $(^NameDA) tətbiqini aşağıdakı qovluğa quraşdıracaq. Başqa qovluq seçmək üçün Bax düyməsini sıxın. $_CLICK
+# ^DirSubText
+Hədəf Qovluq
+# ^DirBrowseText
+$(^NameDA) quraşdırılacaq qovluğu seçin:
+# ^UnDirText
+$(^NameDA) aşağıdakı qovluqdan silinəcək. $_CLICK
+# ^UnDirSubText
+""
+# ^UnDirBrowseText
+$(^NameDA) quraşdırılacaq qovluğu seçin:
+# ^SpaceAvailable
+"Mövcud yer: "
+# ^SpaceRequired
+"Tələb olunan yer: "
+# ^UninstallingText
+$(^NameDA) aşağıdakı qovluqdan silinəcək. $_CLICK
+# ^UninstallingSubText
+Silinən yer:
+# ^FileError
+Error: \r\n\r\n$0
+# ^FileError_NoIgnore
+Error: \r\n\r\n$0
+# ^CantWrite
+"Error: "
+# ^CopyFailed
+Error
+# ^CopyTo
+"-> "
+# ^Registering
+"... "
+# ^Unregistering
+"... "
+# ^SymbolNotFound
+"Error: "
+# ^CouldNotLoad
+"Error: "
+# ^CreateFolder
+"+ "
+# ^CreateShortcut
+"+ "
+# ^CreatedUninstaller
+"+ "
+# ^Delete
+"- "
+# ^DeleteOnReboot
+"- "
+# ^ErrorCreatingShortcut
+"Error: "
+# ^ErrorCreating
+"Error: "
+# ^ErrorDecompressing
+Fayllar çıxarıla bilmədi. Quraşdırıcını yenidən başladın.
+# ^ErrorRegistering
+DLL Error
+# ^ExecShell
+"Exec: "
+# ^Exec
+"Exec: "
+# ^Extract
+"-> "
+# ^ErrorWriting
+"Error: "
+# ^InvalidOpcode
+Fayllar çıxarıla bilmədi. Quraşdırıcını yenidən başladın.
+# ^NoOLE
+"OLE: "
+# ^OutputFolder
+"-> "
+# ^RemoveFolder
+"- "
+# ^RenameOnReboot
+"-> "
+# ^Rename
+"-> "
+# ^Skipped
+"... "
+# ^CopyDetails
+Təfərrüatları köçür
+# ^LogInstall
+Log
+# ^Byte
+B
+# ^Kilo
+ K
+# ^Mega
+ M
+# ^Giga
+ G

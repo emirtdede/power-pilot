@@ -1,5 +1,5 @@
 /**
- * Kapatma uyarısı — kullanıcının gördüğü son çıkış + ekran okuyucu duyurusu.
+ * Kapatma uyarısı - kullanıcının gördüğü son çıkış + ekran okuyucu duyurusu.
  *
  * En kritik son kullanıcı güvenliği: "1 saat sonra kapat" diyen kullanıcı
  * kaydedilmemiş işini kaybetmemeli. Akış doğrulandı (probe-warning-cancel.cjs,
@@ -29,7 +29,7 @@ const bannerTag = () => {
     return html.slice(start, html.indexOf('>', idx) + 1);
 };
 
-describe('kapatma uyarı banner’ı — erişilebilirlik', () => {
+describe('kapatma uyarı banner’ı - erişilebilirlik', () => {
     it('banner role="alert" + aria-live="assertive"', () => {
         const tag = bannerTag();
         expect(tag).toContain('role="alert"');
@@ -52,7 +52,7 @@ describe('kapatma uyarı banner’ı — erişilebilirlik', () => {
     });
 });
 
-describe('kapatma uyarısı — kullanıcı çıkışı', () => {
+describe('kapatma uyarısı - kullanıcı çıkışı', () => {
     it('Durdur, Ertele ve Şimdi Çalıştır düğmeleri var', () => {
         for (const id of ['btn-warn-stop', 'btn-warn-snooze', 'btn-warn-now']) {
             expect(html, `${id} eksik`).toContain(`id="${id}"`);

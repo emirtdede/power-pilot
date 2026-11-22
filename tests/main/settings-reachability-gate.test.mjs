@@ -1,20 +1,20 @@
 /**
- * settings-reachability-gate.test.mjs — P1-6 sınıfı ikinci tur kapısı
+ * settings-reachability-gate.test.mjs - P1-6 sınıfı ikinci tur kapısı
  *
  * Denetimin çekirdek eleştirisi iki yönlüdür:
  *   1. "Arayüzde ayar var, davranışta yok"  → plasebo.
  *   2. "Davranış var, arayüzde ayar yok"    → ULAŞILAMAYAN ayar (o da plasebo).
  *
  * Bu ikinci turda bulunan gerçek kusurlar:
- *   A. `quietHoursEnabled` — arka uç sessiz saatleri YALNIZCA bu anahtar
+ *   A. `quietHoursEnabled` - arka uç sessiz saatleri YALNIZCA bu anahtar
  *      `true` iken uygular; hiçbir arayüz kontrolü bu anahtarı yazmıyordu.
  *      Sonuç: "Gece Sessiz Saat Aralığı" ayarı hiç çalışmadı.
- *   B. `protectedApps` / `forceCloseApps` / `remoteApprovalRequired` — arka uçta
+ *   B. `protectedApps` / `forceCloseApps` / `remoteApprovalRequired` - arka uçta
  *      gerçekten uygulanıyordu ama arayüzde hiçbir kontrolü yoktu.
- *   C. `statsEnabled` / `assumedOffHours` / `bootGuardSeconds` — arka uçta
+ *   C. `statsEnabled` / `assumedOffHours` / `bootGuardSeconds` - arka uçta
  *      okunuyordu, arayüzde kontrolü yoktu.
- *   D. `priceEffectiveFrom` — doğrulanıyor ve saklanıyordu, hiç okunmuyordu.
- *   E. mTLS'de `localApiCaFile` — istemci sertifikası doğrulaması için gerekli,
+ *   D. `priceEffectiveFrom` - doğrulanıyor ve saklanıyordu, hiç okunmuyordu.
+ *   E. mTLS'de `localApiCaFile` - istemci sertifikası doğrulaması için gerekli,
  *      arayüzden yazılamıyordu.
  *
  * Statik doğrulama: her ayarın hem bir kontrolü hem de gerçek bir okuyucusu
@@ -154,7 +154,7 @@ describe('H. Ajan→konsol mTLS materyali tamamlanabilir', () => {
     // `consoleClientKeyFile`, `consoleClientPfxFile` ve `consoleClientKeyPem`
     // okuyordu; hiçbiri depo varsayılanlarında ya da şemada yoktu. Sonuç:
     // konsol istemci sertifikası istediğinde ajan hiçbir zaman sunamıyordu
-    // (`UNKNOWN_SETTING` ile reddediliyordu) — yarım kalmış mTLS.
+    // (`UNKNOWN_SETTING` ile reddediliyordu) - yarım kalmış mTLS.
     const storage = read('src/main/services/StorageService.js');
     const validate = read('src/main/ipc/validate.js');
     const tls = read('src/main/security/TlsConfig.js');

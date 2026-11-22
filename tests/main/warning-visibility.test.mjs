@@ -1,5 +1,5 @@
 /**
- * Kapatma uyarısı görünürlüğü (P0 — veri kaybı).
+ * Kapatma uyarısı görünürlüğü (P0 - veri kaybı).
  *
  * Ölçülen kusur: kullanıcı "1 saat sonra kapat" der, pencereyi kapatır
  * (uygulama tepside çalışır). Süre dolunca uyarı yalnızca gizli pencerenin

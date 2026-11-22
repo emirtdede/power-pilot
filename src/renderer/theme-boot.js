@@ -33,7 +33,7 @@
 
     try {
         var savedMode = localStorage.getItem('theme');
-        if (savedMode === 'light' || savedMode === 'dark') mode = savedMode;
+        if (savedMode === 'light' || savedMode === 'dark' || savedMode === 'system') mode = savedMode;
         var savedId = localStorage.getItem('themeId');
         if (savedId && VALID_THEMES.indexOf(savedId) !== -1) themeId = savedId;
         var savedCustomTheme = localStorage.getItem('customThemeColor');
@@ -70,7 +70,9 @@
     window.__ppApplyCustomCss = applyCustomPaletteCss;
 
     var root = document.documentElement;
-    if (mode === 'light') root.classList.remove('dark');
+    var resolvedDark = mode === 'dark'
+        || (mode === 'system' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if (!resolvedDark) root.classList.remove('dark');
     else root.classList.add('dark');
     root.setAttribute('data-theme', themeId);
     root.setAttribute('data-app-icon', appIcon);

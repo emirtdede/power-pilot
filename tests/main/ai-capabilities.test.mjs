@@ -1,5 +1,5 @@
 /**
- * ai-capabilities.test.mjs — WP-8: templateAgent, connectionAgent, DocsKnowledgeBase ve docsQaAgent.
+ * ai-capabilities.test.mjs - WP-8: templateAgent, connectionAgent, DocsKnowledgeBase ve docsQaAgent.
  * Tamamen yerel ve deterministik (LLM çağrısı gerektirmez).
  */
 import { describe, it, expect } from 'vitest';
@@ -156,10 +156,15 @@ describe('DocsKnowledgeBase & docsQaAgent (WP-8 Yerel RAG)', () => {
  * Bu, "placebo" kusurun doküman tarafıdır: kullanıcı belgelenmiş bir yeteneği
  * arar, bulamaz. Kullanıcı en çok bu metinlere güvendiği için kapı şart.
  */
-describe('Doküman gerçeği — belgelenen her yetenek kodda var', () => {
+describe('Doküman gerçeği - belgelenen her yetenek kodda var', () => {
     const docs = readDoc('src/main/services/DocsKnowledgeBase.js');
-    const mcp = readDoc('src/mcp/server.js');
-    const api = readDoc('src/main/services/LocalApiService.js');
+    const mcp = readDoc('src/mcp/server.js') + '\n' + readDoc('src/mcp/tools.js');
+    const api = [
+        readDoc('src/main/services/LocalApiService.js'),
+        readDoc('src/main/services/api/coreDomainRoutes.js'),
+        readDoc('src/main/services/api/integrationDomainRoutes.js'),
+        readDoc('src/main/services/api/extendedDomainRoutes.js')
+    ].join('\n');
     const cli = readDoc('src/cli/commands.js');
 
     it('dokümanda anılan her MCP aracı sunucuda kayıtlı', () => {
@@ -182,9 +187,23 @@ describe('Doküman gerçeği — belgelenen her yetenek kodda var', () => {
 
     it('dokümanda anılan her REST yolu gerçekten yönlendiriliyor', () => {
         const real = new Set();
-        for (const m of api.matchAll(/path === '(\/api\/v1\/[a-z/-]+)'/g)) real.add(m[1]);
+        for (const m of api.matchAll(/(?:path|pathStr) === '(\/api\/v1\/[a-z/-]+)'/g)) real.add(m[1]);
         for (const m of api.matchAll(/'(\/api\/v1\/power\/[a-z]+)'\s*:/g)) real.add(m[1]);
-        real.add('/api/v1/tasks/:id/cancel');
+        for (const dyn of [
+            '/api/v1/tasks/:id',
+            '/api/v1/tasks/:id/cancel',
+            '/api/v1/tasks/:id/pause',
+            '/api/v1/tasks/:id/resume',
+            '/api/v1/tasks/:id/snooze',
+            '/api/v1/tasks/:id/run-now',
+            '/api/v1/templates/:id',
+            '/api/v1/templates/:id/reset',
+            '/api/v1/templates/:id/run',
+            '/api/v1/exemptions/:id',
+            '/api/v1/maintenance-windows/:id'
+        ]) {
+            real.add(dyn);
+        }
 
         const normalize = (p) => p.replace(/:[a-zA-Z]+/g, ':id').replace(/\/$/, '');
         const known = new Set([...real].map(normalize));

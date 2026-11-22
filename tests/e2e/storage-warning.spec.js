@@ -1,5 +1,5 @@
 /**
- * storage-warning.spec.js — bakım modu görünürlüğü (E2E)
+ * storage-warning.spec.js - bakım modu görünürlüğü (E2E)
  *
  * Gerçek kullanıcı hatası: depo açılamadığında (bozuk veri) her kayıt sessizce
  * reddediliyordu; arayüz normal görünüyordu ve kullanıcı görevinin

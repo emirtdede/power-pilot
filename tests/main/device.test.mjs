@@ -1,5 +1,5 @@
 /**
- * device.test.mjs — DeviceProfileService: MAC doğrulaması, WOL soket yaşam döngüsü.
+ * device.test.mjs - DeviceProfileService: MAC doğrulaması, WOL soket yaşam döngüsü.
  */
 import { describe, it, expect, vi } from 'vitest';
 import DeviceProfileService, {

@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * TimerRegistry.js — WP-13.T6
+ * TimerRegistry.js - WP-13.T6
  * Uygulama ömrü boyunca kurulan timeout/interval'ları izler.
  * `clearAll()` kapanışta açık handle bırakmaz.
  */

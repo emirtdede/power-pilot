@@ -76,7 +76,7 @@
                 try {
                     if (!window.electronAPI || !window.electronAPI.cancelAction) return;
                     const res = await window.electronAPI.cancelAction();
-                    // WBS-11.2: PIN korumalıysa mini pencerede sorulamaz — ana pencere açılır.
+                    // WBS-11.2: PIN korumalıysa mini pencerede sorulamaz - ana pencere açılır.
                     if (res && res.success === false && window.electronAPI.restoreMainWindow) {
                         window.electronAPI.restoreMainWindow();
                     }

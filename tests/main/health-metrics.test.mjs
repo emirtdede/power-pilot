@@ -1,5 +1,5 @@
 /**
- * health-metrics.test.mjs — C5 yerel sağlık özeti
+ * health-metrics.test.mjs - C5 yerel sağlık özeti
  *
  * Saf fonksiyon: depo/saat enjekte edilir, ağ yok, OS yok.
  * Ürünün "telemetri yok" vaadi: bu modül yalnızca cihazdaki kayıtları

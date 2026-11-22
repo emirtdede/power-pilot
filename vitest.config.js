@@ -1,5 +1,5 @@
 /**
- * vitest.config.js — WBS-4.1
+ * vitest.config.js - WBS-4.1
  * Multi-project: main (node) + renderer (jsdom).
  * Kapsam kapısı: satır %80 altında CI kırmızı (WBS-4.2 / TS-4.2).
  */

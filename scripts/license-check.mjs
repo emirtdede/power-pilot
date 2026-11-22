@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * license-check.mjs — WP-15.T5
+ * license-check.mjs - WP-15.T5
  * Üretim bağımlılıklarının lisanslarını çevrimdışı tarar.
  * GPL/AGPL/SSPL yasak; bilinmeyen lisans release'i bloke eder.
  */
@@ -51,4 +51,4 @@ if (issues.length > 0) {
     for (const issue of issues) console.error(`[license-check] ${issue}`);
     process.exit(1);
 }
-console.log('[license-check] temiz — GPL/AGPL/SSPL yok.');
+console.log('[license-check] temiz - GPL/AGPL/SSPL yok.');

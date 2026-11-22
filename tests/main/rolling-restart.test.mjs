@@ -1,5 +1,5 @@
 /**
- * rolling-restart.test.mjs — FAZ D
+ * rolling-restart.test.mjs - FAZ D
  * Sıralı yeniden başlatma: biri dönmeden diğeri başlamaz, zaman-aşımı atlanır.
  */
 import { describe, it, expect } from 'vitest';
@@ -56,7 +56,7 @@ describe('rolling-restart', () => {
         await call(srv, 'POST', '/api/v1/policies', { id: 'rr-1', type: 'rolling-restart', targets: ['srv-01', 'srv-02'], params: {} }, ADMIN);
         // srv-01 heartbeat'i tüketir (emri alır), sonra taze bootAt ile döner → kanıt
         await call(srv, 'POST', '/api/v1/heartbeat', { agentId: 'srv-01', inventory: { bootAt: oldBoot } }, AGENT);
-        // Kanıt: dağıtımdan SONRAKİ açılış damgası (göreli zaman — sabit tarih bombası yok).
+        // Kanıt: dağıtımdan SONRAKİ açılış damgası (göreli zaman - sabit tarih bombası yok).
         const freshBoot = new Date(Date.now() + 5000).toISOString();
         await call(srv, 'POST', '/api/v1/heartbeat', { agentId: 'srv-01', inventory: { bootAt: freshBoot } }, AGENT);
         expect((srv.store.queues['srv-02'] || [])[0].order.action).toBe('restart');

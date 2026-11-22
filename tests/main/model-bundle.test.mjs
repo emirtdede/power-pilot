@@ -1,6 +1,6 @@
 /**
- * model-bundle.test.mjs — AI paketi (LLM + STT) sıralı indirme orkestrasyonu.
- * Gerçek ağ yok — yerel HTTP bayt sunucusu (Range destekli).
+ * model-bundle.test.mjs - AI paketi (LLM + STT) sıralı indirme orkestrasyonu.
+ * Gerçek ağ yok - yerel HTTP bayt sunucusu (Range destekli).
  */
 import { describe, it, expect, afterEach, afterAll } from 'vitest';
 import fs from 'node:fs';

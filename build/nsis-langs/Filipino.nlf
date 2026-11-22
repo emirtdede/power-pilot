@@ -1,0 +1,191 @@
+﻿# Header, don't edit
+NLF v6
+# Start editing here
+# Language ID
+1124
+# Font and size - dash (-) means default
+-
+-
+# Codepage - dash (-) means ASCII code page
+1200
+# RTL - anything else than RTL means LTR
+-
+# Power Pilot custom NLF table
+# ^Branding
+Nullsoft Install System %s
+# ^SetupCaption
+Pag-install ng $(^Name)
+# ^UninstallCaption
+Pag-uninstall ng $(^Name)
+# ^LicenseSubCaption
+: License
+# ^ComponentsSubCaption
+: Folder ng Pag-install
+# ^DirSubCaption
+: Folder ng Pag-install
+# ^InstallingSubCaption
+: Nag-i-install
+# ^CompletedSubCaption
+: Tapos na
+# ^UnComponentsSubCaption
+: Nag-a-uninstall
+# ^UnDirSubCaption
+: Folder ng Pag-install
+# ^ConfirmSubCaption
+: Nag-a-uninstall
+# ^UninstallingSubCaption
+: Nag-a-uninstall
+# ^UnCompletedSubCaption
+: Tapos na
+# ^BackBtn
+< &Bumalik
+# ^NextBtn
+&Susunod >
+# ^AgreeBtn
+&Sumasang-ayon ako
+# ^AcceptBtn
+&Sumasang-ayon ako
+# ^DontAcceptBtn
+Kanselahin
+# ^InstallBtn
+&I-install
+# ^UninstallBtn
+&I-uninstall
+# ^CancelBtn
+Kanselahin
+# ^CloseBtn
+&Isara
+# ^BrowseBtn
+&Mag-browse...
+# ^ShowDetailsBtn
+Ipakita ang &detalye
+# ^ClickNext
+I-click ang Susunod upang magpatuloy.
+# ^ClickInstall
+I-click ang I-install upang simulan ang pag-install.
+# ^ClickUninstall
+I-click ang I-uninstall upang simulan ang pag-uninstall.
+# ^Name
+Name
+# ^Completed
+Tapos na
+# ^LicenseText
+I-click ang Susunod upang magpatuloy.
+# ^LicenseTextCB
+I-click ang Susunod upang magpatuloy.
+# ^LicenseTextRB
+I-click ang Susunod upang magpatuloy.
+# ^UnLicenseText
+I-click ang Susunod upang magpatuloy.
+# ^UnLicenseTextCB
+I-click ang Susunod upang magpatuloy.
+# ^UnLicenseTextRB
+I-click ang Susunod upang magpatuloy.
+# ^Custom
+Custom
+# ^ComponentsText
+I-click ang Susunod upang magpatuloy.
+# ^ComponentsSubText1
+I-click ang Susunod upang magpatuloy.
+# ^ComponentsSubText2_NoInstTypes
+I-click ang Susunod upang magpatuloy.
+# ^ComponentsSubText2
+I-click ang Susunod upang magpatuloy.
+# ^UnComponentsText
+I-click ang Susunod upang magpatuloy.
+# ^UnComponentsSubText1
+I-click ang Susunod upang magpatuloy.
+# ^UnComponentsSubText2_NoInstTypes
+I-click ang Susunod upang magpatuloy.
+# ^UnComponentsSubText2
+I-click ang Susunod upang magpatuloy.
+# ^DirText
+Ii-install ng Setup ang $(^NameDA) sa sumusunod na folder. Upang mag-install sa ibang folder, i-click ang Mag-browse at pumili ng ibang folder. $_CLICK
+# ^DirSubText
+Folder na Paglalagyan
+# ^DirBrowseText
+Piliin ang folder kung saan ii-install ang $(^NameDA):
+# ^UnDirText
+Aalisin ang $(^NameDA) mula sa sumusunod na folder. $_CLICK
+# ^UnDirSubText
+""
+# ^UnDirBrowseText
+Piliin ang folder kung saan ii-install ang $(^NameDA):
+# ^SpaceAvailable
+"Magagamit na espasyo: "
+# ^SpaceRequired
+"Kinakailangang espasyo: "
+# ^UninstallingText
+Aalisin ang $(^NameDA) mula sa sumusunod na folder. $_CLICK
+# ^UninstallingSubText
+Inaalis mula sa:
+# ^FileError
+Error: \r\n\r\n$0
+# ^FileError_NoIgnore
+Error: \r\n\r\n$0
+# ^CantWrite
+"Error: "
+# ^CopyFailed
+Error
+# ^CopyTo
+"-> "
+# ^Registering
+"... "
+# ^Unregistering
+"... "
+# ^SymbolNotFound
+"Error: "
+# ^CouldNotLoad
+"Error: "
+# ^CreateFolder
+"+ "
+# ^CreateShortcut
+"+ "
+# ^CreatedUninstaller
+"+ "
+# ^Delete
+"- "
+# ^DeleteOnReboot
+"- "
+# ^ErrorCreatingShortcut
+"Error: "
+# ^ErrorCreating
+"Error: "
+# ^ErrorDecompressing
+Nabigong i-extract ang mga file. Patakbuhin muli ang installer.
+# ^ErrorRegistering
+DLL Error
+# ^ExecShell
+"Exec: "
+# ^Exec
+"Exec: "
+# ^Extract
+"-> "
+# ^ErrorWriting
+"Error: "
+# ^InvalidOpcode
+Nabigong i-extract ang mga file. Patakbuhin muli ang installer.
+# ^NoOLE
+"OLE: "
+# ^OutputFolder
+"-> "
+# ^RemoveFolder
+"- "
+# ^RenameOnReboot
+"-> "
+# ^Rename
+"-> "
+# ^Skipped
+"... "
+# ^CopyDetails
+Kopyahin ang mga detalye
+# ^LogInstall
+Log
+# ^Byte
+B
+# ^Kilo
+ K
+# ^Mega
+ M
+# ^Giga
+ G

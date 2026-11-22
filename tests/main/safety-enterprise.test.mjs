@@ -1,5 +1,5 @@
 /**
- * safety-enterprise.test.mjs — FAZ B
+ * safety-enterprise.test.mjs - FAZ B
  * Konsol görevlerinde muafiyet + bakım-penceresi kapıları; yerel görev etkilenmez.
  */
 import { describe, it, expect } from 'vitest';
@@ -13,7 +13,7 @@ function makeEngine({ exemptions = [], windows = [], agentId = 'agent-pc-01' } =
         getMaintenanceWindows: () => windows,
         saveMaintenanceWindows: () => {}
     };
-    // exec hiç çağrılmamalı (güvenlik dalları kapalı) — çağrılırsa patlar.
+    // exec hiç çağrılmamalı (güvenlik dalları kapalı) - çağrılırsa patlar.
     const execFn = () => { throw new Error('exec çağrılmamalıydı'); };
     return new SafetyPolicyEngine(storage, execFn, () => 9999);
 }

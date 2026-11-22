@@ -1,13 +1,13 @@
 /**
- * device-profiler.test.mjs — WBS-E3 / TS-E3
+ * device-profiler.test.mjs - WBS-E3 / TS-E3
  * Kasa sınıflandırma, katman tahmini, deşarj ölçümü, profil karar ağacı,
- * arka-plan kalibrasyonu. Donanım yok — sahte exec/bilgi.
+ * arka-plan kalibrasyonu. Donanım yok - sahte exec/bilgi.
  */
 import { describe, it, expect, vi } from 'vitest';
 import { DeviceProfiler } from '../../src/main/services/DeviceProfiler.js';
 
 function execWith(routes) {
-    // routes: [[anahtarKelime, stdout], ...] — ilk eşleşme kazanır.
+    // routes: [[anahtarKelime, stdout], ...] - ilk eşleşme kazanır.
     return vi.fn((file, args, opts, cb) => {
         const cmd = [file, ...(args || [])].join(' ');
         for (const [key, out] of routes) {
@@ -163,5 +163,82 @@ describe('DeviceProfiler arka-plan kalibrasyonu (TS-E3)', () => {
         const r = await p.calibrateIfNeeded(storage, { isCharging: false, hasBattery: true });
         expect(r.measured).toBe(true);
         expect(r.wattW).toBe(50);
+    });
+});
+
+describe('DeviceProfiler.recommendAiTier - 3 Kademeli Yerel AI Donanım Önerisi (TS-2.1)', () => {
+    const GB = 1073741824;
+
+    it('6 GB RAM -> lite (LOW_RAM) önerir ve balanced/powerful için uyarı üretir', () => {
+        const r = DeviceProfiler.recommendAiTier({
+            totalRamBytes: 6 * GB,
+            cpuCores: 4,
+            freeDiskBytes: 50 * GB,
+            hw: { manufacturer: 'LENOVO', model: 'IdeaPad', cpuBrand: 'Intel Core i3', gpus: ['Intel UHD Graphics'] }
+        });
+        expect(r.recommendedTier).toBe('lite');
+        expect(r.reasonCode).toBe('LOW_RAM');
+        expect(r.tierWarnings.balanced).toBe('LOW_RAM_FOR_BALANCED');
+        expect(r.tierWarnings.powerful).toBe('LOW_RAM_FOR_POWERFUL');
+    });
+
+    it('32 GB RAM + RTX 4080 olsa bile boş disk < 1.6 GB ise lite (LOW_DISK) önerir', () => {
+        const r = DeviceProfiler.recommendAiTier({
+            totalRamBytes: 32 * GB,
+            cpuCores: 16,
+            freeDiskBytes: 1.2 * GB,
+            hw: { manufacturer: 'ASUS', model: 'ROG', cpuBrand: 'Intel i9', gpus: ['NVIDIA GeForce RTX 4080'] }
+        });
+        expect(r.recommendedTier).toBe('lite');
+        expect(r.reasonCode).toBe('LOW_DISK');
+    });
+
+    it('Sanal makine (VMware/Hyper-V) -> lite (VM_DETECTED) önerir', () => {
+        const r = DeviceProfiler.recommendAiTier({
+            totalRamBytes: 16 * GB,
+            cpuCores: 8,
+            freeDiskBytes: 80 * GB,
+            hw: { manufacturer: 'VMware, Inc.', model: 'VMware7,1', cpuBrand: 'Xeon', gpus: ['VMware SVGA 3D'] }
+        });
+        expect(r.recommendedTier).toBe('lite');
+        expect(r.reasonCode).toBe('VM_DETECTED');
+        expect(r.isVm).toBe(true);
+    });
+
+    it('16 GB RAM + Entegre GPU (Intel Iris Xe) -> balanced (STANDARD_HW) önerir (paylaşımlı VRAM koruması)', () => {
+        const r = DeviceProfiler.recommendAiTier({
+            totalRamBytes: 16 * GB,
+            cpuCores: 8,
+            freeDiskBytes: 60 * GB,
+            hw: { manufacturer: 'LENOVO', model: 'ThinkPad', cpuBrand: 'Intel Core i7-1355U', gpus: ['Intel Iris Xe Graphics'] }
+        });
+        expect(r.hasDiscreteGpu).toBe(false);
+        expect(r.recommendedTier).toBe('balanced');
+        expect(r.reasonCode).toBe('STANDARD_HW');
+        expect(r.tierWarnings.powerful).toBe('INTEGRATED_GPU_HEAVY');
+    });
+
+    it('16 GB RAM + Harici GPU (NVIDIA RTX 4070) -> powerful (HIGH_END_HW) önerir', () => {
+        const r = DeviceProfiler.recommendAiTier({
+            totalRamBytes: 16 * GB,
+            cpuCores: 8,
+            freeDiskBytes: 60 * GB,
+            hw: { manufacturer: 'MSI', model: 'Katana', cpuBrand: 'Intel Core i7-13620H', gpus: ['Intel UHD', 'NVIDIA GeForce RTX 4070 Laptop GPU'] }
+        });
+        expect(r.hasDiscreteGpu).toBe(true);
+        expect(r.recommendedTier).toBe('powerful');
+        expect(r.reasonCode).toBe('HIGH_END_HW');
+        expect(r.tierWarnings.powerful).toBeNull();
+    });
+
+    it('32 GB RAM + 12 Çekirdek CPU (harici GPU olmasa bile) -> powerful (HIGH_END_HW) önerir', () => {
+        const r = DeviceProfiler.recommendAiTier({
+            totalRamBytes: 32 * GB,
+            cpuCores: 12,
+            freeDiskBytes: 100 * GB,
+            hw: { manufacturer: 'DELL', model: 'OptiPlex', cpuBrand: 'Intel Core i7-14700', gpus: ['Intel UHD Graphics 770'] }
+        });
+        expect(r.recommendedTier).toBe('powerful');
+        expect(r.reasonCode).toBe('HIGH_END_HW');
     });
 });

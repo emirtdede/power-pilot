@@ -1,5 +1,5 @@
 /**
- * release-hardening.test.mjs — v1.0.1 P0/P1 regresyon kapısı.
+ * release-hardening.test.mjs - v1.0.1 P0/P1 regresyon kapısı.
  *
  * Kapsam: IP/CIDR ACL, atomik icra, uyarı-iptal, süreç fail-closed,
  * ps-list/powerMonitor, model pinleri, makbuz idempotency, şema v2,

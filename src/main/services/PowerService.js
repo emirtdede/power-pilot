@@ -28,7 +28,7 @@ const POWER_ACTIONS = {
  * Eskiden her başarısızlık `os_execution_failed` olarak raporlanıyordu.
  * Oysa `EXECUTION_RESULT_CODE` içinde `timeout` ve `authorization_error`
  * tanımlıydı, 17 dilde etiketleri vardı ve `HealthMetrics` bunları
- * "otomasyon çalışmadı" sayıyordu — ama HİÇBİR kod yolu bu değerleri
+ * "otomasyon çalışmadı" sayıyordu - ama HİÇBİR kod yolu bu değerleri
  * üretmiyordu. Kullanıcı "OS reddetti" görüyor, zaman aşımı ile yetki
  * reddini ayırt edemiyordu.
  *
@@ -88,7 +88,7 @@ class PowerService {
      * @param {{forceClose?: boolean, graceSeconds?: number}} [options]
      *        `forceClose`: shutdown/restart/signout'a `/f` ekler (açık
      *        uygulamaları zorla kapat).
-     *        `graceSeconds`: P1-6 — Windows'un YEREL gecikmesi (`/t n`) kullanılır.
+     *        `graceSeconds`: P1-6 - Windows'un YEREL gecikmesi (`/t n`) kullanılır.
      *        Bu, Ayarlar'daki "Açık Uygulamalar İçin Bekleme Süresi"nin gerçek
      *        karşılığıdır: kullanıcıya açık uygulamaları kaydetmesi için süre
      *        tanınır ve `shutdown /a` ile GERÇEKTEN iptal edilebilir.

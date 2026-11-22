@@ -1,5 +1,5 @@
 /**
- * bridge.test.mjs — renderer preload sözleşmesi (iskele; WBS-3.1'de genişletilecek).
+ * bridge.test.mjs - renderer preload sözleşmesi (iskele; WBS-3.1'de genişletilecek).
  */
 import { describe, it, expect } from 'vitest';
 

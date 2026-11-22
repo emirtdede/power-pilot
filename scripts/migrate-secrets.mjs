@@ -1,6 +1,6 @@
 #!/usr/bin/env electron
 /**
- * migrate-secrets.mjs — WP-04.T2
+ * migrate-secrets.mjs - WP-04.T2
  * Düz metin sırları (settings + webhook) DPAPI ile şifreleyip ayrı
  * `secrets.v1.json` dosyasına taşır; eski sır içeren yedekleri siler.
  *

@@ -1,5 +1,5 @@
 /**
- * agents/energyAgent.js — F9.1 + WP-8
+ * agents/energyAgent.js - F9.1 + WP-8
  * Deterministik enerji anlatıcısı (TR / EN): SAYILAR şablondan değişmez alınır.
  */
 'use strict';
@@ -28,7 +28,7 @@ module.exports = {
         if (stats.costSavedFormatted) {
             parts.push(isTr ? `${stats.costSavedFormatted} tasarruf` : `${stats.costSavedFormatted} saved`);
         }
-        const summary = parts.join(' — ') + '.';
+        const summary = parts.join(' - ') + '.';
         let suggestion = null;
         if (parseFloat(stats.preventedUptimeHours) >= 5) {
             suggestion = {

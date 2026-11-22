@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; script-src 'self'; img-src 'self' data:;" />
+  <title>Power Pilot Setup</title>
+  <link rel="stylesheet" href="setup.css" />
+</head>
+<body>
+  <div class="setup-stage">
+    <main class="setup-card" id="setup-card" role="application" aria-label="Power Pilot Setup">
+      <canvas id="soft-backdrop" class="soft-backdrop" width="640" height="420" aria-hidden="true"></canvas>
+
+      <!-- Frameless TitleBar (42px) -->
+      <header class="titlebar" id="titlebar">
+        <div class="titlebar-drag" id="titlebar-drag">
+          <span class="titlebar-title" id="titlebar-title">Power Pilot Setup</span>
+        </div>
+        <div class="titlebar-controls">
+          <button type="button" class="win-btn win-btn-min" id="btn-minimize" aria-label="Minimize">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true">
+              <path d="M1.5 5.5H9.5" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" />
+            </svg>
+          </button>
+          <button type="button" class="win-btn win-btn-close" id="btn-close-win" aria-label="Close">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true">
+              <path d="M2 2L9 9M9 2L2 9" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Screens Container -->
+      <div class="screens-viewport">
+        <!-- 1. WELCOME SCREEN -->
+        <section class="screen is-active" id="screen-welcome" data-screen="welcome" aria-hidden="false">
+          <div class="welcome-center">
+            <div class="app-logo logo-96" aria-hidden="true">
+              <svg viewBox="0 0 256 256" width="96" height="96">
+                <defs>
+                  <linearGradient id="pp-bg-w" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#18181b" />
+                    <stop offset="100%" stop-color="#09090b" />
+                  </linearGradient>
+                  <linearGradient id="pp-bolt-w" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#ffffff" />
+                    <stop offset="100%" stop-color="#d4d4d8" />
+                  </linearGradient>
+                </defs>
+                <rect x="4" y="4" width="248" height="248" rx="56" fill="url(#pp-bg-w)" stroke="rgba(255,255,255,0.16)" stroke-width="4" />
+                <circle cx="128" cy="128" r="78" fill="none" stroke="#a1a1aa" stroke-width="11" stroke-dasharray="20 15" stroke-linecap="round" />
+                <circle cx="128" cy="128" r="60" fill="none" stroke="#ffffff" stroke-width="3.5" opacity="0.32" />
+                <path d="M136 64 L76 148 L120 148 L112 196 L180 108 L136 108 Z" fill="url(#pp-bolt-w)" />
+              </svg>
+            </div>
+
+            <div class="brand-row">
+              <h1 class="brand-name" id="welcome-app-name">Power Pilot</h1>
+              <span class="version-pill" id="welcome-version-pill">v1.0.0</span>
+            </div>
+
+            <p class="welcome-desc" id="welcome-desc">Setup will install Power Pilot 1.0.0 on this computer.</p>
+
+            <div class="welcome-actions">
+              <button type="button" class="btn-primary-lg" id="btn-welcome-install">Install</button>
+              <button type="button" class="btn-options-toggle" id="btn-open-options" aria-expanded="false" aria-controls="options-sheet">
+                <span id="txt-open-options">Options</span>
+                <svg class="chevron-icon" width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M3.25 8.75L7 5L10.75 8.75" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <footer class="welcome-footer" id="welcome-footer">100% local and offline. Uninstall anytime.</footer>
+        </section>
+
+        <!-- 2. PROGRESS SCREEN (Install & Uninstall) -->
+        <section class="screen" id="screen-progress" data-screen="progress" aria-hidden="true">
+          <div class="progress-center">
+            <div class="app-logo logo-84 pulse-subtle" aria-hidden="true">
+              <svg viewBox="0 0 256 256" width="84" height="84">
+                <defs>
+                  <linearGradient id="pp-bg-p" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#18181b" />
+                    <stop offset="100%" stop-color="#09090b" />
+                  </linearGradient>
+                  <linearGradient id="pp-bolt-p" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#ffffff" />
+                    <stop offset="100%" stop-color="#d4d4d8" />
+                  </linearGradient>
+                </defs>
+                <rect x="4" y="4" width="248" height="248" rx="56" fill="url(#pp-bg-p)" stroke="rgba(255,255,255,0.16)" stroke-width="4" />
+                <circle cx="128" cy="128" r="78" fill="none" stroke="#a1a1aa" stroke-width="11" stroke-dasharray="20 15" stroke-linecap="round" />
+                <circle cx="128" cy="128" r="60" fill="none" stroke="#ffffff" stroke-width="3.5" opacity="0.32" />
+                <path d="M136 64 L76 148 L120 148 L112 196 L180 108 L136 108 Z" fill="url(#pp-bolt-p)" />
+              </svg>
+            </div>
+            <h2 class="screen-heading" id="progress-title">Installing Power Pilot</h2>
+          </div>
+
+          <div class="progress-bottom">
+            <div class="progress-meta">
+              <span class="progress-step" id="progress-step">Preparing installation...</span>
+              <span class="progress-percent" id="progress-percent">0%</span>
+            </div>
+            <div class="shimmer-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress-bar-track">
+              <div class="shimmer-fill" id="progress-bar-fill"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. DONE SCREEN -->
+        <section class="screen" id="screen-done" data-screen="done" aria-hidden="true">
+          <div class="done-center">
+            <div class="check-burst" id="done-check-burst" aria-hidden="true">
+              <svg viewBox="0 0 88 88" width="88" height="88">
+                <circle class="burst-ring" cx="44" cy="44" r="38" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="2" />
+                <circle class="burst-disc" cx="44" cy="44" r="32" fill="#FAFAFA" />
+                <path class="burst-check" d="M30 44.5L39.5 54L58 35" fill="none" stroke="#09090B" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <h2 class="screen-heading" id="done-title">Power Pilot is ready</h2>
+            <p class="screen-sub" id="done-desc">Power Pilot 1.0.0 has been installed on this computer.</p>
+          </div>
+
+          <div class="action-row">
+            <button type="button" class="btn-soft-pill" id="btn-done-close">Close</button>
+            <button type="button" class="btn-primary-pill" id="btn-done-launch">Launch Power Pilot</button>
+          </div>
+        </section>
+
+        <!-- 4. UNINSTALL SCREEN -->
+        <section class="screen" id="screen-uninstall" data-screen="uninstall" aria-hidden="true">
+          <div class="uninstall-body">
+            <div class="app-logo logo-72" aria-hidden="true">
+              <svg viewBox="0 0 256 256" width="72" height="72">
+                <defs>
+                  <linearGradient id="pp-bg-u" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#18181b" />
+                    <stop offset="100%" stop-color="#09090b" />
+                  </linearGradient>
+                  <linearGradient id="pp-bolt-u" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#ffffff" />
+                    <stop offset="100%" stop-color="#d4d4d8" />
+                  </linearGradient>
+                </defs>
+                <rect x="4" y="4" width="248" height="248" rx="56" fill="url(#pp-bg-u)" stroke="rgba(255,255,255,0.16)" stroke-width="4" />
+                <circle cx="128" cy="128" r="78" fill="none" stroke="#a1a1aa" stroke-width="11" stroke-dasharray="20 15" stroke-linecap="round" />
+                <circle cx="128" cy="128" r="60" fill="none" stroke="#ffffff" stroke-width="3.5" opacity="0.32" />
+                <path d="M136 64 L76 148 L120 148 L112 196 L180 108 L136 108 Z" fill="url(#pp-bolt-u)" />
+              </svg>
+            </div>
+            <h2 class="screen-heading" id="uninstall-heading">Uninstall Power Pilot</h2>
+            <p class="screen-sub" id="uninstall-desc">This will remove Power Pilot from your computer.</p>
+
+            <div class="uninstall-data-card">
+              <label class="mono-checkbox" for="chk-delete-data">
+                <input type="checkbox" id="chk-delete-data" />
+                <span class="mono-box" aria-hidden="true">
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                    <path d="M2.2 6.2L4.8 8.8L9.8 3.4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </span>
+                <span class="mono-check-label" id="txt-delete-data">Also delete my saved data, local models, and settings</span>
+              </label>
+              <p class="data-path-hint" id="uninstall-data-hint">Data folder: %APPDATA%\powerpilot</p>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button type="button" class="btn-soft-pill" id="btn-uninstall-cancel">Cancel</button>
+            <button type="button" class="btn-primary-pill" id="btn-uninstall-confirm">Uninstall</button>
+          </div>
+        </section>
+
+        <!-- 5. UNINSTALLED SCREEN -->
+        <section class="screen" id="screen-uninstalled" data-screen="uninstalled" aria-hidden="true">
+          <div class="done-center">
+            <div class="check-burst" id="uninstalled-check-burst" aria-hidden="true">
+              <svg viewBox="0 0 88 88" width="88" height="88">
+                <circle class="burst-ring" cx="44" cy="44" r="38" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="2" />
+                <circle class="burst-disc" cx="44" cy="44" r="32" fill="#FAFAFA" />
+                <path class="burst-check" d="M30 44.5L39.5 54L58 35" fill="none" stroke="#09090B" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <h2 class="screen-heading" id="uninstalled-title">Power Pilot was removed</h2>
+            <p class="screen-sub" id="uninstalled-desc">Power Pilot has been removed from your computer.</p>
+          </div>
+
+          <div class="action-row">
+            <button type="button" class="btn-primary-pill" id="btn-uninstalled-close">Close</button>
+          </div>
+        </section>
+
+        <!-- 6. ERROR SCREEN -->
+        <section class="screen" id="screen-error" data-screen="error" aria-hidden="true">
+          <div class="done-center">
+            <div class="error-icon" aria-hidden="true">
+              <svg viewBox="0 0 72 72" width="72" height="72">
+                <circle cx="36" cy="36" r="30" fill="#1C1C1F" stroke="rgba(255,255,255,0.22)" stroke-width="2" />
+                <path d="M36 22V40" stroke="#FAFAFA" stroke-width="4" stroke-linecap="round" />
+                <circle cx="36" cy="49" r="2.6" fill="#FAFAFA" />
+              </svg>
+            </div>
+            <h2 class="screen-heading" id="error-title">Operation failed</h2>
+            <p class="screen-sub error-detail" id="error-message"></p>
+          </div>
+
+          <div class="action-row">
+            <button type="button" class="btn-soft-pill" id="btn-error-close">Close</button>
+            <button type="button" class="btn-primary-pill" id="btn-error-retry">Retry</button>
+          </div>
+        </section>
+      </div>
+
+      <!-- SLIDE-UP OPTIONS SHEET (top: 42px, 340ms cubic-bezier(0.22, 1, 0.36, 1)) -->
+      <aside class="options-sheet" id="options-sheet" aria-hidden="true">
+        <div class="sheet-header">
+          <h2 class="sheet-title" id="sheet-title">Options</h2>
+          <button type="button" class="btn-hide-sheet" id="btn-hide-options">
+            <span id="txt-hide-options">Hide</span>
+            <svg class="chevron-icon" width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M3.25 5.25L7 9L10.75 5.25" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="sheet-content">
+          <div class="field-row">
+            <label class="field-label" for="opt-language" id="lbl-language">Language</label>
+            <div class="select-wrap">
+              <select id="opt-language" class="mono-select"></select>
+              <svg class="select-caret" width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M3.5 5.5L7 9L10.5 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <label class="field-label" for="opt-install-dir" id="lbl-install-dir">Install folder</label>
+            <div class="dir-input-row">
+              <input type="text" id="opt-install-dir" class="mono-input" spellcheck="false" autocomplete="off" />
+              <button type="button" class="btn-browse" id="btn-browse-dir">Change...</button>
+            </div>
+          </div>
+
+          <div class="checks-grid">
+            <label class="mono-checkbox" for="opt-desktop">
+              <input type="checkbox" id="opt-desktop" checked />
+              <span class="mono-box" aria-hidden="true">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                  <path d="M2.2 6.2L4.8 8.8L9.8 3.4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+              <span class="mono-check-label" id="txt-opt-desktop">Create desktop shortcut</span>
+            </label>
+
+            <label class="mono-checkbox" for="opt-startmenu">
+              <input type="checkbox" id="opt-startmenu" checked />
+              <span class="mono-box" aria-hidden="true">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                  <path d="M2.2 6.2L4.8 8.8L9.8 3.4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+              <span class="mono-check-label" id="txt-opt-startmenu">Create Start menu shortcut</span>
+            </label>
+
+            <label class="mono-checkbox" for="opt-startup">
+              <input type="checkbox" id="opt-startup" />
+              <span class="mono-box" aria-hidden="true">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                  <path d="M2.2 6.2L4.8 8.8L9.8 3.4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+              <span class="mono-check-label" id="txt-opt-startup">Start when I sign in</span>
+            </label>
+
+            <label class="mono-checkbox" for="opt-path">
+              <input type="checkbox" id="opt-path" checked />
+              <span class="mono-box" aria-hidden="true">
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                  <path d="M2.2 6.2L4.8 8.8L9.8 3.4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+              <span class="mono-check-label" id="txt-opt-path">Add CLI command to PATH</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="sheet-footer">
+          <span class="disk-space" id="txt-disk-space">Space required: ~240 MB</span>
+          <button type="button" class="btn-sheet-install" id="btn-sheet-install">Install</button>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="i18n-73.js"></script>
+  <script src="setup.js"></script>
+</body>
+</html>

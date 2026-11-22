@@ -1,5 +1,5 @@
 /**
- * wol-readiness.test.mjs — FAZ C
+ * wol-readiness.test.mjs - FAZ C
  * NIC WoL ayrıştırma, wake_armed, hazırlık hükmü, yönlendirilmiş broadcast.
  */
 import { describe, it, expect, vi } from 'vitest';

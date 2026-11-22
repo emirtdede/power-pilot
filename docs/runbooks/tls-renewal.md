@@ -15,7 +15,7 @@ yenilenmesini tanımlar. Tek kaynak: `src/main/security/TlsConfig.js`.
 
 ```powershell
 # Geliştirme/test CA'sı ile (üretimde HSM/TPM CA kullanın)
-# 1) Kök CA (10 yıl) — parmak izini not edin
+# 1) Kök CA (10 yıl) - parmak izini not edin
 .\scripts\certs\New-PowerPilotCa.ps1 -OutDir "$env:APPDATA\powerpilot\certs"
 
 # 2) Sunucu sertifikası (varsayılan 90 gün), SAN'a tüm IP/DNS adları verilmeli

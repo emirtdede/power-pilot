@@ -1,5 +1,5 @@
 /**
- * localapi-mtls.test.mjs — FAZ A
+ * localapi-mtls.test.mjs - FAZ A
  * mTLS iskeleti + rol-bazlı anahtar + rotasyon + güvenlik özeti.
  */
 import { describe, it, expect, vi } from 'vitest';
@@ -160,7 +160,7 @@ describe('FAZ A: rol-bazlı anahtar', () => {
     it('operator: lock serbest, shutdown yasak (403)', () => {
         const { svc, powerService, taskManager } = makeService({ localApiKeyRole: 'operator' });
         expect(postAuthed(svc, '/api/v1/power/lock', {}).statusCode).toBe(200);
-        // K3: doğrudan icra YOK — görev hattı kurulur (güvenlik+uyarı+denetim).
+        // K3: doğrudan icra YOK - görev hattı kurulur (güvenlik+uyarı+denetim).
         expect(powerService.execute).not.toHaveBeenCalled();
         expect(taskManager.createTask).toHaveBeenCalledTimes(1);
         const arg = taskManager.createTask.mock.calls[0][0];

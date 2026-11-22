@@ -1,5 +1,5 @@
 /**
- * order-executor.test.mjs — FAZ B
+ * order-executor.test.mjs - FAZ B
  * apply-policy / revoke-policy / wake / güç emri / dalga-erteleme.
  */
 import { describe, it, expect, vi } from 'vitest';
@@ -70,7 +70,7 @@ describe('OrderExecutor', () => {
         const devices = { sendWakeOnLan: vi.fn(async () => ({ success: true })) };
         const ex = new OrderExecutor({ taskManager: tm, deviceService: devices, audit: null, nowFn: () => 1000 });
         const q = new OrderQueue(null);
-        // OrderQueue.enqueue nonce ister — rec key/order yapısı uyumlu:
+        // OrderQueue.enqueue nonce ister - rec key/order yapısı uyumlu:
         q.enqueue({ order: { action: 'lock', nonce: 'd1' }, signature: 'x' });
         q.enqueue({ order: { action: 'wake', nonce: 'd2', params: undefined }, signature: 'x' });
         const out = await ex.drain(q);

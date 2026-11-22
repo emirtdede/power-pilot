@@ -1,5 +1,5 @@
 /**
- * electron-version.js — WP-00.T2
+ * electron-version.js - WP-00.T2
  * Electron'in kendi içindeki Node sürümünü ve ABI'yi doğrular.
  * Host Node sürümü ne olursa olsun CI bu job'da Electron runtime'ını test eder.
  *

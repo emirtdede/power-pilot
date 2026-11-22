@@ -1,5 +1,5 @@
 /**
- * history.test.mjs — HistoryService: kayıt şekli (gizlilik), filtre, temizleme.
+ * history.test.mjs - HistoryService: kayıt şekli (gizlilik), filtre, temizleme.
  */
 import { describe, it, expect, vi } from 'vitest';
 import HistoryService from '../../src/main/services/HistoryService.js';

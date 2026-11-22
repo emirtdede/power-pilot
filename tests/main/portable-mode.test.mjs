@@ -21,7 +21,7 @@ const root = path.join(here, '../..');
 const mainSrc = fs.readFileSync(path.join(root, 'main.js'), 'utf8');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 
-describe('Portable — veri klasörü', () => {
+describe('Portable - veri klasörü', () => {
     it('taşınabilir değilken veri yeri dayatmaz', () => {
         expect(Portable.isPortable({})).toBe(false);
         expect(Portable.portableDataDir({})).toBe(null);
@@ -36,7 +36,7 @@ describe('Portable — veri klasörü', () => {
     });
 });
 
-describe('Portable — zamanlayıcı yolu', () => {
+describe('Portable - zamanlayıcı yolu', () => {
     it('taşınabilir değilken null döner (çağıran app.getPath kullanır)', () => {
         expect(Portable.portableExePath({})).toBe(null);
         expect(Portable.portableExePath({ PORTABLE_EXECUTABLE_FILE: '' })).toBe(null);

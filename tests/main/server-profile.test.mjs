@@ -1,5 +1,5 @@
 /**
- * server-profile.test.mjs — FAZ D
+ * server-profile.test.mjs - FAZ D
  * Sunucu profilinde konsoldan uyku/kapatma yasak; restart yalnızca bakım penceresinde.
  */
 import { describe, it, expect } from 'vitest';

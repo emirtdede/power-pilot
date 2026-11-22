@@ -1,5 +1,5 @@
 /**
- * store-listing.test.mjs — C3 mağaza metni sözleşmesi
+ * store-listing.test.mjs - C3 mağaza metni sözleşmesi
  *
  * Partner Center'ın sessiz ret nedenleri (metin çok uzun / dil eksik / alan boş)
  * CI'da yakalanır. Ayrıca metinlerin ürünün gerçek davranışıyla çelişmediğini
@@ -24,7 +24,7 @@ const LIMITS = {
 const MAX_FEATURES = 10;
 const MAX_FEATURE_LEN = 200;
 
-describe('C3 — mağaza metni (17 dil)', () => {
+describe('C3 - mağaza metni (17 dil)', () => {
     it('17 dilin tamamı tanımlı, fazlası yok', () => {
         expect(Object.keys(LISTING.languages).sort()).toEqual([...LANGS].sort());
     });

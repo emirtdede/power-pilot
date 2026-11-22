@@ -1,5 +1,5 @@
 /**
- * negation-english.test.mjs — P1-7 regresyon kapısı
+ * negation-english.test.mjs - P1-7 regresyon kapısı
  *
  * Ölçülen kusur: NegationGuard yalnızca Türkçe biliyordu. İngilizce
  * "don't shut down in 10 minutes" cümlesi olumlu sanılıyor ve yıkıcı
@@ -8,7 +8,7 @@
 import { describe, it, expect } from 'vitest';
 import { inspect, guardProposal } from '../../src/main/services/NegationGuard.js';
 
-describe('NegationGuard — İngilizce olumsuzluk (P1-7)', () => {
+describe('NegationGuard - İngilizce olumsuzluk (P1-7)', () => {
     it('İngilizce olumsuz cümleler yakalanır', () => {
         for (const text of [
             "don't shut down in 10 minutes",

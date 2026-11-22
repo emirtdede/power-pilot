@@ -1,5 +1,5 @@
 /**
- * TemplateService.js — WP-7
+ * TemplateService.js - WP-7
  * Kategorize edilmiş 22 hazır otomasyon şablonu + kullanıcı özel şablonları +
  * yerleşik şablon düzenleme (override), silme/gizleme ve varsayılana sıfırlama / geri getirme.
  *

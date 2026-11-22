@@ -3027,7 +3027,7 @@ html.dark .pp-theme-swatch {
     gap: 0.5rem;
 }
 
-/* --- Responsive: AUTO RAIL (900px–1119px) -------------------------------- */
+/* --- Responsive: AUTO RAIL (900px-1119px) -------------------------------- */
 
 @media (max-width: 1119px) and (min-width: 900px) {
     .app-sidebar {
@@ -3791,4 +3791,166 @@ html.dark .pp-template-badge--modified {
 
 #modal-onedrive-recovery {
     z-index: 95;
+}
+
+.pp-mode-segmented--3col {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pp-cloud-providers-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    padding-top: 0.15rem;
+}
+
+.pp-cloud-provider-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    min-height: 28px;
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    background-color: var(--surface);
+    color: var(--fg-muted);
+    cursor: pointer;
+    transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease;
+}
+
+.pp-cloud-provider-chip:hover {
+    border-color: var(--border-strong);
+    color: var(--fg);
+}
+
+.pp-cloud-provider-chip.is-active {
+    background-color: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--fg);
+}
+
+.pp-onedrive-actions-row {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.pp-onedrive-actions-row.hidden {
+    display: none;
+}
+
+.pp-onedrive-actions-row > button {
+    width: 100%;
+    min-height: 38px;
+    justify-content: center;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.pp-onedrive-actions-row > button.hidden {
+    display: none;
+}
+
+.pp-onedrive-actions-row--connected {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 680px) {
+    .pp-onedrive-actions-row,
+    .pp-onedrive-actions-row--connected {
+        grid-auto-flow: row;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.pp-btn-danger-subtle {
+    color: #dc2626;
+}
+
+.dark .pp-btn-danger-subtle {
+    color: #f87171;
+}
+
+.pp-btn-danger-subtle:hover {
+    border-color: rgba(239, 68, 68, 0.45);
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+.pp-equal-btn-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.625rem;
+    width: 100%;
+}
+
+.pp-equal-btn-grid-2 > button {
+    width: 100%;
+    min-height: 38px;
+    justify-content: center;
+    text-align: center;
+}
+
+.pp-modal-footer--equal {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 0.625rem;
+}
+
+.pp-modal-footer--equal > button {
+    width: 100%;
+    height: 100%;
+    min-height: 38px;
+    justify-content: center;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.pp-onedrive-meta.hidden,
+.pp-equal-btn-grid-2.hidden,
+.pp-modal-footer--equal.hidden,
+.pp-cloud-providers-row.hidden {
+    display: none;
+}
+
+.pp-update-progress {
+    width: 100%;
+    height: 0.5rem;
+    border-radius: 9999px;
+    overflow: hidden;
+    appearance: none;
+    border: none;
+    background-color: var(--surface-subtle);
+}
+
+.pp-update-progress::-webkit-progress-bar {
+    background-color: var(--surface-subtle);
+    border-radius: 9999px;
+}
+
+.pp-update-progress::-webkit-progress-value {
+    background-color: var(--accent);
+    border-radius: 9999px;
+    transition: width 180ms ease;
+}
+
+@media (max-width: 520px) {
+    .pp-equal-btn-grid-2,
+    .pp-modal-footer--equal {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+
+.pp-ai-tier-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
 }

@@ -1,5 +1,5 @@
 /**
- * CrashGuard sözleşmesi — ana süreç çökme dayanıklılığı.
+ * CrashGuard sözleşmesi - ana süreç çökme dayanıklılığı.
  *
  * Regresyon: main.js'te uncaughtException / unhandledRejection kancası yoktu;
  * yakalanmamış bir hata uygulamayı sessizce kapatıyor ve log bırakmıyordu.
@@ -10,7 +10,7 @@ import { installCrashGuard, describeError } from '../../src/main/util/CrashGuard
 
 const makeLogger = () => ({ error: vi.fn(), warn: vi.fn() });
 
-describe('CrashGuard — ana süreç hata kancaları', () => {
+describe('CrashGuard - ana süreç hata kancaları', () => {
     it('uncaughtException loglanır ve süreç ayakta kalır', () => {
         const proc = new EventEmitter();
         const logger = makeLogger();

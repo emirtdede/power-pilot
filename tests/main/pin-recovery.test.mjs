@@ -1,5 +1,5 @@
 /**
- * PIN kurtarma yüzeyi — regresyon kilidi.
+ * PIN kurtarma yüzeyi - regresyon kilidi.
  *
  * Bulgu: PIN'i unutan kullanıcıya arayüzde HİÇBİR yön gösterilmiyordu
  * (E2E ölçümü: mentionsForgot=false). Uygulama içi PIN'siz sıfırlama
@@ -35,7 +35,7 @@ function handlerBody() {
     return mainSrc.slice(start, end);
 }
 
-describe('PIN kurtarma — veri klasörü IPC', () => {
+describe('PIN kurtarma - veri klasörü IPC', () => {
     it('handler yalnızca app.getPath(userData) kullanır', () => {
         const body = handlerBody();
         expect(body).toMatch(/app\.getPath\('userData'\)/);
@@ -62,13 +62,13 @@ describe('PIN kurtarma — veri klasörü IPC', () => {
     });
 });
 
-describe('PIN kurtarma — preload yüzeyi', () => {
+describe('PIN kurtarma - preload yüzeyi', () => {
     it('openDataFolder invoke edilir', () => {
         expect(preloadSrc).toMatch(/openDataFolder:\s*\(\)\s*=>\s*ipcRenderer\.invoke\('open-data-folder'\)/);
     });
 });
 
-describe('PIN kurtarma — arayüz', () => {
+describe('PIN kurtarma - arayüz', () => {
     it('kurtarma metni ve düğmesi HTML’de var', () => {
         expect(html).toContain('data-i18n="cancelPinForgotHint"');
         expect(html).toContain('id="btn-open-data-folder"');

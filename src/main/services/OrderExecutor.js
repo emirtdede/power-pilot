@@ -1,5 +1,5 @@
 /**
- * OrderExecutor.js — FAZ B (ajan tarafı).
+ * OrderExecutor.js - FAZ B (ajan tarafı).
  * Doğrulanmış + kuyruğa girmiş konsol emirlerini icra eder:
  *   apply-policy  → EnterprisePolicies.materializeToTask → TaskManager (tam boru hattı)
  *   revoke-policy → aynı policyId'li görevleri iptal et

@@ -1,5 +1,5 @@
 /**
- * pinGuard.js — WBS-11.2 / WP-04.T4
+ * pinGuard.js - WBS-11.2 / WP-04.T4
  * İptal PIN'i doğrulama: Argon2id + 5 yanlış denemede 15 dakika kilit.
  * Eski SHA-256(salt:pin) kayıtları doğrulandıktan sonra çağırana `upgrade`
  * (yeni Argon2id PHC) döner; çağıran atomik olarak kaydeder.
@@ -47,9 +47,9 @@ class PinGuard {
     }
 
     /**
-     * @param {string} scope — sayaç anahtarı (örn. 'cancel')
-     * @param {string|undefined} pin — kullanıcının verdiği PIN
-     * @param {string|{hash:string,salt:string}|null} stored — Argon2id PHC veya legacy kayıt
+     * @param {string} scope - sayaç anahtarı (örn. 'cancel')
+     * @param {string|undefined} pin - kullanıcının verdiği PIN
+     * @param {string|{hash:string,salt:string}|null} stored - Argon2id PHC veya legacy kayıt
      * @returns {Promise<{ok:boolean, code?:string, upgrade?:string, retryAfterSec?:number, attemptsLeft?:number}>}
      */
     async check(scope, pin, stored) {

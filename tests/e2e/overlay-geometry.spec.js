@@ -1,5 +1,5 @@
 /**
- * overlay-geometry.spec.js — PPX-003 / PPX-006 / PPX-013 / PPX-020
+ * overlay-geometry.spec.js - PPX-003 / PPX-006 / PPX-013 / PPX-020
  * TC-19…TC-22, TC-37 ve 22×11 boyut matrisi.
  *
  * Hiçbir pencerede yatay taşma yok; banner/toast/H2/filtre/sticky CTA
@@ -21,7 +21,7 @@ const VIEWS = [
     'nav-templates', 'nav-history', 'nav-stats', 'nav-integrations', 'nav-docs', 'nav-settings', 'nav-about'
 ];
 
-test('TC-19/22/37: 22 boyut × 11 görünüm — yatay taşma yok', async () => {
+test('TC-19/22/37: 22 boyut × 11 görünüm - yatay taşma yok', async () => {
     test.setTimeout(900000);
     const { app, window, userDataDir } = await launchApp('powerpilot-geometry-');
     try {

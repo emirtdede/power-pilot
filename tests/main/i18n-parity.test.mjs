@@ -1,5 +1,5 @@
 /**
- * i18n-parity.test.mjs — WBS-11.6 / WP-14.T1
+ * i18n-parity.test.mjs - WBS-11.6 / WP-14.T1
  * JSON locale dosyaları: 17 dil, birebir eşit anahtar kümeleri, placeholder parity.
  */
 import { describe, it, expect } from 'vitest';

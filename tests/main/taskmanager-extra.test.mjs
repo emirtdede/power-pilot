@@ -1,5 +1,5 @@
 /**
- * taskmanager-extra.test.mjs — TaskManager kalan dallar
+ * taskmanager-extra.test.mjs - TaskManager kalan dallar
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import fs from 'node:fs';
@@ -44,7 +44,7 @@ function harness(over = {}) {
 const flush = (ms = 60) => new Promise((r) => setTimeout(r, ms));
 const taskData = (over = {}) => Object.assign({ name: 'g', action: 'lock', trigger: { type: 'duration', durationMs: 60000 } }, over);
 
-describe('TaskManager — ek dallar', () => {
+describe('TaskManager - ek dallar', () => {
     it('handleTaskExecution boş liste ile güvenli', () => {
         const { tm, power } = harness();
         expect(() => tm.handleTaskExecution([])).not.toThrow();

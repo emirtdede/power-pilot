@@ -1,5 +1,5 @@
 /**
- * safety-power-capability.test.mjs — P0/BLOCKER-001
+ * safety-power-capability.test.mjs - P0/BLOCKER-001
  *
  * `powercfg.exe /requests` yükseltilmiş yetki ister; paketlenmiş uygulama
  * `asInvoker` çalışır. Motor bu farkı yetenek sondasıyla ölçer:

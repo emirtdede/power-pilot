@@ -1,5 +1,5 @@
 /**
- * CrashGuard.js — yayın öncesi dayanıklılık
+ * CrashGuard.js - yayın öncesi dayanıklılık
  *
  * Neden: Electron ana sürecinde yakalanmamış bir istisna, kullanıcıya hiçbir
  * iz bırakmadan uygulamayı kapatır (pencere kaybolur, log yazılmaz).

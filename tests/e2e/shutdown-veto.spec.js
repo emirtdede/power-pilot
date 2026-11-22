@@ -1,5 +1,5 @@
 /**
- * shutdown-veto.spec.js — A6 kapatma engellendi bildirimi (E2E)
+ * shutdown-veto.spec.js - A6 kapatma engellendi bildirimi (E2E)
  *
  * Gerçek kullanıcı hatası: kaydedilmemiş işi olan bir uygulama kapatmayı veto
  * ettiğinde Windows kendi onay penceresini gösteriyordu; Power Pilot görevi

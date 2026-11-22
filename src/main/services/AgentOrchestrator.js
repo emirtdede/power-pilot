@@ -1,5 +1,5 @@
 /**
- * AgentOrchestrator.js — F9.1 + WP-8
+ * AgentOrchestrator.js - F9.1 + WP-8
  * Deterministik yönlendirici + tek-uçuş kuyruğu + susturma + denetim.
  *
  * 7 ajan:

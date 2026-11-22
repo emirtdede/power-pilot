@@ -1,6 +1,6 @@
-# Changelog — Power Pilot (WBS-10.4)
+# Changelog - Power Pilot (WBS-10.4)
 
-## [Unreleased] — Zero-Tolerance Audit Remediation (2026-11-21)
+## [Unreleased] - Zero-Tolerance Audit Remediation (2026-11-21)
 
 Bu sürüm, denetimde tespit edilen **plasebo ayarları** ve **kalıcı kusurları**
 kök nedenden kapatır. Hiçbir ayar "arayüzde var, davranışta yok" durumunda
@@ -29,7 +29,7 @@ bırakılmadı; hiçbir hata sessizce yutulmadı.
   `n8n`, `console` kaynaklı görevler yerel insan onayı ister; sayaç dolarsa
   eylem **iptal** edilir (fail-closed). Yerel UI görevleri etkilenmez.
 - **Aktif güç isteği kapısı** yükseltme yoksa görünür biçimde atlanır
-  (`loadCheck: "unavailable"` + denetim kaydı + arayüz uyarısı) — sessizce
+  (`loadCheck: "unavailable"` + denetim kaydı + arayüz uyarısı) - sessizce
   açık bırakılmaz.
 
 ### Davranış
@@ -37,7 +37,7 @@ bırakılmadı; hiçbir hata sessizce yutulmadı.
   `restart` / `signout` için Windows `/t n` kullanılır; bekleme penceresinde
   iptal `shutdown /a` ile zamanlanmış kapatmayı **gerçekten** durdurur. Veto
   doğrulama penceresi gecikme kadar ötelenir (meşru bekleme yanlış
-  "engellendi" olarak raporlanmaz). 0–600 sn, görev düzeyi değer ezer.
+  "engellendi" olarak raporlanmaz). 0-600 sn, görev düzeyi değer ezer.
 - **Uyarı sayacı = iptal penceresi.** Süre dolarsa eylem çalışır; katı mod
   isteyen `warningConfig.requireConfirmation: true` ile dolduğunda iptal eder.
 - **Yeniden deneme gerçek bekleme (`retry_once`).** 30 sn pencere; bu sırada
@@ -61,7 +61,7 @@ bırakılmadı; hiçbir hata sessizce yutulmadı.
 - **Tek kaynak:** `src/shared/localApiConnection.js`. Kanonik ad
   `POWERPILOT_API_*`; `POWER_PILOT_API_*` geriye uyum fallback'i.
   `*_API_TLS` / `*_API_CA` ile TLS. CLI, MCP, ajan ve "MCP yapılandırmasını
-  kopyala" çıktısı aynı sözleşmeyi kullanır — kopyala-yapıştır 401 üretmez.
+  kopyala" çıktısı aynı sözleşmeyi kullanır - kopyala-yapıştır 401 üretmez.
 - CLI süre alanını sayısal `durationMs` olarak gönderir.
 
 ### Arayüz ve koruma
@@ -80,7 +80,7 @@ bırakılmadı; hiçbir hata sessizce yutulmadı.
   davranışa göre güncellendi. Uygulama içi Dokümantasyon Merkezi de aynı
   gerçekleri anlatır.
 
-## [1.0.0] — Official Production Release (2026-11-21)
+## [1.0.0] - Official Production Release (2026-11-21)
 
 - **v1.0.0 Resmi Yayın:** Vellium (`vellium.dev`, `support@vellium.dev`) çatısı altında sabitlenen ilk kararlı üretim sürümü (`v1.0.0`).
 - **4 Seçilebilir Sistem Geneli Uygulama ve Masaüstü İkonu (`AppIconService`):** `Koyu Monokrom` (varsayılan), `Açık Monokrom`, `Saf Siyah-Beyaz` ve `Klasik Cyan` ikon setleri (`.svg`, `.png`, 7 boyutlu `.ico` + 51 parçalı Microsoft Store çoklu-DPI `build/appx` seti). Seçim değiştiğinde ana pencere, mini widget, sistem tepsisi, görev çubuğu ve Windows Masaüstü/Başlat kısayolları (`.lnk`) UTF-16LE `SHChangeNotify` (`SHCNE_UPDATEITEM` + `SHCNE_UPDATEDIR` + `SHCNE_ASSOCCHANGED`) ile eşzamanlı güncellenir.
@@ -92,37 +92,37 @@ bırakılmadı; hiçbir hata sessizce yutulmadı.
 - **Kurulum Sihirbazı Otomatik Enerji Profili & %100 Responsive Arayüz:** Kurulum sihirbazı 2. adımında algılanan cihaz watt değeri ve yerel elektrik tarifesinin otomatik doldurulması; tüm ikinci kenar menülerde tek satır kilidi ve 22×12 pencere boyutunda sıfır yatay taşma.
 - **Özel Windows 11 NSIS Kurulum ve Kaldırma Deneyimi:** Özel yan ve üst grafikler (sürüm numarası içermez), Görev Zamanlayıcı temizliği ve isteğe bağlı kullanıcı verisi koruma/silme adımı.
 
-## [1.3.1] — UI/UX & Accessibility Remediation (2026-11-20)
+## [1.3.1] - UI/UX & Accessibility Remediation (2026-11-20)
 
-### Erişilebilirlik ve Klavye (WCAG 2.2 AA — WP-01, WP-02, WP-03, WP-07)
-- **PPX-001 (P0) — Kenar çubuğu (sidebar) klavye navigasyonu.** 11 navigasyon öğesi `href`'siz `<a>` yerine `<button type="button">` öğelerine dönüştürüldü; tümü Tab sırasına girer, `ArrowUp`/`ArrowDown`/`Home`/`End` ile odak taşınır, `Enter`/`Space` ile etkinleştirilir.
-- **PPX-002 (P1) — Ayarlar anahtarları (switch) odaklanabilirliği.** Bildirimler, Windows ile Başlat ve Sesli Geri Bildirim anahtarlarında `invisible` (`visibility: hidden`) kaldırılarak `opacity-0` + tam kaplama ve `peer-focus-visible:ring-2` odak halkası eklendi.
-- **PPX-004 (P1) — Dar pencere çekmecesi (drawer) odak yönetimi.** `< 900 px` kapalı çekmece `visibility: hidden` ile erişilebilirlik ağacından ve Tab sırasından çıkarıldı; açıldığında `#main-content` `inert` olur, odak ilk nav öğesine taşınır, Tab çekmece içinde tutulur ve `Escape`/scrim kapanışında odak `#btn-nav-toggle` düğmesine döner.
-- **PPX-007 / PPX-029 (P1/P3) — Mini widget klavye halkası ve erişilebilir adlar.** Mini widget kontrol düğmeleri 24×24 px hedef boyutuna yükseltildi, `:focus-visible` halkası ve ilk boyamadan itibaren statik `aria-label` eklendi.
-- **PPX-008 (P2) — Ayarlar açılır listeleri (`<select>`) programatik etiketleri.** `#setting-sound-mode`, `#setting-theme` ve `#setting-language` öğeleri görünür başlık ve açıklama metinlerine `aria-labelledby` ve `aria-describedby` ile bağlandı.
-- **PPX-009 / PPX-036 (P2/P4) — Dokunma ve işaretçi hedef boyutları (WCAG 2.5.8).** Entegrasyonlar/Ayarlar/Smart Finish onay ve radyo kutusu etiketleri, Hakkında `vellium.dev` bağlantısı ve `#onboarding-skip` en az 24×24 px; istatistik çipleri (`#chip-watt`, `#chip-price`) en az 32 px yüksekliğe çıkarıldı.
-- **PPX-011 (P2) — Görünüm geçişi duyurusu ve odak yönetimi.** Görünüm değişiminde `document.title` `<Görünüm> — Power Pilot` olarak güncellenir ve klavye/nav aktivasyonunda odak hedef görünüme (`tabindex="-1"`) taşınır.
-- **PPX-012 (P2) — Landmark adlandırması ve içeriğe atlama bağlantısı.** `<header>`, `<nav>`, `<main>`, `<footer>` bölgeleri 17 dilde `aria-label` ile adlandırıldı; ilk Tab durağı olarak `#pp-skip` ("Ana içeriğe atla") eklendi.
-- **PPX-017 (P2) — Görev filtrelerinde durum semantiği.** `[data-task-filter]` düğmelerine `aria-pressed` ve renk dışı aktif durum göstergesi (alt çizgi `box-shadow`) eklendi.
-- **PPX-019 / PPX-030 (P2/P3) — Boş durum canlı bölgeleri ve ortak bileşen.** Görevler, Geçmiş, Şablonlar ve AI Asistan boş durumları `role="status" aria-live="polite"` ve ortak `.pp-empty` bileşeniyle (ikon + başlık + açıklama + birincil eylem) standartlaştırıldı.
-- **PPX-027 (P3) — Süre adımlayıcı (stepper) semantiği.** 6 adımlayıcı düğmesi `type="button"` yapıldı ve değer değişimleri `#pp-step-live` canlı bölgesiyle duyurulur hale getirildi.
-- **PPX-028 (P3) — İstatistik kartları semantiği.** İstatistik kartları `<dl>` (`<dt>` + `<dd>`) yapısına alındı.
-- **PPX-031 (P3) — Kurulum sihirbazı adım göstergesi.** `#wz-dots` grubuna erişilebilir etiket ve `#wz-step-text` (`aria-live="polite"`) adım durumu ("Adım 1/3") eklendi.
-- **PPX-032 (P3) — Windows Yüksek Karşıtlık (`forced-colors: active`) desteği.** Odak halkaları, kart sınırları ve anahtarlar için sistem renkleriyle (`Highlight`, `CanvasText`, `ButtonText`) yüksek karşıtlık kuralları eklendi.
+### Erişilebilirlik ve Klavye (WCAG 2.2 AA - WP-01, WP-02, WP-03, WP-07)
+- **PPX-001 (P0) - Kenar çubuğu (sidebar) klavye navigasyonu.** 11 navigasyon öğesi `href`'siz `<a>` yerine `<button type="button">` öğelerine dönüştürüldü; tümü Tab sırasına girer, `ArrowUp`/`ArrowDown`/`Home`/`End` ile odak taşınır, `Enter`/`Space` ile etkinleştirilir.
+- **PPX-002 (P1) - Ayarlar anahtarları (switch) odaklanabilirliği.** Bildirimler, Windows ile Başlat ve Sesli Geri Bildirim anahtarlarında `invisible` (`visibility: hidden`) kaldırılarak `opacity-0` + tam kaplama ve `peer-focus-visible:ring-2` odak halkası eklendi.
+- **PPX-004 (P1) - Dar pencere çekmecesi (drawer) odak yönetimi.** `< 900 px` kapalı çekmece `visibility: hidden` ile erişilebilirlik ağacından ve Tab sırasından çıkarıldı; açıldığında `#main-content` `inert` olur, odak ilk nav öğesine taşınır, Tab çekmece içinde tutulur ve `Escape`/scrim kapanışında odak `#btn-nav-toggle` düğmesine döner.
+- **PPX-007 / PPX-029 (P1/P3) - Mini widget klavye halkası ve erişilebilir adlar.** Mini widget kontrol düğmeleri 24×24 px hedef boyutuna yükseltildi, `:focus-visible` halkası ve ilk boyamadan itibaren statik `aria-label` eklendi.
+- **PPX-008 (P2) - Ayarlar açılır listeleri (`<select>`) programatik etiketleri.** `#setting-sound-mode`, `#setting-theme` ve `#setting-language` öğeleri görünür başlık ve açıklama metinlerine `aria-labelledby` ve `aria-describedby` ile bağlandı.
+- **PPX-009 / PPX-036 (P2/P4) - Dokunma ve işaretçi hedef boyutları (WCAG 2.5.8).** Entegrasyonlar/Ayarlar/Smart Finish onay ve radyo kutusu etiketleri, Hakkında `vellium.dev` bağlantısı ve `#onboarding-skip` en az 24×24 px; istatistik çipleri (`#chip-watt`, `#chip-price`) en az 32 px yüksekliğe çıkarıldı.
+- **PPX-011 (P2) - Görünüm geçişi duyurusu ve odak yönetimi.** Görünüm değişiminde `document.title` `<Görünüm> - Power Pilot` olarak güncellenir ve klavye/nav aktivasyonunda odak hedef görünüme (`tabindex="-1"`) taşınır.
+- **PPX-012 (P2) - Landmark adlandırması ve içeriğe atlama bağlantısı.** `<header>`, `<nav>`, `<main>`, `<footer>` bölgeleri 17 dilde `aria-label` ile adlandırıldı; ilk Tab durağı olarak `#pp-skip` ("Ana içeriğe atla") eklendi.
+- **PPX-017 (P2) - Görev filtrelerinde durum semantiği.** `[data-task-filter]` düğmelerine `aria-pressed` ve renk dışı aktif durum göstergesi (alt çizgi `box-shadow`) eklendi.
+- **PPX-019 / PPX-030 (P2/P3) - Boş durum canlı bölgeleri ve ortak bileşen.** Görevler, Geçmiş, Şablonlar ve AI Asistan boş durumları `role="status" aria-live="polite"` ve ortak `.pp-empty` bileşeniyle (ikon + başlık + açıklama + birincil eylem) standartlaştırıldı.
+- **PPX-027 (P3) - Süre adımlayıcı (stepper) semantiği.** 6 adımlayıcı düğmesi `type="button"` yapıldı ve değer değişimleri `#pp-step-live` canlı bölgesiyle duyurulur hale getirildi.
+- **PPX-028 (P3) - İstatistik kartları semantiği.** İstatistik kartları `<dl>` (`<dt>` + `<dd>`) yapısına alındı.
+- **PPX-031 (P3) - Kurulum sihirbazı adım göstergesi.** `#wz-dots` grubuna erişilebilir etiket ve `#wz-step-text` (`aria-live="polite"`) adım durumu ("Adım 1/3") eklendi.
+- **PPX-032 (P3) - Windows Yüksek Karşıtlık (`forced-colors: active`) desteği.** Odak halkaları, kart sınırları ve anahtarlar için sistem renkleriyle (`Highlight`, `CanvasText`, `ButtonText`) yüksek karşıtlık kuralları eklendi.
 
 ### Yerleşim, Kontrast, Tema ve Platform (WP-04, WP-05, WP-06, WP-08)
-- **PPX-003 (P1) — Pano (Dashboard) sticky CTA örtüşmesi.** Sticky bar yüksekliği `ResizeObserver` ile `--pp-cta-h` olarak ölçülüp `#view-dashboard` alt boşluğuna bağlandı (`padding-bottom` + `scroll-padding-bottom`), eylem ızgarası `lg:grid-cols-6` yapıldı ve kısa pencereler (`≤ 640 px`) için dikey yoğunluk kuralları eklendi.
-- **PPX-005 / PPX-010 (P1/P2) — Kontrast düzeltmeleri (WCAG 1.4.3 / 1.4.11).** `#btn-cancel` `bg-red-600 hover:bg-red-700` (4,83:1), `#stat-kwh` `text-green-700 dark:text-green-400` (5,02:1 / 7,9:1), saat ayırıcıları ve Hakkında chevron ikonları tema duyarlı `.pp-sep` (`--pp-sep`, ≥ 3:1) yapıldı; statik kontrast kapısına `text-green-500` ve `text-emerald-500` yasakları eklendi.
-- **PPX-006 / PPX-018 / PPX-023 / PPX-024 (P1/P2/P3) — Bildirim ve uyarı katmanı.** `#warning-banner` ve `#toast-container` sabit overlay yerine `#main-content` içinde normal akışa alındı; başlık, filtre ve banner çakışmaları yapısal olarak ortadan kaldırıldı. Toast üst sınırı 2'ye indirildi, duyarlı genişlik (`min(20rem, calc(100vw - 8rem))`), hover/odak duraklatma ve 24×24 kapatma düğmesi eklendi.
-- **PPX-013 (P2) — Desteklenen pencere alt sınırı.** 720×520 alt sınırı (`minWidth: 720, minHeight: 520`) kodda ve dokümantasyonda resmileştirildi.
-- **PPX-014 (P4) — Mini widget akışkan kart ve saat.** Mini widget kartı `w-full h-full max-w-[260px]` ve saat boyutu `clamp(1.25rem, 8vw, 1.5rem)` ile dar boyutta taşmasız hale getirildi.
-- **PPX-015 (P2) — Tema ve dilin anında uygulanması.** Ayarlar'da tema ve dil seçimi `change` olayında anında uygulanır ve kalıcılaştırılır; sunucu reddi durumunda son onaylı değere geri döner.
-- **PPX-016 (P2) — Tek kurulum deneyimi.** İlk açılış sihirbazını atlayan kullanıcıya (`pp-wizard-skipped=1`) hemen ardından ikinci bir onboarding katmanı gösterilmez.
-- **PPX-020 / PPX-033 (P2/P3) — Entegrasyonlar girdi genişlikleri.** API yapılandırma ızgarası `grid-cols-1 lg:grid-cols-2` yapıldı; IP, sertifika, anahtar ve parmak izi alanları dar pencerede tam satır genişliği alır.
-- **PPX-021 (P2) — Açık temada açılış parlamasının giderilmesi.** Harici, CSP uyumlu `src/renderer/theme-boot.js` stil dosyalarından önce çalışarak ilk boyamada kayıtlı temayı uygular.
-- **PPX-022 / PPX-026 (P3) — Tipografi ve içerik genişliği tokenları.** Tüm görünüm başlıkları `.page-title` (`24 px / 700`) ile hizalandı; `--pp-content-max` (`72rem`), `--pp-data-max` (`64rem`) ve `--pp-form-max` (`56rem`) kolon tokenları tanımlandı.
-- **PPX-025 (P3) — Kısa pencerede kenar çubuğu kaydırma ipucu.** `#app-sidebar nav` alanına ince kaydırma çubuğu ve üst/alt `mask-image` solma efekti eklendi.
-- **PPX-034 / PPX-035 (P4) — Yerelleştirme ve başlık çubuğu ipuçları.** Türkçe sözlükte `"dashboard"` etiketi `"Panel"` olarak çevrildi; pencere kontrol düğmelerine yerel `title` ipuçları eklendi.
+- **PPX-003 (P1) - Pano (Dashboard) sticky CTA örtüşmesi.** Sticky bar yüksekliği `ResizeObserver` ile `--pp-cta-h` olarak ölçülüp `#view-dashboard` alt boşluğuna bağlandı (`padding-bottom` + `scroll-padding-bottom`), eylem ızgarası `lg:grid-cols-6` yapıldı ve kısa pencereler (`≤ 640 px`) için dikey yoğunluk kuralları eklendi.
+- **PPX-005 / PPX-010 (P1/P2) - Kontrast düzeltmeleri (WCAG 1.4.3 / 1.4.11).** `#btn-cancel` `bg-red-600 hover:bg-red-700` (4,83:1), `#stat-kwh` `text-green-700 dark:text-green-400` (5,02:1 / 7,9:1), saat ayırıcıları ve Hakkında chevron ikonları tema duyarlı `.pp-sep` (`--pp-sep`, ≥ 3:1) yapıldı; statik kontrast kapısına `text-green-500` ve `text-emerald-500` yasakları eklendi.
+- **PPX-006 / PPX-018 / PPX-023 / PPX-024 (P1/P2/P3) - Bildirim ve uyarı katmanı.** `#warning-banner` ve `#toast-container` sabit overlay yerine `#main-content` içinde normal akışa alındı; başlık, filtre ve banner çakışmaları yapısal olarak ortadan kaldırıldı. Toast üst sınırı 2'ye indirildi, duyarlı genişlik (`min(20rem, calc(100vw - 8rem))`), hover/odak duraklatma ve 24×24 kapatma düğmesi eklendi.
+- **PPX-013 (P2) - Desteklenen pencere alt sınırı.** 720×520 alt sınırı (`minWidth: 720, minHeight: 520`) kodda ve dokümantasyonda resmileştirildi.
+- **PPX-014 (P4) - Mini widget akışkan kart ve saat.** Mini widget kartı `w-full h-full max-w-[260px]` ve saat boyutu `clamp(1.25rem, 8vw, 1.5rem)` ile dar boyutta taşmasız hale getirildi.
+- **PPX-015 (P2) - Tema ve dilin anında uygulanması.** Ayarlar'da tema ve dil seçimi `change` olayında anında uygulanır ve kalıcılaştırılır; sunucu reddi durumunda son onaylı değere geri döner.
+- **PPX-016 (P2) - Tek kurulum deneyimi.** İlk açılış sihirbazını atlayan kullanıcıya (`pp-wizard-skipped=1`) hemen ardından ikinci bir onboarding katmanı gösterilmez.
+- **PPX-020 / PPX-033 (P2/P3) - Entegrasyonlar girdi genişlikleri.** API yapılandırma ızgarası `grid-cols-1 lg:grid-cols-2` yapıldı; IP, sertifika, anahtar ve parmak izi alanları dar pencerede tam satır genişliği alır.
+- **PPX-021 (P2) - Açık temada açılış parlamasının giderilmesi.** Harici, CSP uyumlu `src/renderer/theme-boot.js` stil dosyalarından önce çalışarak ilk boyamada kayıtlı temayı uygular.
+- **PPX-022 / PPX-026 (P3) - Tipografi ve içerik genişliği tokenları.** Tüm görünüm başlıkları `.page-title` (`24 px / 700`) ile hizalandı; `--pp-content-max` (`72rem`), `--pp-data-max` (`64rem`) ve `--pp-form-max` (`56rem`) kolon tokenları tanımlandı.
+- **PPX-025 (P3) - Kısa pencerede kenar çubuğu kaydırma ipucu.** `#app-sidebar nav` alanına ince kaydırma çubuğu ve üst/alt `mask-image` solma efekti eklendi.
+- **PPX-034 / PPX-035 (P4) - Yerelleştirme ve başlık çubuğu ipuçları.** Türkçe sözlükte `"dashboard"` etiketi `"Panel"` olarak çevrildi; pencere kontrol düğmelerine yerel `title` ipuçları eklendi.
 
 ## [Unreleased]
 
@@ -138,7 +138,7 @@ bırakılmadı; hiçbir hata sessizce yutulmadı.
   etti, manifest doğru: `Vellium.PowerPilot`, `runFullTrust` + `microphone`,
   `startupTask Enabled=false`, 17 dil. Gerçek Store sertifikasıyla imzalama
   kapsam dışı (belgelendi).
-- **Kapatma uyarısı pencere gizliyken görünmüyordu (P0 — veri kaybı).**
+- **Kapatma uyarısı pencere gizliyken görünmüyordu (P0 - veri kaybı).**
   Kullanıcı "1 saat sonra kapat" deyip pencereyi kapatınca uygulama tepside
   çalışmaya devam ediyor; süre dolunca uyarı yalnızca gizli pencerenin DOM'una
   yazılıyordu. `full` modda uyarı süresi dolunca otomatik devam edildiği için
@@ -176,7 +176,7 @@ bırakılmadı; hiçbir hata sessizce yutulmadı.
   Bozuk `powerpilot.db` (elektrik kesintisi/antivirüs/disk hatası) durumunda
   uygulama açılıyor ama **hiçbir görev oluşturulamıyordu**; yalnızca
   "Task could not be created." görünüyor, kurtarma yolu sunulmuyordu.
-  Düzeltme: `StorageRecovery.quarantineDatabase` — bozuk DB **silinmez**,
+  Düzeltme: `StorageRecovery.quarantineDatabase` - bozuk DB **silinmez**,
   `quarantine/` altına taşınır, temiz depoyla devam edilir; `new Db()`
   açılış hatası da kurtarma yoluna girer. `get-storage-status` `recoveredFrom`
   döndürür ve arayüz `role="status"` canlı bölgeyle çevrilmiş bildirim +
@@ -212,13 +212,13 @@ bırakılmadı; hiçbir hata sessizce yutulmadı.
   `aria-labelledby` uygular, odağı modala taşır, Tab'ı içeride tutar
   (Shift+Tab döngüsü dahil), Escape'i uygulamanın **kendi iptal yoluna**
   bağlar (bekleyen PIN işlemi asılı kalmaz) ve kapanışta odağı tetikleyiciye
-  döndürür. Ölçüm (sonrası): **8/8 PASS** — 12 Tab içeride, Escape kapattı,
+  döndürür. Ölçüm (sonrası): **8/8 PASS** - 12 Tab içeride, Escape kapattı,
   odak `btn-pin-clear`'a döndü. Regresyon: `tests/main/modal-a11y.test.mjs` (7).
 - **Bildirimler kapalıyken hata mesajları da kayboluyordu (P1).** Ayarlar >
   "Bildirimleri Göster" kapatıldığında `showToast` **her türde** erken dönüyordu,
   yani hata mesajları da sessizce yutuluyordu ("PIN kurulamadı", "görev
   oluşturulamadı", "klasör açılamadı"...). Uygulamada bu yoldan geçen **79 hata
-  çağrısı** var; kullanıcı işlemin başarısız olduğunu **hiç öğrenmiyordu** —
+  çağrısı** var; kullanıcı işlemin başarısız olduğunu **hiç öğrenmiyordu** -
   sessiz başarısızlık. Ölçüm (öncesi): bildirim kapalı + geçersiz PIN →
   toast adedi **0**. Düzeltme: ayar yalnızca bilgilendirme amaçlı geri bildirimi
   kapatır, hata her zaman görünür (`if (!showNotifs && type !== 'error') return;`).
@@ -230,10 +230,10 @@ bırakılmadı; hiçbir hata sessizce yutulmadı.
   ekranda ikon çizer, ama **DOM metni anlamsız bir kelimedir**. Hiçbir ikonda
   `aria-hidden` yoktu (ölçüm: **28/28 açık**). Ekran okuyucu kullanıcısı düğme
   adını **"power_settings_new Bilgisayarı Kapat Gücü tamamen kapatır"**, toast'ı
-  **"error Klasör açılamadı."** diye duyuyordu — **29 düğme** etkileniyordu.
+  **"error Klasör açılamadı."** diye duyuyordu - **29 düğme** etkileniyordu.
   Düzeltme: 57 dekoratif ikon `aria-hidden="true"` aldı (index.html 52,
   mini.html 3, app.js 2); yalnızca ikon taşıyan düğmelerin mevcut `aria-label`
-  etiketi korundu. Ayrıca toast'ın **canlı bölge** semantiği yoktu — ekran
+  etiketi korundu. Ayrıca toast'ın **canlı bölge** semantiği yoktu - ekran
   okuyucu yeni bildirimi kendiliğinden duyurmuyordu; `role`/`aria-live`/
   `aria-atomic` eklendi (hata → `alert`/`assertive`, diğer → `status`/`polite`).
   Ölçüm (sonrası): **0/28 açık**, **0 düğme** etkileniyor, okunan toast metni
@@ -245,7 +245,7 @@ bırakılmadı; hiçbir hata sessizce yutulmadı.
   anlatan **tek bir cümle bile yoktu** (ölçüm: `mentionsForgot: false`,
   `mentionsReset: false`); kullanıcı kendi kurduğu ayarla kendini korumasız
   bırakıyordu. Kurtarma anahtarı/arka kapı tasarım gereği **yasak**
-  (`REMEDIATION_PLAN_WBS_V3.md` §2.2 — PIN'in varlık nedeni fiziksel erişimi
+  (`REMEDIATION_PLAN_WBS_V3.md` §2.2 - PIN'in varlık nedeni fiziksel erişimi
   olan kişiyi engellemektir), bu yüzden güvenlik kapısı zayıflatılmadı; onun
   yerine gerçek yol gösterildi. Ayarlar > İptal PIN'i kartına uyarı metni ve
   **"Veri klasörünü aç"** düğmesi eklendi. Yol sabit metin olarak gömülmedi
@@ -261,7 +261,7 @@ bırakılmadı; hiçbir hata sessizce yutulmadı.
   Widget, görev çubuğunda **her aktif görevde** açılıyordu, ama sayaç verisini
   yalnızca Hızlı Zamanlayıcı renderer'ı gönderiyordu. Smart Finish, şablon,
   zamanlanmış görev ve zincir görevlerinde pencere açılıyor fakat içi
-  **`--` / `00:00`** kalıyordu — kullanıcı sayaç sanıp bakıyor, hiçbir bilgi
+  **`--` / `00:00`** kalıyordu - kullanıcı sayaç sanıp bakıyor, hiçbir bilgi
   göremiyordu. Ölçüm (öncesi): `createTask({duration:1h})` → pencereyi gizle →
   `{"action":"--","countdown":"00:00"}`. Düzeltme: sayaç artık ana süreçte
   `TaskManager`'dan hesaplanır (`src/main/services/MiniWidgetState.js`, saf ve
@@ -313,7 +313,7 @@ bırakılmadı; hiçbir hata sessizce yutulmadı.
   birleştirilerek). Açık temada **52 kusur**: `text-slate-400` beyaz üstünde
   **2,56:1**, `text-slate-500` slate-100 üstünde **4,34:1**, uyarı metni
   `text-amber-500` **2,10:1**, hata metni `text-red-500` **3,23:1**. Koyu temada
-  **22 kusur**: `text-primary` (#0067c2) koyu zeminlerde **2,40–3,16:1**
+  **22 kusur**: `text-primary` (#0067c2) koyu zeminlerde **2,40-3,16:1**
   (menü/buton vurgusu, "Kullan" düğmeleri, sesli komut düğmesi okunmuyordu).
   Düzeltme: `text-slate-500 dark:text-slate-400`,
   `text-slate-600 dark:text-slate-400`, `text-amber-700 dark:text-amber-400`,
@@ -324,7 +324,7 @@ bırakılmadı; hiçbir hata sessizce yutulmadı.
 - **`classList`'e boşluklu token verilmesi seçili durumu bozuyordu (P0).**
   Kontrast düzeltmesi sırasında `classList.remove('text-primary dark:text-primary-light')`
   gibi **tek string içinde iki sınıf** yazıldı. `DOMTokenList` boşluk kabul
-  etmez ve geçersiz token'ı **sessizce** yok sayar — hata fırlatmaz. Sonuç:
+  etmez ve geçersiz token'ı **sessizce** yok sayar - hata fırlatmaz. Sonuç:
   görev filtresinde "Tümü/Aktif" seçimi görsel olarak taşınmıyor, aktif menü
   vurgusu kayboluyordu. Ek olarak `toggle('text-slate-600', 'dark:text-slate-400', !on)`
   çağrısında ikinci string `force` argümanı sayılıyordu (truthy) → toggle hiç
@@ -353,7 +353,7 @@ bırakılmadı; hiçbir hata sessizce yutulmadı.
 - **Mağaza URL'leri ölüydü (P0).** `store-listing.json` içindeki
   `privacyPolicyUrl` ve `supportUrl`, vellium.dev SPA'sında **yayınlanmayan**
   `/power-pilot/privacy` ve `/power-pilot/support` yollarına gidiyordu; canlı
-  tarayıcıda başlık "Bu sayfa burada değil." (404) dönüyordu — Store başvurusu
+  tarayıcıda başlık "Bu sayfa burada değil." (404) dönüyordu - Store başvurusu
   bu haliyle reddedilirdi. Canlı doğrulanmış sayfalara bağlandı:
   gizlilik → `/en/legal/privacy` (200, 4 617 krkt), destek →
   `/en/legal/support` (200, 2 180 krkt), EULA → `/en/legal/products/power-pilot`
@@ -388,7 +388,7 @@ bırakılmadı; hiçbir hata sessizce yutulmadı.
   gönderiliyor (`APP_CSP`). Ölçüm: `scratch/runtime-health.cjs` →
   önce 1 console.error, sonra **0**; `security.spec.js` 7/7 PASS.
 - **Hakkında görünümüne destek girişi eklendi.** EULA, gizlilik, OSS ve
-  "uygunsuz içerik bildir" vardı ama **destek/sorun bildirme girişi yoktu** —
+  "uygunsuz içerik bildir" vardı ama **destek/sorun bildirme girişi yoktu** -
   sorun yaşayan kullanıcının gideceği bir yol bulunmuyordu. `btn-support`
   eklendi → `/en/legal/support` (https allowlist içinde, 17 dilde çevrildi).
   Regresyon: `tests/e2e/about-links.spec.js` (düğmelerin gerçekten
@@ -398,7 +398,7 @@ bırakılmadı; hiçbir hata sessizce yutulmadı.
   harita değeri (`BUSY: 'aiBusy'`), nesne özelliği (`dict.timeFormatDays`),
   `this.translate('key')`, üçlü seçim (`t(x ? 'a' : 'b')`) ve dinamik önek
   (`t('event_' + ev)`). Dedektör bu biçimleri tanıyor; test dosyalarındaki
-  anmalar artık "kullanım" sayılmıyor. Regresyon: `i18n-check.test.mjs` (+4) —
+  anmalar artık "kullanım" sayılmıyor. Regresyon: `i18n-check.test.mjs` (+4) -
   hem yanlış pozitif hem yanlış negatif yönü kilitli.
 - **Yayın artefaktından geliştirici dosyaları çıkarıldı.** `app.asar` içinde
   `playwright.config.js`, `vitest.config.js`, `tailwind.config.js`,
@@ -419,9 +419,9 @@ bırakılmadı; hiçbir hata sessizce yutulmadı.
   `tests/main/stable-stringify.test.mjs` (6).
 
 ### Performans ölçümü (gerçek uygulama)
-`scratch/runtime-health.cjs` — 7 görünümün tamamı, 0 yakalanmamış hata:
+`scratch/runtime-health.cjs` - 7 görünümün tamamı, 0 yakalanmamış hata:
 `dashboard 9.2 ms / tasks 28.3 / templates 28.1 / history 28.2 / stats 27.8 /
-settings 42.1 / about 14.6`; DOM 922–1026 düğüm (görünüm başına sabit,
+settings 42.1 / about 14.6`; DOM 922-1026 düğüm (görünüm başına sabit,
 sızıntı yok).
 
 ### Dokümantasyon ve Altyapı
@@ -452,30 +452,30 @@ sızıntı yok).
   mesajı verilir ve PIN kartına odaklanılır.
 
 ### Entegrasyon, erişilebilirlik ve mağaza hazırlığı
-- **B2 — CLI artık API'nin tamamını kapsıyor ve tek kaynaktan üretiliyor.**
+- **B2 - CLI artık API'nin tamamını kapsıyor ve tek kaynaktan üretiliyor.**
   `src/cli/powerpilot.js` yalnızca HTTP taşıması yapıyor; argüman ayrıştırma,
   istek gövdesi kurma ve doğrulama saf `src/cli/commands.js` kataloğunda
   (15 rotanın tamamı). Demo anahtar fallback'i kaldırıldı: CLI artık
   `POWERPILOT_API_KEY` olmadan çalışmıyor, `--help` ve `--json` destekliyor,
   kullanım hatasında çıkış kodu 2. Regresyon: `tests/main/cli-commands.test.mjs`
   (21). Doküman: `docs/integrations/POWERSHELL_AND_CLI.md`.
-- **B3 — OpenAPI sözleşmesi koddan ayrışmıyor.** `/audit/verify` ucu ve
+- **B3 - OpenAPI sözleşmesi koddan ayrışmıyor.** `/audit/verify` ucu ve
   `/audit` sorgu parametreleri (`limit`, `beforeSeq`, `verify`) belgelendi;
   rota listesini kodla karşılaştıran `tests/main/openapi-parity.test.mjs` (3)
   artık yeni uçlarda da kırılıyor.
-- **C3 — 17 dilli mağaza metni tek kaynakta.** `docs/store/store-listing.json`
+- **C3 - 17 dilli mağaza metni tek kaynakta.** `docs/store/store-listing.json`
   tüm diller için ad, kısa/uzun açıklama ve özellik listesi taşıyor; Partner
   Center'ın sessiz ret nedenleri (alan sınırı, eksik dil, boş alan, yer tutucu
   sızıntısı) `tests/main/store-listing.test.mjs` (9) ile CI'da yakalanıyor.
   Metinlerin ürünle çelişmediği de doğrulanıyor: telemetri yok, veri silme,
   engellenme raporu, yerel AI ve kurumsal özelliklerin ayrı sürümde olduğu.
-- **C4 — İkon-only düğmelerin erişilebilir adı var.** Süre adımlayıcılarının
+- **C4 - İkon-only düğmelerin erişilebilir adı var.** Süre adımlayıcılarının
   6 düğmesi ekran okuyucuda adsızdı; `data-i18n-aria-context` desteğiyle
   ("Gün: değeri artır") 17 dilde adlandırıldı. `scratch/audit-a11y.mjs`
   93 düğmenin tamamını adlı raporluyor; `tests/e2e/a11y.spec.js` PASS.
   i18n denetleyicisi artık `data-i18n-aria-label`/`-aria-context`
   kullanımlarını da tarıyor (kaçan anahtar kör noktası kapandı).
-- **C5 — Cihazda kalan sağlık özeti.** Hakkında görünümünde çökmesiz oturum,
+- **C5 - Cihazda kalan sağlık özeti.** Hakkında görünümünde çökmesiz oturum,
   görev başarı oranı ve son hataların **kategori** dağılımı gösteriliyor;
   hesaplama saf `src/main/services/HealthMetrics.js` içinde ve **hiçbir veri
   dışarı gitmiyor** (telemetri yok sözü korunuyor). Ham sonuç kodları
@@ -512,13 +512,13 @@ sızıntı yok).
   "Vellium" kabuğu görünüyordu; mağaza incelemesinde politika metninin
   görünmesi gerektiğinden statik sayfa şart. Test iki dili, gömülü metni ve
   `<script>` yokluğunu doğrular.
-- **A2 — Açılışta beyaz parlama giderildi, açılış süresi ölçüldü.** Ana pencere
+- **A2 - Açılışta beyaz parlama giderildi, açılış süresi ölçüldü.** Ana pencere
   varsayılan `show:true` ile açılıyordu; kullanıcı ilk kare gelmeden beyaz bir
   pencere görüyordu ("yarım açılmış" izlenimi). Pencere artık `show:false` +
   `backgroundColor` ile açılıp `ready-to-show` anında gösteriliyor. İlk boya
   (FCP) p95 **300 ms** / p50 268 ms (8 çalıştırma, ilk çalıştırma dahil;
   `scratch/boot-measure.js`), hedef p95 ≤ 2500 ms. Regresyon: E2E 26/26.
-- **C1 — Store (MSIX) paketi gerçekten üretilebiliyor.** Mağaza yolu kod
+- **C1 - Store (MSIX) paketi gerçekten üretilebiliyor.** Mağaza yolu kod
   incelemesinde "hazır" görünüyordu ama uçtan uca hiç çalıştırılmamıştı;
   ilk gerçek denemede dört ayrı engel çıktı ve hepsi giderildi:
   1. `build-appx` electron-builder'ı `npx.cmd` ile çağırıyordu; Node 20+
@@ -542,7 +542,7 @@ sızıntı yok).
      `store-packaging.test.mjs` güncellendi. Yalnızca **gerçek mağaza
      sertifikasıyla imzalama** (bu makinedeki eski `signtool` HTTPS zaman
      damgasını desteklemiyor) ve WACK elle yapılır.
-- **B5 — Mini zamanlayıcı çoklu monitörde yanlış ekrana düşüyordu.** Mini
+- **B5 - Mini zamanlayıcı çoklu monitörde yanlış ekrana düşüyordu.** Mini
   pencere her zaman `screen.getPrimaryDisplay()` köşesine sabitleniyordu;
   ana pencereyi ikincil ekranda kullanan kişi widget'ı başka ekranda görüyor,
   monitör söküldüğünde görünmez bir koordinatta kalabiliyordu. Yeni saf
@@ -550,7 +550,7 @@ sızıntı yok).
   bulunduğu ekranı seçiyor, çalışma alanına kırpıyor ve ekran yapılandırması
   değiştiğinde yeniden konumlandırıyor. Regresyon:
   `tests/main/mini-window-placement.test.mjs` (9).
-- **A6 — Kapatma engellendiğinde artık sessiz kalmıyor.** Windows'ta
+- **A6 - Kapatma engellendiğinde artık sessiz kalmıyor.** Windows'ta
   `shutdown /s` komutu başarı dönse bile kaydedilmemiş işi olan uygulamalar
   oturum sonlandırmayı veto edebilir; Windows kendi onay penceresini gösterir
   ve Power Pilot görevi "başarılı" sayıp hiçbir şey söylemezdi. Yeni
@@ -562,7 +562,7 @@ sızıntı yok).
   Regresyon: `tests/main/terminal-action-verifier.test.mjs` (10),
   `tests/main/taskmanager-shutdown-veto.test.mjs` (5),
   `tests/e2e/shutdown-veto.spec.js` (1).
-- **P0 — Yeniden başlatmada tüm görevler ve ayarlar kayboluyordu (ACL).**
+- **P0 - Yeniden başlatmada tüm görevler ve ayarlar kayboluyordu (ACL).**
   Klasör sıkılaştırması `icacls <dizin> … /T` ile yapılıyordu; `(OI)(CI)F`
   maskesi `/T` ile dosyaların kendisine hiç ACE yazmadığı için `powerpilot.db`,
   `secrets.v1.json` ve yedekler **sahibi tarafından bile** açılamıyordu
@@ -574,7 +574,7 @@ sızıntı yok).
   Erişim tespiti `fs.accessSync` yerine gerçek `open()` ile yapılıyor
   (accessSync bozuk dosyada yanlışlıkla OK dönüyordu).
   Regresyon: `tests/main/acl-secure.test.mjs` (P0 regresyon bloğu).
-- **P0 — Türkçe Windows'ta uygulama kapalıyken yedek zamanlayıcı hiç
+- **P0 - Türkçe Windows'ta uygulama kapalıyken yedek zamanlayıcı hiç
   kurulmuyordu.** `schtasks /sd MM/DD/YYYY` tarihi **sistem yereline** göre
   ayrıştırır; tr-TR gibi gün.ay.yıl kullanan sistemlerde
   `ERROR: Incorrect Start Date` veriyordu, yani "uygulama kapalıyken görev
@@ -635,7 +635,7 @@ sızıntı yok).
   için PIN'siz kurulumda tüm kayıt `PIN_REQUIRED` ile engelleniyordu.
   Güvenlik alanı artık yalnızca gerçekten değiştiğinde gönderiliyor; otorite
   değişimi PIN kapısından geçmeye devam ediyor.
-- **P0 — Zamanlanmış güç eylemleri yükseltilmemiş kurulumda hiç çalışmıyordu.**
+- **P0 - Zamanlanmış güç eylemleri yükseltilmemiş kurulumda hiç çalışmıyordu.**
   Güvenlik motoru, aktif güç isteği kontrolü için `powercfg.exe /requests`
   çalıştırıyor; bu komut yönetici yetkisi ister ve paketlenmiş uygulama
   `asInvoker` çalışır. Sonuç: her görev `POWER_REQUESTS_UNAVAILABLE` ile
@@ -662,7 +662,7 @@ sızıntı yok).
 - Türkçe metinler düzeltildi: `Telefon QR'si` → `Telefon QR Kodu`,
   QR notundaki `tuş` → `anahtar`.
 
-## [1.1.0] — Security & Reliability Hardening (2026-10-23)
+## [1.1.0] - Security & Reliability Hardening (2026-10-23)
 
 ### Güvenlik
 - Emir imzası v2: RFC 8785 kanonik tam nesne imzası, nonce tek kullanım,
@@ -700,7 +700,7 @@ sızıntı yok).
 - Electron fuses, SHA-256 + RFC 3161 imza, CycloneDX SBOM + imzalı release
   manifesti, paketli E2E ve 100 ajan yük/soak testi.
 
-## [1.0.1] — Release Hardening (2026-10-22)
+## [1.0.1] - Release Hardening (2026-10-22)
 
 ### Güvenlik
 - LAN API için IP/CIDR allowlist eklendi; hostname reddedilir, IPv4-mapped IPv6
@@ -778,13 +778,13 @@ sızıntı yok).
 - Profesyonel çeviri incelemesi.
 - `v1.0.1` tag ve kademeli dağıtım, temiz ağaç ve release onayı bekliyor.
 
-## [2.0.0] — Yayınlanmadı (geliştirme dalı)
+## [2.0.0] - Yayınlanmadı (geliştirme dalı)
 
 ### Eklenenler (WBS-E: opsiyonel enerji + otomatik tanıma)
 - Watt/fiyat kurulumda ve ayarlarda **opsiyonel** (boş = `null`, uydurma sayı yok)
 - Otomatik cihaz tanıma: kasa sınıfı (ChassisTypes), pilde gerçek deşarj ölçümü,
   donanım katman tahmini; ilk pilde-kullanımda sessiz arka-plan kalibrasyonu
-- Eksik-veri boş-durumları: "—" kartlar + uyarı çipleri + Ayarlar derin-bağı
+- Eksik-veri boş-durumları: "-" kartlar + uyarı çipleri + Ayarlar derin-bağı
 - Akıllı fiyat varsayılanı **3,24 TL** (EPDK Nisan 2026 mesken, `EFFECTIVE_FROM`
   damgalı; sürüm öncesi gözden geçirme STORE_CHECKLIST'te)
 - Eski `(150, 2.5)` profilleri korunur + `legacy` rozetiyle doğrulamaya davet

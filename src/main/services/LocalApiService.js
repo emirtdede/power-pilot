@@ -28,6 +28,11 @@ const { AuditLog } = require('./AuditLog');
 const ipAcl = require('./net/ipAcl');
 const TlsConfig = require('../security/TlsConfig');
 const { safeCompare } = require('../security/safeCompare');
+const Pin = require('../security/Pin');
+const { PinGuard } = require('../ipc/pinGuard');
+const { routeCoreDomain } = require('./api/coreDomainRoutes');
+const { routeIntegrationDomain } = require('./api/integrationDomainRoutes');
+const { routeExtendedDomain } = require('./api/extendedDomainRoutes');
 const { version: APP_VERSION } = require('../../../package.json');
 
 const MAX_BODY_BYTES = 100 * 1024;
@@ -64,6 +69,8 @@ class LocalApiService {
         this.requestCounts = new Map(); // Rate limiting: IP:keyHash -> timestamp list
         this.authFailures = new Map(); // O-02: IP -> başarısız auth zamanları
         this.idempotencyCache = new Map(); // Key -> response
+        this.pinGuard = new PinGuard();
+        this._aiDownloadState = null;
         this.diagnostics = {
             aclAllowed: 0,
             aclDenied: 0,
@@ -132,18 +139,138 @@ class LocalApiService {
         return ROLE_RANK[r] ? r : null;
     }
 
+    async verifyCancelPin(providedPin) {
+        const s = this.storage.getSettings() || {};
+        if (!s.cancelPinHash) return null;
+        const stored = Pin.isArgon2Hash(s.cancelPinHash)
+            ? s.cancelPinHash
+            : { hash: s.cancelPinHash, salt: s.cancelPinSalt };
+        const check = await this.pinGuard.check('api-cancel', providedPin, stored);
+        if (check.ok) {
+            if (check.upgrade) {
+                try { this.storage.updateSettings({ cancelPinHash: check.upgrade, cancelPinSalt: null }); } catch (_) { /* best-effort */ }
+            }
+            return null;
+        }
+        return {
+            success: false,
+            code: check.code,
+            error: check.code === 'PIN_REQUIRED' ? 'Cancel PIN is required.' : (check.message || 'Invalid Cancel PIN.'),
+            retryAfterSec: check.retryAfterSec,
+            attemptsLeft: check.attemptsLeft
+        };
+    }
+
     static requiredRole(method, path) {
-        // O-06: denetim kaydı hassas alanlar içerir; yalnızca admin okuyabilir.
-        // Viewer'a özet/doğrulama sonucu bile verilmez (ayrı yetki yok).
+        // O-06: denetim kaydi, webhooks, diagnostics, settings export hassas alanlar icerir; yalnizca admin okuyabilir.
         if (path === '/api/v1/audit' || path === '/api/v1/audit/verify') return 'admin';
+        if (path === '/api/v1/webhooks' || path === '/api/v1/webhooks/test') return 'admin';
+        if (path === '/api/v1/diagnostics' || path === '/api/v1/diagnostics/bundle') return 'admin';
+        if (path === '/api/v1/export/settings') return 'admin';
+        if (path === '/api/v1/ai/diagnose' && method === 'POST') return 'viewer';
         if (method === 'GET') return 'viewer';
-        // FAZ B: muafiyet/pencere yönetimi yalnızca admin (operator veremez/silemez).
+        // Ayar, guvenlik bayragi, PIN, anahtar rotasyonu, gecmis silme, bulut/AI model/konsol/guncelleme yonetimi: admin.
+        if (path === '/api/v1/settings' || path === '/api/v1/settings/security') return 'admin';
+        if (path === '/api/v1/import/settings') return 'admin';
+        if (path === '/api/v1/security/cancel-pin' || path === '/api/v1/security/rotate-key') return 'admin';
+        if (path === '/api/v1/history' && method === 'DELETE') return 'admin';
+        if (path === '/api/v1/console/sync') return 'admin';
+        if (path === '/api/v1/updates/check' || path === '/api/v1/updates/download'
+            || path === '/api/v1/updates/install-on-quit' || path === '/api/v1/updates/install') return 'admin';
+        if (path === '/api/v1/ai/model/download' || path === '/api/v1/ai/model/cancel'
+            || path === '/api/v1/ai/model/delete' || path === '/api/v1/ai/tier'
+            || path === '/api/v1/ai/model/load' || path === '/api/v1/ai/model/unload') return 'admin';
+        if (path === '/api/v1/cloud/connect' || path === '/api/v1/cloud/disconnect'
+            || path === '/api/v1/cloud/restore' || path === '/api/v1/cloud/provider'
+            || path === '/api/v1/cloud/autosync' || path === '/api/v1/cloud/folder'
+            || path === '/api/v1/cloud/folder/reset' || path === '/api/v1/cloud/dismiss-recovery') return 'admin';
+        // FAZ B: muafiyet/pencere yonetimi yalnizca admin (operator veremez/silemez).
         if (path === '/api/v1/exemptions' || path === '/api/v1/maintenance-windows') return 'admin';
         if (path.match(/^\/api\/v1\/(exemptions|maintenance-windows)\/[^\/]+$/)) return 'admin';
-        // Yıkıcı güç eylemleri yalnızca admin.
+        // Yikici guc eylemleri yalnizca admin.
         if (path === '/api/v1/power/shutdown' || path === '/api/v1/power/restart') return 'admin';
         if (path.match(/^\/api\/v1\/tasks\/[^\/]+\/cancel$/)) return 'operator';
         return 'operator';
+    }
+
+    static isKnownRoute(path) {
+        if (typeof path !== 'string') return false;
+        const EXACT = new Set([
+            '/api/v1/status',
+            '/api/v1/tasks',
+            '/api/v1/tasks/timer',
+            '/api/v1/tasks/clear-finished',
+            '/api/v1/tasks/pause-all',
+            '/api/v1/warning',
+            '/api/v1/warning/confirm',
+            '/api/v1/warning/snooze',
+            '/api/v1/warning/cancel',
+            '/api/v1/templates',
+            '/api/v1/templates/restore-defaults',
+            '/api/v1/settings',
+            '/api/v1/settings/security',
+            '/api/v1/security/status',
+            '/api/v1/security/cancel-pin',
+            '/api/v1/security/rotate-key',
+            '/api/v1/export/settings',
+            '/api/v1/import/settings',
+            '/api/v1/export/templates',
+            '/api/v1/import/templates',
+            '/api/v1/history',
+            '/api/v1/statistics',
+            '/api/v1/health',
+            '/api/v1/device/estimate',
+            '/api/v1/console/sync',
+            '/api/v1/wol/devices',
+            '/api/v1/wol/send',
+            '/api/v1/webhooks',
+            '/api/v1/webhooks/test',
+            '/api/v1/ups/test',
+            '/api/v1/cloud/status',
+            '/api/v1/cloud/connect',
+            '/api/v1/cloud/disconnect',
+            '/api/v1/cloud/sync',
+            '/api/v1/cloud/restore',
+            '/api/v1/cloud/provider',
+            '/api/v1/cloud/autosync',
+            '/api/v1/cloud/folder',
+            '/api/v1/cloud/folder/reset',
+            '/api/v1/cloud/dismiss-recovery',
+            '/api/v1/ai/status',
+            '/api/v1/ai/tier',
+            '/api/v1/ai/model/download',
+            '/api/v1/ai/model/cancel',
+            '/api/v1/ai/model/delete',
+            '/api/v1/ai/model/load',
+            '/api/v1/ai/model/unload',
+            '/api/v1/ai/parse',
+            '/api/v1/ai/assist',
+            '/api/v1/ai/diagnose',
+            '/api/v1/ai/energy',
+            '/api/v1/ai/suggest',
+            '/api/v1/ai/dismiss-suggestion',
+            '/api/v1/docs/search',
+            '/api/v1/diagnostics',
+            '/api/v1/diagnostics/bundle',
+            '/api/v1/updates/status',
+            '/api/v1/updates/check',
+            '/api/v1/updates/download',
+            '/api/v1/updates/install-on-quit',
+            '/api/v1/updates/install',
+            '/api/v1/inventory',
+            '/api/v1/orders',
+            '/api/v1/orders/pending',
+            '/api/v1/exemptions',
+            '/api/v1/maintenance-windows',
+            '/api/v1/audit',
+            '/api/v1/audit/verify'
+        ]);
+        if (EXACT.has(path)) return true;
+        if (path.startsWith('/api/v1/power/')) return true;
+        if (/^\/api\/v1\/tasks\/[^\/]+(\/(cancel|pause|resume|snooze|run-now))?$/.test(path)) return true;
+        if (/^\/api\/v1\/templates\/[^\/]+(\/(reset|run))?$/.test(path)) return true;
+        if (/^\/api\/v1\/(exemptions|maintenance-windows)\/[^\/]+$/.test(path)) return true;
+        return false;
     }
 
     static isApiKeyRotationDue(settings, now = Date.now()) {
@@ -153,7 +280,7 @@ class LocalApiService {
     }
 
     /**
-     * Konsol/UI için güvenlik özeti (saf, test edilebilir — sunucuya dokunmaz).
+     * Konsol/UI için güvenlik özeti (saf, test edilebilir - sunucuya dokunmaz).
      */
     /**
      * WP-08: Uzaktan kapatma, kullanıcı aktifken (idle < 60sn) engellenir.
@@ -228,7 +355,7 @@ class LocalApiService {
             return { ok: false, code: 'TLS_MATERIAL_MISSING' };
         }
         if (lanRequested && !lanBound) {
-            log.warn('[LocalApiService] LAN modu açık ama allowlist boş — yalnızca loopback dinleniyor.');
+            log.warn('[LocalApiService] LAN modu açık ama allowlist boş - yalnızca loopback dinleniyor.');
         }
         const host = lanBound ? '::' : '127.0.0.1';
 
@@ -296,7 +423,7 @@ class LocalApiService {
     }
 
     /**
-     * WP-02.T6: async durdurma — idle bağlantılar hemen, aktifler 5 sn sonra.
+     * WP-02.T6: async durdurma - idle bağlantılar hemen, aktifler 5 sn sonra.
      */
     async stop() {
         const server = this.server;
@@ -472,7 +599,7 @@ class LocalApiService {
 
             // Denetim: yönlendirici istisnası süreci ÖLDÜRMEZ (500 + log).
             try {
-                const out = this.route(method, pathname, body, res, { role, url: parsedUrl });
+                const out = this.route(method, pathname, body, res, { role, url: parsedUrl, headers: req.headers });
                 if (out && typeof out.catch === 'function') {
                     out.catch((err) => {
                         log.error('[LocalApiService] asenkron uç hatası:', err && err.message);
@@ -558,20 +685,8 @@ class LocalApiService {
         const parsedUrl = ctx.url instanceof URL ? ctx.url : new URL(String(path), 'http://127.0.0.1');
         const settings = this.storage.getSettings();
 
-        // FAZ A: rol kapısı — bilinmeyen yola 404 (yetki sızıntısı yok).
-        const KNOWN = path === '/api/v1/status'
-            || path === '/api/v1/tasks'
-            || path === '/api/v1/tasks/timer'
-            || path === '/api/v1/inventory'
-            || path === '/api/v1/orders'
-            || path === '/api/v1/orders/pending'
-            || path === '/api/v1/exemptions'
-            || path === '/api/v1/maintenance-windows'
-            || path === '/api/v1/audit'
-            || path === '/api/v1/audit/verify'
-            || (typeof path === 'string' && path.match(/^\/api\/v1\/(tasks\/[^\/]+\/cancel|exemptions\/[^\/]+|maintenance-windows\/[^\/]+)$/))
-            || (typeof path === 'string' && path.startsWith('/api/v1/power/'));
-        if (KNOWN) {
+        // FAZ A: rol kapısı - bilinmeyen yola 404 (yetki sızıntısı yok).
+        if (LocalApiService.isKnownRoute(path)) {
             const need = LocalApiService.requiredRole(method, path);
             if (!role || ROLE_RANK[role] < ROLE_RANK[need]) {
                 return this.sendJson(res, 403, { error: `Role '${role || 'none'}' insufficient (requires '${need}')`, code: 'FORBIDDEN' });
@@ -584,32 +699,37 @@ class LocalApiService {
                 status: 'online',
                 app: 'Power Pilot',
                 version: APP_VERSION,
+                headless: Boolean(this.deps && this.deps.headless === true),
                 activeTasksCount: this.taskManager.getActiveTasks().length,
                 pausedAll: this.taskManager.pausedAll,
                 transport: this.transport,
                 boundHost: this.boundHost,
+                port: (settings && settings.localApiPort) || 18456,
                 keyRole: role,
                 diagnostics: this.getDiagnostics()
             });
         }
 
-        // Tasks API — O-06: varsayılan sayfalama; tüm geçmiş tek yanıtta dönmez.
+        // Tasks API - O-06: varsayılan sayfalama; tüm geçmiş tek yanıtta dönmez.
         if (method === 'GET' && path === '/api/v1/tasks') {
             const limit = Math.min(500, Math.max(1, Number(parsedUrl.searchParams.get('limit')) || 100));
             const offset = Math.max(0, Number(parsedUrl.searchParams.get('offset')) || 0);
-            const all = this.taskManager.tasks;
-            const page = all.slice(offset, offset + limit);
+            const statusFilter = parsedUrl.searchParams.get('status');
+            const source = statusFilter
+                ? this.taskManager.tasks.filter((t) => t && t.status === statusFilter)
+                : this.taskManager.tasks;
+            const page = source.slice(offset, offset + limit);
             return this.sendJson(res, 200, {
-                tasks: page.map(t => t.toJSON()),
-                total: all.length,
+                tasks: page.map(t => (t.toJSON ? t.toJSON() : t)),
+                total: source.length,
                 limit,
                 offset,
-                hasMore: offset + page.length < all.length
+                hasMore: offset + page.length < source.length
             });
         }
 
         if (method === 'POST' && path === '/api/v1/tasks/timer') {
-            // Takip-1: fail-fast — geçersiz eylem/süre 400 döner, bozuk görev kurulmaz.
+            // Takip-1: fail-fast - geçersiz eylem/süre 400 döner, bozuk görev kurulmaz.
             if (!body.action || !body.durationMs) {
                 return this.sendJson(res, 400, { error: 'Missing action or durationMs' });
             }
@@ -619,7 +739,7 @@ class LocalApiService {
             if (!Number.isInteger(body.durationMs) || body.durationMs <= 0 || body.durationMs > 2500000000) {
                 return this.sendJson(res, 400, { error: 'durationMs must be an integer in 1..2500000000' });
             }
-            // K2: ad doğrulaması (uzunluk + HTML karakterleri) — geçmiş tablosu lavabosu.
+            // K2: ad doğrulaması (uzunluk + HTML karakterleri) - geçmiş tablosu lavabosu.
             if (body.name !== undefined) {
                 if (typeof body.name !== 'string' || body.name.length > 120) {
                     return this.sendJson(res, 400, { error: 'name must be a string up to 120 chars' });
@@ -642,28 +762,38 @@ class LocalApiService {
 
         if (method === 'POST' && path.match(/^\/api\/v1\/tasks\/[^\/]+\/cancel$/)) {
             const taskId = path.split('/')[4];
-            // WP-02.T8 / D-06: iptal sonucu yok sayılmaz; gerçek sonuç eşlenir.
-            const result = this.taskManager.cancelTask(taskId);
-            if (!result || result.ok === false) {
-                if (result && result.code === 'NOT_FOUND') {
-                    return this.sendJson(res, 404, { success: false, code: 'TASK_NOT_FOUND', error: `Task ${taskId} not found` });
+            const runCancel = () => {
+                // WP-02.T8 / D-06: iptal sonucu yok sayılmaz; gerçek sonuç eşlenir.
+                const result = this.taskManager.cancelTask(taskId);
+                if (!result || result.ok === false) {
+                    if (result && result.code === 'NOT_FOUND') {
+                        return this.sendJson(res, 404, { success: false, code: 'TASK_NOT_FOUND', error: `Task ${taskId} not found` });
+                    }
+                    return this.sendJson(res, 400, {
+                        success: false,
+                        code: (result && result.code) || 'CANCEL_FAILED',
+                        error: (result && result.message) || `Task ${taskId} could not be cancelled`
+                    });
                 }
-                return this.sendJson(res, 400, {
-                    success: false,
-                    code: (result && result.code) || 'CANCEL_FAILED',
-                    error: (result && result.message) || `Task ${taskId} could not be cancelled`
-                });
+                if (result.code === 'CANCEL_TOO_LATE') {
+                    return this.sendJson(res, 409, { success: false, code: 'CANCEL_TOO_LATE', error: result.message || 'Cancel too late' });
+                }
+                if (result.code === 'ALREADY_CANCELLED') {
+                    return this.sendJson(res, 409, { success: false, code: 'ALREADY_CANCELLED', error: `Task ${taskId} is already cancelled` });
+                }
+                return this.sendJson(res, 200, { success: true, message: `Task ${taskId} cancelled` });
+            };
+            if (settings && settings.cancelPinHash) {
+                const providedPin = (body && body.pin) || (ctx.headers && ctx.headers['x-cancel-pin']) || undefined;
+                this.verifyCancelPin(providedPin)
+                    .then((pinErr) => (pinErr ? this.sendJson(res, 403, pinErr) : runCancel()))
+                    .catch((err) => this.sendJson(res, 500, { success: false, error: err && err.message }));
+                return true;
             }
-            if (result.code === 'CANCEL_TOO_LATE') {
-                return this.sendJson(res, 409, { success: false, code: 'CANCEL_TOO_LATE', error: result.message || 'Cancel too late' });
-            }
-            if (result.code === 'ALREADY_CANCELLED') {
-                return this.sendJson(res, 409, { success: false, code: 'ALREADY_CANCELLED', error: `Task ${taskId} is already cancelled` });
-            }
-            return this.sendJson(res, 200, { success: true, message: `Task ${taskId} cancelled` });
+            return runCancel();
         }
 
-        // Power Actions API — K3: TÜM güç eylemleri görev hattından geçer
+        // Power Actions API - K3: TÜM güç eylemleri görev hattından geçer
         // (güvenlik motoru + uyarı + geçmiş/denetim). shutdown deseni genelleştirildi:
         // 5sn gecikmeli görev + 15sn uyarı; anında `execute()` çağrısı YOKTUR.
         // Gerekçe: uzaktan-emir koruması (blockRemoteShutdownWhenActive), muafiyet,
@@ -709,13 +839,20 @@ class LocalApiService {
             return this.sendJson(res, 200, { success: true, message: 'Shutdown scheduled via API', taskId: task.id });
         }
 
-        // FAZ B: kurumsal uçlar (servis yoksa 503, çekirdek etkilenmez).
+        // Full-headless domain endpoints (core + integrations + extended + enterprise)
+        const routeCtx = { role, query: parsedUrl.searchParams, headers: ctx.headers || {} };
         try {
+            const coreRes = routeCoreDomain(this, method, path, body, res, routeCtx);
+            if (coreRes !== null) return coreRes;
+            const intRes = routeIntegrationDomain(this, method, path, body, res, routeCtx);
+            if (intRes !== null) return intRes;
+            const extRes = routeExtendedDomain(this, method, path, body, res, routeCtx);
+            if (extRes !== null) return extRes;
             const enterprise = this.routeEnterprise(method, path, body, res, parsedUrl);
             if (enterprise !== null) return enterprise;
         } catch (err) {
-            log.warn('[LocalApiService] kurumsal uç hatası:', err && err.message);
-            return this.sendJson(res, 500, { error: 'Enterprise endpoint failed', code: (err && err.code) || 'ENDPOINT_FAILED' });
+            log.warn('[LocalApiService] domain route hatası:', err && err.message);
+            return this.sendJson(res, 500, { error: 'Endpoint failed', code: (err && err.code) || 'ENDPOINT_FAILED' });
         }
 
         return this.sendJson(res, 404, { error: 'Endpoint not found' });
@@ -727,7 +864,7 @@ class LocalApiService {
 
     routeEnterprise(method, path, body, res, parsedUrl = null) {
         const query = parsedUrl && parsedUrl.searchParams ? parsedUrl.searchParams : new URLSearchParams();
-        // GET /api/v1/inventory — cihaz envanteri (viewer+).
+        // GET /api/v1/inventory - cihaz envanteri (viewer+).
         if (method === 'GET' && path === '/api/v1/inventory') {
             if (!this.deps.inventory || typeof this.deps.inventory.collect !== 'function') {
                 return this.unavailable(res, 'Envanter servisi');
@@ -738,7 +875,7 @@ class LocalApiService {
             return true; // asenkron yanıt
         }
 
-        // POST /api/v1/orders — imzalı konsol emri alımı (operator+).
+        // POST /api/v1/orders - imzalı konsol emri alımı (operator+).
         if (method === 'POST' && path === '/api/v1/orders') {
             if (!this.deps.queue || typeof this.deps.queue.enqueue !== 'function') {
                 return this.unavailable(res, 'Emir kuyruğu');
@@ -768,7 +905,7 @@ class LocalApiService {
             return this.sendJson(res, 201, { success: true, key: record.key, duplicate });
         }
 
-        // GET /api/v1/orders/pending — bekleyen emirler (viewer+).
+        // GET /api/v1/orders/pending - bekleyen emirler (viewer+).
         if (method === 'GET' && path === '/api/v1/orders/pending') {
             if (!this.deps.queue || typeof this.deps.queue.pending !== 'function') {
                 return this.unavailable(res, 'Emir kuyruğu');
@@ -776,7 +913,7 @@ class LocalApiService {
             return this.sendJson(res, 200, { orders: this.deps.queue.pending() });
         }
 
-        // Muafiyetler (okuma viewer+, yazma admin — rol kapısı yukarıda).
+        // Muafiyetler (okuma viewer+, yazma admin - rol kapısı yukarıda).
         if (method === 'GET' && path === '/api/v1/exemptions') {
             const svc = this.deps.exemptions || new ExemptionService(this.storage);
             return this.sendJson(res, 200, { exemptions: svc.list() });
@@ -828,7 +965,7 @@ class LocalApiService {
             return this.sendJson(res, 200, { success: true });
         }
 
-        // GET /api/v1/audit — O-06: yalnızca admin; sayfalı denetim günlüğü.
+        // GET /api/v1/audit - O-06: yalnızca admin; sayfalı denetim günlüğü.
         // Zincir doğrulaması ayrı ve pahalı olduğu için varsayılan yanıta dahil edilmez.
         if (method === 'GET' && path === '/api/v1/audit') {
             const audit = this.deps.audit || new AuditLog(this.storage);

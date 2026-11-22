@@ -1,4 +1,4 @@
-# Power Pilot — Dokümantasyon
+# Power Pilot - Dokümantasyon
 
 Bu klasör Power Pilot'un **güncel** mimarisini, güvenlik sözleşmelerini ve operasyon prosedürlerini tek yerde toplar. Tarihsel planlar, denetim kayıtları ve sürüm notları burada **tutulmaz**; onların yeri [`../CHANGELOG.md`](../CHANGELOG.md)'dir.
 
@@ -28,22 +28,22 @@ Bu klasör Power Pilot'un **güncel** mimarisini, güvenlik sözleşmelerini ve 
 
 ## Entegrasyon (`integrations/`, `openapi/`)
 
-- [`integrations/POWERSHELL_AND_CLI.md`](integrations/POWERSHELL_AND_CLI.md) — CLI ve PowerShell kullanımı
-- [`integrations/N8N_SETUP.md`](integrations/N8N_SETUP.md) — n8n webhook akışı
-- [`openapi/power-pilot-local-api.yaml`](openapi/power-pilot-local-api.yaml) — yerel API sözleşmesi (rota pariteleri testle doğrulanır)
+- [`integrations/POWERSHELL_AND_CLI.md`](integrations/POWERSHELL_AND_CLI.md) - CLI ve PowerShell kullanımı
+- [`integrations/N8N_SETUP.md`](integrations/N8N_SETUP.md) - n8n webhook akışı
+- [`openapi/power-pilot-local-api.yaml`](openapi/power-pilot-local-api.yaml) - yerel API sözleşmesi (rota pariteleri testle doğrulanır)
 
 ## Sürüm ve imzalama (`release/`)
 
-- [`release/RELEASE_SIGNING.md`](release/RELEASE_SIGNING.md) — imzalama ve doğrulama akışı
-- [`release/ASAR-INTEGRITY.md`](release/ASAR-INTEGRITY.md) — ASAR bütünlük kontrolü
-- [`release/SBOM.md`](release/SBOM.md) — yazılım malzeme listesi
-- `release/release-ed25519.pub.pem` — güncelleme imza açık anahtarı
+- [`release/RELEASE_SIGNING.md`](release/RELEASE_SIGNING.md) - imzalama ve doğrulama akışı
+- [`release/ASAR-INTEGRITY.md`](release/ASAR-INTEGRITY.md) - ASAR bütünlük kontrolü
+- [`release/SBOM.md`](release/SBOM.md) - yazılım malzeme listesi
+- `release/release-ed25519.pub.pem` - güncelleme imza açık anahtarı
 
 ## Raporlar (`reports/`)
 
-- [`reports/soak.md`](reports/soak.md) / [`reports/soak.json`](reports/soak.json) — konsol yük/soak sonucu
-- [`reports/licenses.json`](reports/licenses.json) — bağımlılık lisans özeti
-- [`reports/key-rotation-log.md`](reports/key-rotation-log.md) — anahtar rotasyon denetim kaydı
+- [`reports/soak.md`](reports/soak.md) / [`reports/soak.json`](reports/soak.json) - konsol yük/soak sonucu
+- [`reports/licenses.json`](reports/licenses.json) - bağımlılık lisans özeti
+- [`reports/key-rotation-log.md`](reports/key-rotation-log.md) - anahtar rotasyon denetim kaydı
 
 ## Operasyon (`runbooks/`)
 
@@ -68,4 +68,4 @@ Bu klasör Power Pilot'un **güncel** mimarisini, güvenlik sözleşmelerini ve 
 ## Dil Desteği
 
 17 dil tam çeviriyle gelir: `tr, en, de, sv, no, da, fr, pl, it, nl, cs, es, pt, ja, zh, ko, ar`.
-Çeviri dosyaları `src/renderer/locales/<kod>.json` içindedir; `src/main/locales/<kod>.server.json` bunların birebir üretilmiş kopyasıdır (`npm run build:locales`). Parite `npm run locales:check` ile zorunlu tutulur — eksik/fazla anahtar sürümü durdurur.
+Çeviri dosyaları `src/renderer/locales/<kod>.json` içindedir; `src/main/locales/<kod>.server.json` bunların birebir üretilmiş kopyasıdır (`npm run build:locales`). Parite `npm run locales:check` ile zorunlu tutulur - eksik/fazla anahtar sürümü durdurur.

@@ -1,5 +1,5 @@
 /**
- * metric-collector-core.test.mjs — MetricCollector (WBS-1.1 / WP-13.T3 / WP-16)
+ * metric-collector-core.test.mjs - MetricCollector (WBS-1.1 / WP-13.T3 / WP-16)
  *
  * Ağır OS sorguları (systeminformation/ps-list) YALNIZCA sağlayıcı
  * enjeksiyonuyla taklit edilir. Gerçek spawn yok; interval'ler unref'li ve
@@ -23,7 +23,7 @@ afterEach(() => {
     for (const mc of live.splice(0)) mc.stopSampling();
 });
 
-describe('MetricCollector — temel', () => {
+describe('MetricCollector - temel', () => {
     it('constructor güvenli (stale) metriklerle başlar', () => {
         const mc = make();
         const m = mc.getMetrics();
@@ -61,7 +61,7 @@ describe('MetricCollector — temel', () => {
     });
 });
 
-describe('MetricCollector — süreç örnekleme kapıları', () => {
+describe('MetricCollector - süreç örnekleme kapıları', () => {
     it('tüketici yoksa (needsProcessList=false) örneklemez', () => {
         const mc = make({ needsProcessList: () => false });
         expect(mc.shouldSampleProcesses()).toBe(false);
@@ -128,7 +128,7 @@ describe('MetricCollector — süreç örnekleme kapıları', () => {
     });
 });
 
-describe('MetricCollector — idle/uyku', () => {
+describe('MetricCollector - idle/uyku', () => {
     it('idleProvider geçerli sayıyı floor\'lar', async () => {
         const mc = make({ idleProvider: async () => 42.7 });
         await mc.sampleIdle();
@@ -163,7 +163,7 @@ describe('MetricCollector — idle/uyku', () => {
     });
 });
 
-describe('MetricCollector — zaman aşımı ve döngü', () => {
+describe('MetricCollector - zaman aşımı ve döngü', () => {
     it('withTimeout değeri iletir', async () => {
         const mc = make();
         await expect(mc.withTimeout(Promise.resolve('ok'), 1000)).resolves.toBe('ok');

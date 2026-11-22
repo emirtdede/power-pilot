@@ -1,5 +1,5 @@
 /**
- * headless-agent.test.mjs — Denetim turu: Electron'sız ajan yığını açılır,
+ * headless-agent.test.mjs - Denetim turu: Electron'sız ajan yığını açılır,
  * envanter + emir hattı çalışır, durur.
  */
 import { describe, it, expect } from 'vitest';

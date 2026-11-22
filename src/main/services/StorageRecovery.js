@@ -1,5 +1,5 @@
 /**
- * StorageRecovery.js — bozuk veritabanından kurtarma.
+ * StorageRecovery.js - bozuk veritabanından kurtarma.
  *
  * Son kullanıcı senaryosu: yazma sırasında elektrik kesilir, antivirüs
  * dosyayı kilitler veya disk hata verir → `powerpilot.db` bozulur.
@@ -56,7 +56,7 @@ function listBackups(backupDir, { prefix = BACKUP_PREFIX, nowMs = Date.now() } =
 /**
  * Bozuk DB dosyasını (ve WAL/SHM artıklarını) karantinaya alır.
  * Dosya SİLİNMEZ; yalnızca taşınır. Taşıma başarısız olursa hata fırlatır
- * (çağıran bakım moduna düşer — sessiz veri kaybı olmaz).
+ * (çağıran bakım moduna düşer - sessiz veri kaybı olmaz).
  *
  * @returns {{quarantined: string|null, removedSidecars: string[]}}
  */

@@ -1,5 +1,5 @@
 /**
- * energy-chip-focus.test.mjs — "kWh için watt girin →" kısayolu sözleşmesi.
+ * energy-chip-focus.test.mjs - "kWh için watt girin →" kısayolu sözleşmesi.
  *
  * GERÇEK EKSİK (bu turda bulundu ve düzeltildi): İstatistik görünümündeki
  * "kWh için watt girin →" düğmesi kullanıcıyı Ayarlar > Enerji kartına
@@ -27,7 +27,7 @@ function gotoEnergyBlock() {
     return appSrc.slice(start, end);
 }
 
-describe('Enerji kısayolu — Ayarlar > watt alanına odaklanma', () => {
+describe('Enerji kısayolu - Ayarlar > watt alanına odaklanma', () => {
     it('kısayol Ayarlar görünümüne gider ve doğru karta kaydırır', () => {
         const block = gotoEnergyBlock();
         expect(block).toContain("switchView('nav-settings')");
@@ -52,9 +52,9 @@ describe('Enerji kısayolu — Ayarlar > watt alanına odaklanma', () => {
         expect(priceBound, 'chip-price → gotoEnergySettings').toBe(true);
     });
 
-    it('kWh kartı değer yokken "—" gösterir (uydurma sayı yok)', () => {
-        // app.js: `stats.kwhSaved == null ? '—' : ...`
-        expect(appSrc).toMatch(/kwhEl\.innerText\s*=\s*stats\.kwhSaved\s*==\s*null\s*\?\s*'—'/);
-        expect(appSrc).toMatch(/costEl\.innerText\s*=\s*stats\.costSavedFormatted\s*==\s*null\s*\?\s*'—'/);
+    it('kWh kartı değer yokken "-" gösterir (uydurma sayı yok)', () => {
+        // app.js: `stats.kwhSaved == null ? '-' : ...`
+        expect(appSrc).toMatch(/kwhEl\.innerText\s*=\s*stats\.kwhSaved\s*==\s*null\s*\?\s*'-'/);
+        expect(appSrc).toMatch(/costEl\.innerText\s*=\s*stats\.costSavedFormatted\s*==\s*null\s*\?\s*'-'/);
     });
 });

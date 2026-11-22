@@ -1,5 +1,5 @@
 /**
- * build-appx-gate.test.mjs — C1/MSIX üretim kapısı regresyonu
+ * build-appx-gate.test.mjs - C1/MSIX üretim kapısı regresyonu
  *
  * Gerçek mağaza paketi üretilirken iki sessiz hata vardı:
  *  1. `build-appx` electron-builder'ı `npx.cmd` ile çağırıyordu; Node 20+
@@ -21,7 +21,7 @@ const require = createRequire(import.meta.url);
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const appx = require('../../scripts/build-appx.js');
 
-describe('C1 — MSIX üretim kapısı', () => {
+describe('C1 - MSIX üretim kapısı', () => {
     it('imza Subject’i iki ortam adından da çözülür', () => {
         expect(appx.resolveSigningSubject({ WINDOWS_CERT_SUBJECT: 'CN=A, O=B' }).subject).toBe('CN=A, O=B');
         expect(appx.resolveSigningSubject({ WIN_CERT_SUBJECT: 'CN=C' }).subject).toBe('CN=C');

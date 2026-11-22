@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * verify-pack.js — WP-16/TS-16: paketlenmiş ps-list spike'ı.
+ * verify-pack.js - WP-16/TS-16: paketlenmiş ps-list spike'ı.
  *
  * `npm run pack` sonrası çalışır. Doğrular:
  *  1. `dist/win-unpacked/resources/app.asar` mevcut,
@@ -9,7 +9,7 @@
  *  3. unpacked ps-list modülü dinamik import ile yüklenebiliyor,
  *  4. gerçek süreç listesi boş değil.
  *
- * Herhangi biri başarısızsa exit 1 — ps-list@9 ESM paketleme regresyonu
+ * Herhangi biri başarısızsa exit 1 - ps-list@9 ESM paketleme regresyonu
  * release'e çıkamaz.
  */
 
@@ -71,7 +71,7 @@ async function main() {
     if (!Array.isArray(list) || list.length === 0) {
         fail('ps-list boş liste döndürdü (paketli fastlist çalışmıyor).');
     }
-    console.log(`[verify-pack] OK — ${list.length} süreç listelendi.`);
+    console.log(`[verify-pack] OK - ${list.length} süreç listelendi.`);
 }
 
 if (require.main === module) {

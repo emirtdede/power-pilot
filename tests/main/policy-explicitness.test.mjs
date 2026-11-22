@@ -1,10 +1,10 @@
 /**
- * policy-explicitness.test.mjs — P1-6 kök neden regresyonu
+ * policy-explicitness.test.mjs - P1-6 kök neden regresyonu
  *
  * Ölçülen kusur: `AutomationTask` her göreve TAM `safetyPolicy` nesnesi
  * yazıyordu (varsayılan `false` değerlerle). Sonuç: kalıcı Ayarlar
  * (`forceCloseApps`, `remoteApprovalRequired`, `protectFullscreen`,
- * `protectActiveIo`) hiçbir zaman uygulanamıyordu — görev düzeyi varsayılan
+ * `protectActiveIo`) hiçbir zaman uygulanamıyordu - görev düzeyi varsayılan
  * değer onları gölgeliyordu. Arayüzde ayar vardı, davranışta yoktu (plasebo).
  *
  * Bu testler, kalıcı ayarın gerçekten devreye girdiğini ve yalnızca AÇIKÇA
@@ -23,7 +23,7 @@ function engine(settings = {}) {
     });
 }
 
-describe('AutomationTask — explicit politika işareti', () => {
+describe('AutomationTask - explicit politika işareti', () => {
     it('politika verilmezse hiçbir alan explicit değildir', () => {
         const t = new AutomationTask({});
         expect(t.safetyPolicy).toMatchObject({ forceCloseApps: false, remoteApprovalRequired: false });
@@ -71,7 +71,7 @@ describe('AutomationTask — explicit politika işareti', () => {
     });
 });
 
-describe('SafetyPolicyEngine — kalıcı ayar görev varsayılanını ezer', () => {
+describe('SafetyPolicyEngine - kalıcı ayar görev varsayılanını ezer', () => {
     it('protectFullscreen=false kalıcı ayarı gerçekten uygulanır', async () => {
         // Görev kendi politikasında AÇIKÇA seçmediyse kalıcı ayar kazanır.
         const task = new AutomationTask({ action: 'lock', safetyPolicy: OFF_LOAD });

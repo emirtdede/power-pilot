@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * sbom.mjs — WP-15.T8
+ * sbom.mjs - WP-15.T8
  * CycloneDX 1.5 SBOM + yayın manifesti (SHA-256 + Ed25519 imza).
  *
  * Kullanım:

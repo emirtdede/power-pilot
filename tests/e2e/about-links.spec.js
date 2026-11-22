@@ -1,10 +1,10 @@
 /**
- * about-links.spec.js — Hakkında görünümü bağlantı sözleşmesi.
+ * about-links.spec.js - Hakkında görünümü bağlantı sözleşmesi.
  *
  * Neden: Store Politikası 10.5.1 ve 11.16, gizlilik ve "uygunsuz içerik
  * bildirimi" için ÇALIŞAN bir kanal zorunlu kılar. Daha önce
  * `btn-report-content` ana sayfayı açıyordu (bildirim kanalı değil) ve
- * Hakkında görünümünde hiçbir destek girişi yoktu — kullanıcının sorun
+ * Hakkında görünümünde hiçbir destek girişi yoktu - kullanıcının sorun
  * bildirebileceği bir yol bulunmuyordu.
  *
  * Bu test üç şeyi kilitler:

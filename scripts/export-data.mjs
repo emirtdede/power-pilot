@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * export-data.mjs — WP-04.T7
+ * export-data.mjs - WP-04.T7
  * Veriyi SIRLAR OLMADAN dışa aktarır. Dışa aktarılan dosya başka bir makinede
  * geri yüklenirse sırlar/PIN/API anahtarı yeniden provisioning gerektirir.
  *

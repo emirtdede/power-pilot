@@ -1,5 +1,5 @@
 /**
- * model-manager-download.test.mjs — model indirme/bütünlük akışı
+ * model-manager-download.test.mjs - model indirme/bütünlük akışı
  * fetchFn enjekte edilir; ağ YOK. Dosyalar GEÇİCİ dizinde.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -47,7 +47,7 @@ function manager({ fetchImpl, expectedBytes = null, expectedSha256 = null } = {}
     });
 }
 
-describe('ModelManager — yollar ve status', () => {
+describe('ModelManager - yollar ve status', () => {
     it('yollar türetilir', () => {
         const m = manager({ fetchImpl: async () => res() });
         expect(m.modelPath()).toBe(path.join(dir, 'model.bin'));
@@ -94,7 +94,7 @@ describe('ModelManager — yollar ve status', () => {
     });
 });
 
-describe('ModelManager — indirme', () => {
+describe('ModelManager - indirme', () => {
     it('model dizini yoksa hata', async () => {
         const m = new ModelManager({ modelDir: null, fetchFn: async () => res() });
         await expect(m.download()).resolves.toMatchObject({ success: false });

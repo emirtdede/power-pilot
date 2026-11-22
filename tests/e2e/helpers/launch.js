@@ -1,5 +1,5 @@
 /**
- * tests/e2e/helpers/launch.js — ortak Electron açılış/kapatma yardımcıları.
+ * tests/e2e/helpers/launch.js - ortak Electron açılış/kapatma yardımcıları.
  * Yeni PPX spec'leri aynı deseni kullanır (mevcut spec'ler değişmez).
  */
 const { _electron: electron } = require('@playwright/test');

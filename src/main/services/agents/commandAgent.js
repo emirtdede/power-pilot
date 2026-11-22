@@ -1,5 +1,5 @@
 /**
- * agents/commandAgent.js — F9.1
+ * agents/commandAgent.js - F9.1
  * Komut niyeti: AiService ayrıştırıcısına devreder (tek LLM temas noktası).
  */
 module.exports = {

@@ -1,5 +1,5 @@
 /**
- * DbWorker.js — WP-11.T11 / WP-03.T8
+ * DbWorker.js - WP-11.T11 / WP-03.T8
  * Yedek/geri yükleme işlerini ana iş parçacığından ayırır.
  *
  * Electron'da `utilityProcess.fork`; test/CLI/Node ortamında `execFile`

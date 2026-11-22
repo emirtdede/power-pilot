@@ -1,4 +1,4 @@
-# Power Pilot — Yerel API Güvenlik Mimarisi
+# Power Pilot - Yerel API Güvenlik Mimarisi
 
 ## Güvenlik Sınırları
 
@@ -28,7 +28,7 @@
 | `GET /api/v1/status` | `transport`, `version`, güvenlik özeti |
 | `getSecurityStatus()` | `aclAllowed/aclDenied/rateLimited`, `rotationDue` |
 
-## FAZ A — Pilot güvenlik katmanı (tek-şirket)
+## FAZ A - Pilot güvenlik katmanı (tek-şirket)
 
 - **TLS**: `localApiTlsEnabled=true` + sertifika materyali (`localApiCertPem`/`localApiKeyPem` veya mutlak dosya yolları) varsa `https`; materyal yoksa `http` fallback (tek-PC davranışı bozulmaz). Durum: `GET /api/v1/status` → `transport`, `getSecurityStatus()` özeti.
 - **mTLS**: `localApiRequireClientCert=true` ise istemci sertifikası zorunludur; yoksa `401 MTLS_REQUIRED`. FAZ A'da uygulama katmanında 401 üretilir (debug kolaylığı); FAZ B'de TLS katmanında `rejectUnauthorized:true` ile sıkılaştırılacak.

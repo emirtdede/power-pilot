@@ -1,5 +1,5 @@
 /**
- * signed-orders.test.mjs — FAZ A
+ * signed-orders.test.mjs - FAZ A
  * Ed25519 imzalı emir: geçerli kabul, imzasız/bozuk/süresi-geçmiş/tekrar red.
  */
 import { describe, it, expect } from 'vitest';

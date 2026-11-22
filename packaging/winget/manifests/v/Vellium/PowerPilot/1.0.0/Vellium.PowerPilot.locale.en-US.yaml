@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
+PackageIdentifier: Vellium.PowerPilot
+PackageVersion: 1.0.0
+PackageLocale: en-US
+Publisher: Vellium Teknoloji Anonim Sirketi
+PublisherUrl: https://vellium.dev
+PublisherSupportUrl: https://vellium.dev/en/legal/support
+PrivacyUrl: https://vellium.dev/en/legal/privacy
+Author: Vellium
+PackageName: Power Pilot
+PackageUrl: https://github.com/emirtdede/power-pilot
+License: Proprietary
+LicenseUrl: https://github.com/emirtdede/power-pilot/blob/main/LICENSE
+Copyright: Copyright (c) 2026 Vellium Teknoloji Anonim Sirketi
+ShortDescription: Smart, local-first Windows power management and task automation.
+Description: >-
+  Power Pilot automates Windows shutdown, restart, sleep, hibernate, lock, and
+  Smart Finish conditions completely offline with local SQLite storage, OneDrive
+  folder sync, 73 languages, custom color themes, and accessibility controls.
+Moniker: powerpilot
+Tags:
+  - power-management
+  - shutdown
+  - timer
+  - automation
+  - sleep
+  - hibernate
+  - windows
+  - offline
+ReleaseNotesUrl: https://github.com/emirtdede/power-pilot/releases/tag/v1.0.0
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0

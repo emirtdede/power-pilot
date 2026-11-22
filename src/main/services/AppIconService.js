@@ -1,5 +1,5 @@
 /**
- * AppIconService.js — Uygulama, görev çubuğu, sistem tepsisi ve masaüstü ikonu yönetimi.
+ * AppIconService.js - Uygulama, görev çubuğu, sistem tepsisi ve masaüstü ikonu yönetimi.
  *
  * 4 kanonik ikon varyantı sunar (varsayılan: `monochrome-dark` / Koyu Monokrom):
  *  - `monochrome-dark`     : Siyah Zemin · Koyu Monokrom
@@ -22,14 +22,33 @@
 const fs = require('fs');
 const path = require('path');
 const { execFile } = require('child_process');
+const {
+    DEFAULT_CUSTOM_COLOR,
+    THEME_ICON_PALETTES,
+    normalizeHexColor,
+    buildCustomIconPalette,
+    buildBrandIconSvg
+} = require('../../shared/customColorPalette');
 
 const APP_USER_MODEL_ID = 'Vellium.PowerPilot';
 
-const APP_ICON_IDS = Object.freeze([
+const CLASSIC_APP_ICON_IDS = Object.freeze([
     'monochrome-dark',
     'monochrome-light',
     'monochrome-contrast',
     'classic-cyan'
+]);
+
+const THEME_APP_ICON_IDS = Object.freeze(Object.keys(THEME_ICON_PALETTES));
+
+const STATIC_APP_ICON_IDS = Object.freeze([
+    ...CLASSIC_APP_ICON_IDS,
+    ...THEME_APP_ICON_IDS
+]);
+
+const APP_ICON_IDS = Object.freeze([
+    ...STATIC_APP_ICON_IDS,
+    'custom'
 ]);
 
 const DEFAULT_APP_ICON = 'monochrome-dark';
@@ -42,22 +61,176 @@ function normalizeAppIcon(id) {
     return isValidAppIcon(id) ? id : DEFAULT_APP_ICON;
 }
 
+function customHexSlug(hex) {
+    return normalizeHexColor(hex, DEFAULT_CUSTOM_COLOR).slice(1).toLowerCase();
+}
+
+/**
+ * 32-bit RGBA tamponundan klasik Windows ICO DIB BMP + 1-bit AND maskesi üretir.
+ */
+function encodeIcoBmpFrame(rgba, size) {
+    const xorSize = size * size * 4;
+    const maskRowBytes = Math.ceil(size / 32) * 4;
+    const andSize = maskRowBytes * size;
+    const buf = Buffer.alloc(40 + xorSize + andSize);
+
+    buf.writeUInt32LE(40, 0);
+    buf.writeInt32LE(size, 4);
+    buf.writeInt32LE(size * 2, 8);
+    buf.writeUInt16LE(1, 12);
+    buf.writeUInt16LE(32, 14);
+    buf.writeUInt32LE(0, 16);
+    buf.writeUInt32LE(xorSize + andSize, 20);
+
+    for (let y = 0; y < size; y++) {
+        const srcRow = (size - 1 - y) * size * 4;
+        const dstRow = 40 + y * size * 4;
+        const maskRow = 40 + xorSize + y * maskRowBytes;
+        for (let x = 0; x < size; x++) {
+            const s = srcRow + x * 4;
+            const d = dstRow + x * 4;
+            const r = rgba[s];
+            const g = rgba[s + 1];
+            const b = rgba[s + 2];
+            const a = rgba[s + 3];
+            buf[d] = b;
+            buf[d + 1] = g;
+            buf[d + 2] = r;
+            buf[d + 3] = a;
+            if (a < 16) {
+                buf[maskRow + (x >> 3)] |= (0x80 >> (x & 7));
+            }
+        }
+    }
+    return buf;
+}
+
+/**
+ * Çoklu çözünürlüklü (16/24/32/48/64 BMP DIB + 128/256 PNG) Windows ICO paketler.
+ */
+function encodeMultiResIco(frames) {
+    const valid = (Array.isArray(frames) ? frames : [])
+        .filter((f) => f && Number.isInteger(f.size) && f.size >= 16 && f.size <= 256 && Buffer.isBuffer(f.data) && f.data.length > 0)
+        .sort((a, b) => a.size - b.size);
+    if (valid.length === 0) throw new Error('En az bir geçerli ICO karesi gerekli.');
+
+    const header = Buffer.alloc(6);
+    header.writeUInt16LE(0, 0);
+    header.writeUInt16LE(1, 2);
+    header.writeUInt16LE(valid.length, 4);
+
+    let offset = 6 + valid.length * 16;
+    const dirEntries = [];
+    const payloads = [];
+    for (const f of valid) {
+        const entry = Buffer.alloc(16);
+        entry[0] = f.size >= 256 ? 0 : f.size;
+        entry[1] = f.size >= 256 ? 0 : f.size;
+        entry[2] = 0;
+        entry[3] = 0;
+        entry.writeUInt16LE(1, 4);
+        entry.writeUInt16LE(32, 6);
+        entry.writeUInt32LE(f.data.length, 8);
+        entry.writeUInt32LE(offset, 12);
+        dirEntries.push(entry);
+        payloads.push(f.data);
+        offset += f.data.length;
+    }
+    return Buffer.concat([header, ...dirEntries, ...payloads]);
+}
+
+/**
+ * Renderer tarafından rasterize edilen özel renkli ikon karelerinden
+ * `userData/icons/powerpilot-custom-<hex>.ico` ve `.png` dosyalarını diske yazar.
+ */
+function writeCustomIconFiles(rawHex, rawFrames, {
+    userDataDir,
+    fsImpl = fs
+} = {}) {
+    if (!userDataDir) return { ok: false, code: 'NO_USER_DATA_DIR' };
+    const hex = normalizeHexColor(rawHex, DEFAULT_CUSTOM_COLOR);
+    const slug = customHexSlug(hex);
+    if (!Array.isArray(rawFrames) || rawFrames.length === 0 || rawFrames.length > 10) {
+        return { ok: false, code: 'INVALID_FRAMES' };
+    }
+
+    const icoFrames = [];
+    let png256 = null;
+    for (const item of rawFrames) {
+        if (!item || typeof item !== 'object') return { ok: false, code: 'INVALID_FRAME' };
+        const size = Number(item.size);
+        if (![16, 24, 32, 48, 64, 128, 256].includes(size)) return { ok: false, code: 'INVALID_FRAME_SIZE' };
+        if (item.kind === 'rgba' && typeof item.base64 === 'string') {
+            const raw = Buffer.from(item.base64, 'base64');
+            if (raw.length !== size * size * 4) return { ok: false, code: 'INVALID_RGBA_LEN' };
+            icoFrames.push({ size, data: encodeIcoBmpFrame(raw, size) });
+        } else if (item.kind === 'png' && typeof item.base64 === 'string') {
+            if (item.base64.length > 400000) return { ok: false, code: 'FRAME_TOO_LARGE' };
+            const pngBuf = Buffer.from(item.base64, 'base64');
+            // PNG sihirli bayt doğrulaması (89 50 4E 47)
+            if (pngBuf.length < 24 || pngBuf[0] !== 0x89 || pngBuf[1] !== 0x50 || pngBuf[2] !== 0x4e || pngBuf[3] !== 0x47) {
+                return { ok: false, code: 'INVALID_PNG' };
+            }
+            icoFrames.push({ size, data: pngBuf });
+            if (size === 256 || !png256) png256 = pngBuf;
+        } else {
+            return { ok: false, code: 'INVALID_FRAME_KIND' };
+        }
+    }
+
+    if (icoFrames.length === 0) return { ok: false, code: 'EMPTY_FRAMES' };
+
+    const icoBuf = encodeMultiResIco(icoFrames);
+    const iconStoreDir = path.join(userDataDir, 'icons');
+    fsImpl.mkdirSync(iconStoreDir, { recursive: true });
+
+    const baseName = `powerpilot-custom-${slug}`;
+    const icoPath = path.join(iconStoreDir, `${baseName}.ico`);
+    const pngPath = path.join(iconStoreDir, `${baseName}.png`);
+    const svgPath = path.join(iconStoreDir, `${baseName}.svg`);
+
+    fsImpl.writeFileSync(icoPath, icoBuf);
+    if (png256) fsImpl.writeFileSync(pngPath, png256);
+    fsImpl.writeFileSync(svgPath, buildBrandIconSvg(buildCustomIconPalette(hex)), 'utf8');
+
+    // Eski özel renk ikon dosyalarını temizle (sadece etkin olanı tut).
+    try {
+        for (const name of fsImpl.readdirSync(iconStoreDir)) {
+            if (!name.startsWith('powerpilot-custom-')) continue;
+            if (name === `${baseName}.ico` || name === `${baseName}.png` || name === `${baseName}.svg`) continue;
+            try { fsImpl.unlinkSync(path.join(iconStoreDir, name)); } catch (_) { /* kilitli olabilir */ }
+        }
+    } catch (_) { /* best-effort */ }
+
+    return { ok: true, hex, icoPath, pngPath: png256 ? pngPath : null, svgPath };
+}
+
 /**
  * Seçili ikon varyantı için disk üzerindeki gerçek `.ico` yolunu çözer.
  */
 function resolveIconIcoPath(iconId, {
     rootDir = path.resolve(__dirname, '..', '..', '..'),
     resourcesPath = process.resourcesPath || null,
+    userDataDir = null,
+    customIconColor = null,
     isPackaged = false,
     fsImpl = fs
 } = {}) {
     const id = normalizeAppIcon(iconId);
     const candidates = [];
+    if (id === 'custom' && userDataDir) {
+        const slug = customHexSlug(customIconColor);
+        candidates.push(path.join(userDataDir, 'icons', `powerpilot-custom-${slug}.ico`));
+    }
     if (isPackaged && resourcesPath) {
-        candidates.push(path.join(resourcesPath, 'app.asar.unpacked', 'src', 'assets', 'icons', `${id}.ico`));
+        if (id !== 'custom') {
+            candidates.push(path.join(resourcesPath, 'app.asar.unpacked', 'src', 'assets', 'icons', `${id}.ico`));
+        }
         candidates.push(path.join(resourcesPath, 'app.asar.unpacked', 'src', 'assets', 'icons', `${DEFAULT_APP_ICON}.ico`));
     }
-    candidates.push(path.join(rootDir, 'src', 'assets', 'icons', `${id}.ico`));
+    if (id !== 'custom') {
+        candidates.push(path.join(rootDir, 'src', 'assets', 'icons', `${id}.ico`));
+    }
     candidates.push(path.join(rootDir, 'src', 'assets', 'icons', `${DEFAULT_APP_ICON}.ico`));
 
     for (const candidate of candidates) {
@@ -74,15 +247,24 @@ function resolveIconIcoPath(iconId, {
 function resolveIconPngPath(iconId, {
     rootDir = path.resolve(__dirname, '..', '..', '..'),
     resourcesPath = process.resourcesPath || null,
+    userDataDir = null,
+    customIconColor = null,
     isPackaged = false,
     fsImpl = fs
 } = {}) {
     const id = normalizeAppIcon(iconId);
     const candidates = [];
-    if (isPackaged && resourcesPath) {
+    if (id === 'custom' && userDataDir) {
+        const slug = customHexSlug(customIconColor);
+        candidates.push(path.join(userDataDir, 'icons', `powerpilot-custom-${slug}.png`));
+    }
+    if (isPackaged && resourcesPath && id !== 'custom') {
         candidates.push(path.join(resourcesPath, 'app.asar.unpacked', 'src', 'assets', 'icons', `${id}.png`));
     }
-    candidates.push(path.join(rootDir, 'src', 'assets', 'icons', `${id}.png`));
+    if (id !== 'custom') {
+        candidates.push(path.join(rootDir, 'src', 'assets', 'icons', `${id}.png`));
+    }
+    candidates.push(path.join(rootDir, 'src', 'assets', 'icons', `${DEFAULT_APP_ICON}.png`));
 
     for (const candidate of candidates) {
         try {
@@ -94,14 +276,24 @@ function resolveIconPngPath(iconId, {
 
 /**
  * Electron `BrowserWindow.setIcon` / `Tray.setImage` için Windows DPI uyumlu
- * `NativeImage` oluşturur. `nativeImage` verilmezse güvenli biçimde `icoPath` döner.
+ * ikon yükü oluşturur:
+ *  - Windows pencere / görev çubuğu ikonu (`!targetSize`): doğrudan 7-kareli
+ *    `.ico` dosya yolu dönülür; böylece Win32 `LoadImageW` hem `ICON_SMALL`
+ *    (16/24px) hem `ICON_BIG` (32/48px) karelerini anında ve beyaz çerçeve
+ *    gecikmesi olmadan yükler.
+ *  - Sistem tepsisi / bildirim (`targetSize` verildiyse): PNG üzerinden hedef
+ *    boyuta en yüksek kalitede ölçeklenmiş `NativeImage` dönülür.
  */
 function buildRuntimeIconPayload(iconId, {
     icoPath,
     pngPath = null,
     nativeImage = null,
-    targetSize = null
+    targetSize = null,
+    platform = process.platform
 } = {}) {
+    if (!targetSize && platform === 'win32' && icoPath) {
+        return icoPath;
+    }
     if (!nativeImage || typeof nativeImage.createFromPath !== 'function') {
         return icoPath;
     }
@@ -127,12 +319,19 @@ function buildRuntimeIconPayload(iconId, {
 function ensureStableShortcutIco(iconId, {
     sourceIcoPath,
     userDataDir = null,
+    customIconColor = null,
     isPortable = false,
     isPackaged = false,
     fsImpl = fs
 } = {}) {
     const id = normalizeAppIcon(iconId);
     if (!sourceIcoPath) return null;
+
+    // Özel renkli ikon zaten `userDataDir/icons/powerpilot-custom-<hex>.ico` altında
+    // benzersiz adla kalıcıdır; yeniden kopyalamadan doğrudan döndür.
+    if (id === 'custom' && userDataDir && sourceIcoPath.startsWith(path.join(userDataDir, 'icons'))) {
+        return sourceIcoPath;
+    }
 
     const isPermanentUnpacked = isPackaged && !isPortable
         && sourceIcoPath.includes('app.asar.unpacked')
@@ -143,8 +342,13 @@ function ensureStableShortcutIco(iconId, {
     try {
         const iconStoreDir = path.join(userDataDir, 'icons');
         fsImpl.mkdirSync(iconStoreDir, { recursive: true });
-        const target = path.join(iconStoreDir, `powerpilot-${id}.ico`);
-        fsImpl.copyFileSync(sourceIcoPath, target);
+        const fileName = id === 'custom'
+            ? `powerpilot-custom-${customHexSlug(customIconColor)}.ico`
+            : `powerpilot-${id}.ico`;
+        const target = path.join(iconStoreDir, fileName);
+        if (path.resolve(sourceIcoPath) !== path.resolve(target)) {
+            fsImpl.copyFileSync(sourceIcoPath, target);
+        }
         return target;
     } catch (_) {
         return sourceIcoPath;
@@ -290,8 +494,8 @@ function createDesktopShortcut({
             target: targetExePath,
             cwd: path.dirname(targetExePath),
             description: isPortable
-                ? 'Power Pilot Portable — Smart Power Automation'
-                : 'Power Pilot — Smart Power Automation',
+                ? 'Power Pilot Portable - Smart Power Automation'
+                : 'Power Pilot - Smart Power Automation',
             icon: icoPath,
             iconIndex: 0,
             appUserModelId: APP_USER_MODEL_ID
@@ -414,6 +618,7 @@ function applyAppIcon(iconId, {
     rootDir = path.resolve(__dirname, '..', '..', '..'),
     resourcesPath = process.resourcesPath || null,
     userDataDir = null,
+    customIconColor = null,
     desktopDirs = [],
     startMenuDirs = [],
     taskbarDirs = [],
@@ -427,8 +632,8 @@ function applyAppIcon(iconId, {
     logger = null
 } = {}) {
     const id = normalizeAppIcon(iconId);
-    const icoPath = resolveIconIcoPath(id, { rootDir, resourcesPath, isPackaged, fsImpl });
-    const pngPath = resolveIconPngPath(id, { rootDir, resourcesPath, isPackaged, fsImpl });
+    const icoPath = resolveIconIcoPath(id, { rootDir, resourcesPath, userDataDir, customIconColor, isPackaged, fsImpl });
+    const pngPath = resolveIconPngPath(id, { rootDir, resourcesPath, userDataDir, customIconColor, isPackaged, fsImpl });
 
     const windowIcon = buildRuntimeIconPayload(id, { icoPath, pngPath, nativeImage });
     const trayIcon = buildRuntimeIconPayload(id, { icoPath, pngPath, nativeImage, targetSize: 32 });
@@ -465,6 +670,7 @@ function applyAppIcon(iconId, {
         const stableIco = ensureStableShortcutIco(id, {
             sourceIcoPath: icoPath,
             userDataDir,
+            customIconColor,
             isPortable,
             isPackaged,
             fsImpl
@@ -499,6 +705,7 @@ function applyAppIcon(iconId, {
     return {
         ok: true,
         iconId: id,
+        customIconColor: id === 'custom' ? normalizeHexColor(customIconColor, DEFAULT_CUSTOM_COLOR) : null,
         icoPath,
         pngPath,
         shortcutsUpdated: shortcuts.updated,
@@ -508,10 +715,16 @@ function applyAppIcon(iconId, {
 
 module.exports = {
     APP_USER_MODEL_ID,
+    CLASSIC_APP_ICON_IDS,
+    THEME_APP_ICON_IDS,
+    STATIC_APP_ICON_IDS,
     APP_ICON_IDS,
     DEFAULT_APP_ICON,
     isValidAppIcon,
     normalizeAppIcon,
+    encodeIcoBmpFrame,
+    encodeMultiResIco,
+    writeCustomIconFiles,
     resolveIconIcoPath,
     resolveIconPngPath,
     buildRuntimeIconPayload,

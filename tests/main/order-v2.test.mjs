@@ -1,5 +1,5 @@
 /**
- * order-v2.test.mjs — WP-01 kabul testleri (T-ORD-01..09)
+ * order-v2.test.mjs - WP-01 kabul testleri (T-ORD-01..09)
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import {

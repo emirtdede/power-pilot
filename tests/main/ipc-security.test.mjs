@@ -1,5 +1,5 @@
 /**
- * ipc-security.test.mjs — WP-10.T1/T2/T4/T9
+ * ipc-security.test.mjs - WP-10.T1/T2/T4/T9
  * app:// yol çözümü, IPC gönderici denetimi, AI girdi sınırı ve
  * güvenlik ayarlarının normal yoldan yazılamaması.
  */

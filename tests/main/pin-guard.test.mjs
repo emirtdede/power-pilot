@@ -1,5 +1,5 @@
 /**
- * pin-guard.test.mjs — WBS-11.2 / WP-04.T4
+ * pin-guard.test.mjs - WBS-11.2 / WP-04.T4
  * PIN doğrulama: format, başarı, yanlış-sayacı, kilit (5/15dk),
  * Argon2id parametreleri, eski SHA-256 kaydının yükseltilmesi.
  */

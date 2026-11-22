@@ -1,5 +1,5 @@
 /**
- * exemption-service.test.mjs — FAZ B
+ * exemption-service.test.mjs - FAZ B
  * Muafiyet CRUD + eşleşme + bakım penceresi.
  */
 import { describe, it, expect, vi } from 'vitest';

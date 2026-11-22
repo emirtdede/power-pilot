@@ -1,5 +1,5 @@
 /**
- * safety-hint.test.mjs — P0/BLOCKER-001 görünürlük kapısı (S-10, statik doğrulama)
+ * safety-hint.test.mjs - P0/BLOCKER-001 görünürlük kapısı (S-10, statik doğrulama)
  *
  * `powercfg /requests` yükseltme gerektirdiğinde kapı atlanır; bu durum
  * kullanıcıya Ayarlar → Entegrasyonlar ekranında gösterilmelidir ve 17 dilin

@@ -1,5 +1,5 @@
 /**
- * power-service.test.mjs — PowerService güvenlik kapısı
+ * power-service.test.mjs - PowerService güvenlik kapısı
  *
  * GÜVENLİK: hiçbir OS güç komutu çalıştırılmaz. `execute()` yalnızca
  * (a) guard reddi, (b) geçersiz eylem dallarında test edilir; bu iki dal

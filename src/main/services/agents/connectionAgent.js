@@ -1,5 +1,5 @@
 /**
- * agents/connectionAgent.js — WP-8
+ * agents/connectionAgent.js - WP-8
  * Doğal dil (TR + EN) ile Power Pilot bağlantı ve entegrasyon ayarlarını
  * (Yerel REST API, Webhook, Wake-on-LAN, UPS/NUT, MCP yapılandırması, Kurumsal Konsol)
  * yapılandırma önerisi olarak ayrıştırır.
@@ -52,7 +52,7 @@ module.exports = {
                         command: 'node',
                         args: ['src/mcp/server.js'],
                         env: {
-                            // P0-4: kanonik adlar — CLI/MCP bunları okur.
+                            // P0-4: kanonik adlar - CLI/MCP bunları okur.
                             POWERPILOT_API_PORT: String(port),
                             POWERPILOT_API_KEY: '<API_KEY>'
                         }
@@ -127,8 +127,8 @@ module.exports = {
                     integrationSection: 'int-sec-webhooks',
                     title: isTr ? 'Yeni Webhook Ekle' : 'Add New Webhook',
                     summary: isTr
-                        ? `"${hook.name}" (${hook.url}) — Olaylar: ${events.join(', ')}`
-                        : `"${hook.name}" (${hook.url}) — Events: ${events.join(', ')}`
+                        ? `"${hook.name}" (${hook.url}) - Olaylar: ${events.join(', ')}`
+                        : `"${hook.name}" (${hook.url}) - Events: ${events.join(', ')}`
                 }
             };
         }
@@ -176,8 +176,8 @@ module.exports = {
                         ? (isTr ? 'Wake-on-LAN Paketi Gönder' : 'Send Wake-on-LAN Packet')
                         : (isTr ? 'Wake-on-LAN Cihazı Kaydet' : 'Save Wake-on-LAN Device'),
                     summary: isTr
-                        ? `${device.name} — MAC: ${macAddress}${broadcastIp ? ` (${broadcastIp})` : ''}`
-                        : `${device.name} — MAC: ${macAddress}${broadcastIp ? ` (${broadcastIp})` : ''}`
+                        ? `${device.name} - MAC: ${macAddress}${broadcastIp ? ` (${broadcastIp})` : ''}`
+                        : `${device.name} - MAC: ${macAddress}${broadcastIp ? ` (${broadcastIp})` : ''}`
                 }
             };
         }

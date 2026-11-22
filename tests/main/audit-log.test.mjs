@@ -1,5 +1,5 @@
 /**
- * audit-log.test.mjs — FAZ B
+ * audit-log.test.mjs - FAZ B
  * Hash zinciri: ekleme, doğrulama, kurcalama tespiti.
  */
 import { describe, it, expect } from 'vitest';

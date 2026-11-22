@@ -1,5 +1,5 @@
 /**
- * safety-policy-extra.test.mjs — SafetyPolicyEngine kalan dallar
+ * safety-policy-extra.test.mjs - SafetyPolicyEngine kalan dallar
  *
  * Süreç listesi/komutlar enjekte edilir; OS güç eylemi ve gerçek spawn yok.
  */
@@ -14,7 +14,7 @@ function store(settings = {}) {
 
 const base = { checkProtectedApps: false, checkUserActivity: false, checkFullscreen: false, checkSystemLoad: false };
 
-describe('SafetyPolicyEngine — korunan uygulamalar / süreç listesi', () => {
+describe('SafetyPolicyEngine - korunan uygulamalar / süreç listesi', () => {
     it('processProvider sonuçlarından korunan uygulama bulunur', async () => {
         const eng = new Engine(store(), vi.fn(), null, { processProvider: async () => ['C:\\Apps\\Code.EXE'] });
         const r = await eng.evaluate({ action: 'shutdown', source: 'ui', safetyPolicy: { ...base, checkProtectedApps: true } });
@@ -41,7 +41,7 @@ describe('SafetyPolicyEngine — korunan uygulamalar / süreç listesi', () => {
     });
 });
 
-describe('SafetyPolicyEngine — ayarlar ve kill-switch', () => {
+describe('SafetyPolicyEngine - ayarlar ve kill-switch', () => {
     it('ayar okunamazsa POLICY_UNAVAILABLE', async () => {
         const eng = new Engine({ getSettings: () => { throw new Error('db'); } });
         await expect(eng.evaluate({ action: 'lock', source: 'ui', safetyPolicy: base })).resolves.toMatchObject({ allowed: false, reasonCode: 'POLICY_UNAVAILABLE' });
@@ -75,7 +75,7 @@ describe('SafetyPolicyEngine — ayarlar ve kill-switch', () => {
     });
 });
 
-describe('SafetyPolicyEngine — güç istekleri ve tam ekran dalları', () => {
+describe('SafetyPolicyEngine - güç istekleri ve tam ekran dalları', () => {
     it('aktif güç isteği POWER_REQUEST_ACTIVE; 5 sn sonuç önbelleği', async () => {
         const busy = 'DISPLAY:\r\nNone.\r\n\r\nSYSTEM:\r\n[DRIVER] \\FileSystem\\srvnet\r\n';
         const exec = vi.fn((file, args, opts, cb) => cb(null, busy));
@@ -129,7 +129,7 @@ describe('SafetyPolicyEngine — güç istekleri ve tam ekran dalları', () => {
     });
 });
 
-describe('SafetyPolicyEngine — kurumsal / sunucu profili', () => {
+describe('SafetyPolicyEngine - kurumsal / sunucu profili', () => {
     it('konsol görevi muafiyetle engellenir', async () => {
         const eng = new Engine({
             getSettings: () => ({ agentId: 'a1' }),

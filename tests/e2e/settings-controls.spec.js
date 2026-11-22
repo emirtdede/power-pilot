@@ -1,5 +1,5 @@
 /**
- * settings-controls.spec.js — PPX-002 / PPX-010 / PPX-015 / PPX-026
+ * settings-controls.spec.js - PPX-002 / PPX-010 / PPX-015 / PPX-026
  * TC-08…TC-11, TC-30.
  *
  * Üç switch (onay kutusu) klavyeyle odaklanabilir ve görünür halka üretir;

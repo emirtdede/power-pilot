@@ -1,5 +1,5 @@
 /**
- * warning.test.mjs — WarningManager: süre sonu proceed, iptal, ertele, event'ler.
+ * warning.test.mjs - WarningManager: süre sonu proceed, iptal, ertele, event'ler.
  * durationSeconds=1 ile hızlı çalışır (gerçek sayaç, ~1sn/test).
  */
 import { describe, it, expect } from 'vitest';

@@ -1,5 +1,5 @@
 /**
- * AuditLog.js — FAZ B + WP-11.T7
+ * AuditLog.js - FAZ B + WP-11.T7
  * Değişmez (append-only) denetim günlüğü. İki uyumlu mod:
  * - HMAC zinciri (üretim): depo `appendAudit` + `verifyAuditChain` sunar ve
  *   SecretStore'dan gelen `auditHmacKey` hazırdır. Kayıt kendi HMAC alanı

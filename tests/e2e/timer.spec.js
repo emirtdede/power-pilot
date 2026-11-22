@@ -1,5 +1,5 @@
 /**
- * timer.spec.js — WP-08.T12 / T-REN-01..T-REN-10
+ * timer.spec.js - WP-08.T12 / T-REN-01..T-REN-10
  * Sayaç reddi, koşullu görev geri yükleme, çift iptal, yükleme hataları,
  * pencere IPC dayanıklılığı ve ayar görünümü geçişlerini doğrular.
  */

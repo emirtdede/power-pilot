@@ -16,3 +16,4 @@ audit.json
 # Yerel tasarim/magaza varliklari (docs altinda tutulur, repoya girmez).
 docs/assets/design/
 docs/store/assets/
+installer/target/

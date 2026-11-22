@@ -1,5 +1,5 @@
 /**
- * AiBackend.js — WBS-7.1 (+P0-3 düzeltmeleri)
+ * AiBackend.js - WBS-7.1 (+P0-3 düzeltmeleri)
  * node-llama-cpp için ince yaşam-döngüsü yöneticisi.
  *
  * Kurallar (doğrulanmış entegrasyon kısıtları):
@@ -16,22 +16,29 @@ const log = require('../logger');
 
 // Gerçek repo dosya adı (büyük-küçük harfe duyarlı dosya sistemleri için birebir).
 const DEFAULT_MODEL_FILE = 'Qwen_Qwen3-1.7B-Q4_K_M.gguf';
+const TIER_MODEL_FILES = Object.freeze({
+    lite: 'Qwen_Qwen3-0.6B-Q4_K_M.gguf',
+    balanced: 'Qwen_Qwen3-1.7B-Q4_K_M.gguf',
+    powerful: 'Qwen_Qwen3-4B-Q4_K_M.gguf'
+});
 
 // Yardımcı-komut profili için tutumlu bağlam: kısa ayrıştırma girdileri,
 // küçük KV önbelleği. "auto", modelin eğitim bağlamını seçip ayırmayı
 // patlatabilir (sahada görülen "Failed to create context" hatası).
 const ASSISTANT_CONTEXT_OPTIONS = { sequences: 1, contextSize: 2048, batchSize: 512, flashAttention: false };
+const FALLBACK_CONTEXT_OPTIONS = { sequences: 1, contextSize: 1024, batchSize: 256, flashAttention: false };
 
 class AiBackend {
     // modelDir: modellerin durduğu dizin (main.js: userData/models).
     // importer: test izolasyonu için (varsayılan: gerçek dinamik import).
-    constructor({ modelDir = null, importer = null, idleUnloadMs = 600000 } = {}) {
+    constructor({ modelDir = null, importer = null, idleUnloadMs = 600000, defaultModelFile = DEFAULT_MODEL_FILE } = {}) {
         this.modelDir = modelDir;
         this.importer = importer || (() => import('node-llama-cpp'));
         this.llama = null;
         this.model = null;
         this.context = null;
         this.modelId = null;
+        this.preferredModelFile = defaultModelFile || DEFAULT_MODEL_FILE;
         // P2: 10dk kullanılmayan model RAM'den boşaltılır (varsayılan 600000ms).
         // idleUnloadMs <= 0 ise zamanlayıcı kapalıdır (testler/sunucu senaryosu).
         this.idleUnloadMs = idleUnloadMs;
@@ -46,7 +53,7 @@ class AiBackend {
         this.closed = false;
     }
 
-    // Her çıkarım yolu buradan geçer — kullanım sayacı sıfırlanır.
+    // Her çıkarım yolu buradan geçer - kullanım sayacı sıfırlanır.
     touch() {
         if (this.idleTimer) {
             clearTimeout(this.idleTimer);
@@ -70,7 +77,16 @@ class AiBackend {
         }
     }
 
-    modelPathFor(modelFile = DEFAULT_MODEL_FILE) {
+    static modelFileForTier(tierId = 'balanced') {
+        return TIER_MODEL_FILES[tierId] || DEFAULT_MODEL_FILE;
+    }
+
+    setPreferredTier(tierId = 'balanced') {
+        this.preferredModelFile = AiBackend.modelFileForTier(tierId);
+        return this.preferredModelFile;
+    }
+
+    modelPathFor(modelFile = this.preferredModelFile || DEFAULT_MODEL_FILE) {
         if (!this.modelDir) return null;
         return path.join(this.modelDir, modelFile);
     }
@@ -82,14 +98,15 @@ class AiBackend {
         if (!this.modelDir) {
             return { loaded: false, code: 'NOT_CONFIGURED', message: 'Model dizini tanımlı değil.' };
         }
+        const targetFile = this.preferredModelFile || DEFAULT_MODEL_FILE;
         if (!this.model) {
-            const p = this.modelPathFor();
+            const p = this.modelPathFor(targetFile);
             const exists = p && fs.existsSync(p);
             return {
                 loaded: false,
                 code: exists ? 'NOT_LOADED' : 'MODEL_MISSING',
                 message: exists ? 'Model yüklü değil.' : 'AI modeli indirilmedi.',
-                modelId: DEFAULT_MODEL_FILE,
+                modelId: targetFile,
                 modelDir: this.modelDir
             };
         }
@@ -107,14 +124,15 @@ class AiBackend {
         return this.llama;
     }
 
-    // Modeli RAM'e yükler. Başarısızlık fırlatmaz — sonuç nesnesi döner.
-    async loadModel(modelFile = DEFAULT_MODEL_FILE) {
+    // Modeli RAM'e yükler. Başarısızlık fırlatmaz - sonuç nesnesi döner.
+    async loadModel(modelFile = this.preferredModelFile || DEFAULT_MODEL_FILE) {
         if (AiBackend.isRendererProcess()) {
             return { loaded: false, code: 'WRONG_PROCESS' };
         }
         if (!this.modelDir) {
             return { loaded: false, code: 'NOT_CONFIGURED' };
         }
+        this.preferredModelFile = modelFile || DEFAULT_MODEL_FILE;
         if (this.model && this.modelId === modelFile) {
             return { loaded: true, code: 'READY', modelId: this.modelId };
         }
@@ -135,7 +153,12 @@ class AiBackend {
             await this.unload();
             const llama = await this.ensureLlama();
             model = await llama.loadModel({ modelPath });
-            context = await model.createContext(ASSISTANT_CONTEXT_OPTIONS);
+            try {
+                context = await model.createContext(ASSISTANT_CONTEXT_OPTIONS);
+            } catch (ctxErr) {
+                log.warn('[AiBackend] 2048 context oluşturulamadı, 1024 fallback deneniyor:', ctxErr && ctxErr.message);
+                context = await model.createContext(FALLBACK_CONTEXT_OPTIONS);
+            }
             this.model = model;
             this.context = context;
             this.modelId = modelFile;
@@ -153,6 +176,22 @@ class AiBackend {
         } finally {
             this.loading = false;
         }
+    }
+
+    async switchTier(tierId = 'balanced', { autoLoad = false } = {}) {
+        const nextFile = AiBackend.modelFileForTier(tierId);
+        this.preferredModelFile = nextFile;
+        const wasLoaded = !!this.model;
+        if (this.model && this.modelId !== nextFile) {
+            await this.unload();
+        }
+        if (autoLoad || wasLoaded) {
+            const p = this.modelPathFor(nextFile);
+            if (p && fs.existsSync(p)) {
+                return await this.loadModel(nextFile);
+            }
+        }
+        return this.getStatus();
     }
 
     async unload() {
@@ -220,7 +259,7 @@ class AiBackend {
     /**
      * K1: Sohbet oturumu kurar (çağrı-başı taze oturum; geçmiş kirlenmesi yok).
      * WP-13.T1: semafor=1, oturum başına ayrı `getSequence()`.
-     * node-llama-cpp v3'te ham sequence'te prompt()/completion() YOKTUR —
+     * node-llama-cpp v3'te ham sequence'te prompt()/completion() YOKTUR -
      * tek desteklenen yüksek-seviye yol LlamaChatSession.completePrompt'tur.
      */
     async createSession (systemPrompt = null) {
@@ -304,4 +343,4 @@ class AiBackend {
     }
 }
 
-module.exports = { AiBackend, DEFAULT_MODEL_FILE, ASSISTANT_CONTEXT_OPTIONS };
+module.exports = { AiBackend, DEFAULT_MODEL_FILE, TIER_MODEL_FILES, ASSISTANT_CONTEXT_OPTIONS, FALLBACK_CONTEXT_OPTIONS };

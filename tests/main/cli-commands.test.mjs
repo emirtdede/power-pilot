@@ -1,5 +1,5 @@
 /**
- * cli-commands.test.mjs — B2 CLI paritesi
+ * cli-commands.test.mjs - B2 CLI paritesi
  *
  * SAF modül: ağ yok, OS yok. Argüman ayrıştırma, istek kurma ve doğrulama
  * doğrudan test edilir. HTTP taşıması `powerpilot.js` içinde ayrıdır.
@@ -128,16 +128,62 @@ describe('CLI komut kataloğu', () => {
     });
 
     it('geçerli komutlar doğrulamadan geçer', () => {
-        // timer/cancel zorunlu bayrak ister; diğerleri bayraksız geçerli olmalı.
         const minimal = {
             timer: ['timer', '--action', 'sleep', '--durationMs', '60000'],
-            cancel: ['cancel', '--id', 'task_1']
+            'task-create': ['task-create', '--action', 'sleep', '--minutes', '15'],
+            cancel: ['cancel', '--id', 'task_1'],
+            pause: ['pause', '--id', 'task_1'],
+            resume: ['resume', '--id', 'task_1'],
+            snooze: ['snooze', '--id', 'task_1', '--minutes', '5'],
+            'run-now': ['run-now', '--id', 'task_1'],
+            'delete-task': ['delete-task', '--id', 'task_1'],
+            'template-save': ['template-save', '--name', 'Gece', '--action', 'sleep', '--minutes', '20'],
+            'template-run': ['template-run', '--id', 'tpl_1'],
+            'template-delete': ['template-delete', '--id', 'user_tpl_1'],
+            'template-reset': ['template-reset', '--id', 'tpl_1'],
+            'settings-set': ['settings-set', '--key', 'theme', '--value', 'dark'],
+            'security-set': ['security-set', '--key', 'autonomyMode', '--value', 'classic'],
+            'cancel-pin-set': ['cancel-pin-set', '--pin', '1234'],
+            'import-settings': ['import-settings', '--json-body', '{"theme":"dark"}'],
+            'import-templates': ['import-templates', '--json-body', '{"schema":1,"templates":[]}'],
+            'wol-devices-save': ['wol-devices-save', '--mac', 'AA:BB:CC:DD:EE:FF'],
+            'wol-send': ['wol-send', '--mac', 'AA:BB:CC:DD:EE:FF'],
+            'webhooks-save': ['webhooks-save', '--url', 'https://example.com/hook'],
+            'webhook-test': ['webhook-test', '--url', 'https://example.com/hook'],
+            'cloud-provider': ['cloud-provider', '--provider', 'onedrive'],
+            'cloud-autosync': ['cloud-autosync', '--on'],
+            'cloud-folder': ['cloud-folder', '--dir', 'C:\\Temp\\PowerPilot'],
+            'ai-parse': ['ai-parse', '--text', '30 dakika sonra uyut'],
+            'ai-assist': ['ai-assist', '--text', 'MCP nasil baglanir?'],
+            'ai-dismiss': ['ai-dismiss', '--topic', 'night_sleep'],
+            'docs-search': ['docs-search', '--query', 'mcp'],
+            'updates-install-on-quit': ['updates-install-on-quit', '--on'],
+            'exemption-delete': ['exemption-delete', '--id', 'ex_1'],
+            'window-delete': ['window-delete', '--id', 'mw_1'],
+            'order-submit': ['order-submit', '--json-body', '{"order":{},"signature":"abc"}']
         };
         for (const name of Object.keys(COMMANDS)) {
             const argv = minimal[name] || [name];
             const v = validate(parseArgs(argv));
             expect(v.ok, `${name} reddedilmemeli: ${v.error}`).toBe(true);
         }
+    });
+
+    it('cancel ve pause-all --pin bayragini JSON govdesine tasir', () => {
+        const c = buildRequest(parseArgs(['cancel', '--id', 'task_1', '--pin', '1234']));
+        expect(c.body).toEqual({ pin: '1234' });
+        const p = buildRequest(parseArgs(['pause-all', '--on', '--pin', '1234']));
+        expect(p.body).toEqual({ paused: true, pin: '1234' });
+    });
+
+    it('status varsayilan olarak insan-okunabilir formatta, --json ile ham JSON doner', () => {
+        const req = buildRequest(parseArgs(['status']));
+        const body = { status: 'online', version: '1.0.0', headless: true, transport: 'http', boundHost: '127.0.0.1', port: 18456, keyRole: 'admin', activeTasksCount: 2, pausedAll: false };
+        const human = renderResponse(req, { status: 200, body });
+        expect(human).toContain('Power Pilot v1.0.0 (online)');
+        expect(human).toContain('Headless Daemon');
+        const raw = renderResponse(req, { status: 200, body }, { json: true });
+        expect(JSON.parse(raw)).toEqual(body);
     });
 
     it('usageText tüm komutları listeler', () => {

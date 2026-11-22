@@ -1,5 +1,5 @@
 /**
- * ups-monitor.test.mjs — FAZ D + WP-12.T8
+ * ups-monitor.test.mjs - FAZ D + WP-12.T8
  * Tek TCP bağlantısı, LIST VAR parse, 55 sn cache, erişilemezlik.
  */
 import { describe, it, expect } from 'vitest';

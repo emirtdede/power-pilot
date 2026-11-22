@@ -1,5 +1,5 @@
 /**
- * i18n.test.mjs — WP-14.T2/T6
+ * i18n.test.mjs - WP-14.T2/T6
  * Renderer yalnızca aktif locale'i IPC ile yükler; RTL ve tek sözlük.
  */
 import { describe, it, expect } from 'vitest';

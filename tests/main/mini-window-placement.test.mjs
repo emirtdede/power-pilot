@@ -1,5 +1,5 @@
 /**
- * mini-window-placement.test.mjs — B5 çoklu monitör/DPI yerleşimi
+ * mini-window-placement.test.mjs - B5 çoklu monitör/DPI yerleşimi
  *
  * Mini widget birincil ekrana sabitlenmemeli: ana pencerenin (yoksa imlecin)
  * bulunduğu ekrana yerleşmeli ve her zaman o ekranın çalışma alanı içinde
@@ -23,7 +23,7 @@ const secondary = {
     scaleFactor: 1.5
 };
 
-describe('B5 — mini pencere yerleşimi', () => {
+describe('B5 - mini pencere yerleşimi', () => {
     it('ana pencere ikincil ekrandaysa mini widget oraya yerleşir', () => {
         const anchor = { x: 2400, y: 200, width: 800, height: 600 };
         const result = placement.computePlacement({
@@ -121,5 +121,37 @@ describe('B5 — mini pencere yerleşimi', () => {
         expect(placement.DEFAULT_WIDTH).toBe(280);
         expect(placement.DEFAULT_HEIGHT).toBe(76);
         expect(placement.DEFAULT_MARGIN).toBe(20);
+    });
+
+    it('TS-4.2: computeBottomCenterPlacement görev çubuğunun tam 18px üst-ortasına yerleşir (çoklu monitör destekli)', () => {
+        const resPrimary = placement.computeBottomCenterPlacement({
+            displays: [primary, secondary],
+            primaryDisplay: primary,
+            cursorPoint: { x: 500, y: 500 },
+            width: 440,
+            height: 116,
+            margin: 18
+        });
+        expect(resPrimary).toEqual({
+            x: Math.round((1920 - 440) / 2),
+            y: 1040 - 116 - 18,
+            width: 440,
+            height: 116
+        });
+
+        const resSecondary = placement.computeBottomCenterPlacement({
+            displays: [primary, secondary],
+            primaryDisplay: primary,
+            cursorPoint: { x: 2500, y: 500 },
+            width: 440,
+            height: 116,
+            margin: 18
+        });
+        expect(resSecondary).toEqual({
+            x: 1920 + Math.round((2560 - 440) / 2),
+            y: 1400 - 116 - 18,
+            width: 440,
+            height: 116
+        });
     });
 });

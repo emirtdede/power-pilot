@@ -1,8 +1,8 @@
 /**
- * EnergyEstimateService.js — FAZ D + WP-6 Zenginleştirilmiş İstatistik Motoru.
+ * EnergyEstimateService.js - FAZ D + WP-6 Zenginleştirilmiş İstatistik Motoru.
  * Kapanış kaydı → sonraki açılış kaydı (bootHistory) = GERÇEK kapalı-süre.
  * Eşleşmeyen kapanışlar SADECE kullanıcı beyanlı assumedOffHours ile ve
- * isEstimate:true + missing listesiyle raporlanır; beyan yoksa "—" döner.
+ * isEstimate:true + missing listesiyle raporlanır; beyan yoksa "-" döner.
  *
  * WP-6 eklemeleri (tam geriye dönük uyumlu):
  *  - Dönem filtresi (`days`: 7 | 30 | null/tümü)

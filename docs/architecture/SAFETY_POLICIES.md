@@ -1,4 +1,4 @@
-# Power Pilot — Güvenlik Politikası Motoru (`SafetyPolicyEngine`)
+# Power Pilot - Güvenlik Politikası Motoru (`SafetyPolicyEngine`)
 
 Power Pilot hiçbir güç işlemini güvenlik kapılarından geçirmeden çalıştırmaz.
 Motorun tek giriş noktası `SafetyPolicyEngine.evaluate(task)`'tır ve
@@ -13,12 +13,12 @@ Motorun tek giriş noktası `SafetyPolicyEngine.evaluate(task)`'tır ve
 | 0 | Kill-switch | Konsol ajanı devre-dışı | Açıksa **tüm** eylemler engellenir |
 | 1 | Korunan uygulamalar | `protectedApps` (liste) | Kullanıcı düzenler; görevin kendi izlediği süreç muaf |
 | 2 | Tam ekran | `protectFullscreen` | Tam ekran uygulama açıkken engellenir |
-| 3 | Aktif güç isteği | `protectActiveIo` | `powercfg /requests` — aşağıya bakın |
+| 3 | Aktif güç isteği | `protectActiveIo` | `powercfg /requests` - aşağıya bakın |
 | 4 | Aktif kullanıcı | `remoteUserActiveCheck` | Uzaktan görevde kullanıcı bilgisayardaysa reddedilir |
 | 5 | Bakım penceresi | Konsol politikası | `requiresMaintenanceWindow` görevleri pencere dışında çalışmaz |
 | 6 | Muafiyet | `ExemptionService` | Konsol muafiyeti icra **öncesi** değerlendirilir |
 | 7 | Sunucu profili | Sunucu profili | Profilde yasak eylem engellenir |
-| 8 | Boot Guard | — | Açılıştan sonraki 120 sn içinde boşta tetiklenme engellenir |
+| 8 | Boot Guard | - | Açılıştan sonraki 120 sn içinde boşta tetiklenme engellenir |
 
 ### Korunan uygulamalar
 
@@ -76,7 +76,7 @@ Karar `AutomationTask.isExplicitPolicy(task, key)` /
 | Ayar | Gerçek davranış |
 |---|---|
 | `forceCloseApps` | Kapatmayı engelleyen uygulamalar `taskkill /f` ile kapatılır (`PowerService.execute(action, { forceClose })`). Görev düzeyi değer açıkça verilirse o kazanır. |
-| `graceSeconds` | Yalnızca `shutdown`/`restart`/`signout` için. Windows `/t n` ile **gerçek** yerel gecikme; bekleme penceresinde iptal `shutdown /a` ile gerçekten durdurulur. Veto doğrulaması gecikme kadar ötelenir. 0–600 sn. |
+| `graceSeconds` | Yalnızca `shutdown`/`restart`/`signout` için. Windows `/t n` ile **gerçek** yerel gecikme; bekleme penceresinde iptal `shutdown /a` ile gerçekten durdurulur. Veto doğrulaması gecikme kadar ötelenir. 0-600 sn. |
 | `remoteApprovalRequired` | `local_api` / `n8n` / `console` kaynaklı görevler yerel insan onayı ister. Sayaç dolarsa eylem **iptal** edilir (fail-closed). Yerel UI görevleri etkilenmez. |
 | `retry_once` yedeği | Gerçek 30 sn bekleme penceresi; bu sırada iptal edilirse tekrar denenmez. |
 | `upsAutoActionEnabled` | UPS `LB` + `OB` bildirdiğinde geri sayım sonrası seçilen güç eylemi (`UpsSupervisor`). Normale dönüş iptal eder; `reachable:false` asla eylem üretmez. Varsayılan kapalı. |
@@ -94,7 +94,7 @@ davranışını seçer. İki mod da testlidir.
 
 ## Testler
 
-- `tests/main/policy-explicitness.test.mjs` — explicit işaret ve kalıcı ayar önceliği
+- `tests/main/policy-explicitness.test.mjs` - explicit işaret ve kalıcı ayar önceliği
 - `tests/main/safety.test.mjs`, `safety-policy-extra`, `safety-enterprise`, `audit-fixes`
-- `tests/main/taskmanager-grace-approval.test.mjs` — grace + uzaktan onay
-- `tests/main/ups-supervisor.test.mjs` — UPS durum makinesi
+- `tests/main/taskmanager-grace-approval.test.mjs` - grace + uzaktan onay
+- `tests/main/ups-supervisor.test.mjs` - UPS durum makinesi

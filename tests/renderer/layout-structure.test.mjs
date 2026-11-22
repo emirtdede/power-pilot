@@ -1,5 +1,5 @@
 /**
- * layout-structure.test.mjs — Responsive iskelet sözleşmesi (statik)
+ * layout-structure.test.mjs - Responsive iskelet sözleşmesi (statik)
  *
  * E2E pencereleri gerçek davranışı ölçer; bu test ise HTML iskeletinin
  * yapısal bozulmalarını (iç içe geçmiş görünümler, eksik çekmece parçaları,
@@ -20,7 +20,7 @@ const VIEWS = [
     'view-templates', 'view-history', 'view-stats', 'view-integrations', 'view-docs', 'view-settings', 'view-about'
 ];
 
-describe('Responsive iskelet — yapı', () => {
+describe('Responsive iskelet - yapı', () => {
     it('tek iskelet kabuğu, tek sidebar, tek scrim ve menü düğmesi var', () => {
         expect(document.querySelectorAll('.app-shell')).toHaveLength(1);
         expect(document.querySelectorAll('#app-sidebar')).toHaveLength(1);

@@ -1,7 +1,7 @@
 /**
- * sound-mode.spec.js — A9: uyarı sesi tercihi
+ * sound-mode.spec.js - A9: uyarı sesi tercihi
  *
- * Eski davranış: ses 22:00–08:00 arası sabit kapalıydı ve kullanıcının seçimi
+ * Eski davranış: ses 22:00-08:00 arası sabit kapalıydı ve kullanıcının seçimi
  * yoktu; gece çalışan kullanıcı kapatma uyarısını hiç duymuyordu. Artık
  * Otomatik / Her zaman / Kapalı seçilebilir ve seçim yeniden açılışta korunur.
  */
@@ -50,7 +50,7 @@ test('uyarı sesi tercihi: varsayılan otomatik, değişir ve yeniden açılış
 
         const select = window.locator('#setting-sound-mode');
         await expect(select).toBeVisible();
-        // Varsayılan: otomatik (gece sessiz) — eski davranışın korunmuş hâli.
+        // Varsayılan: otomatik (gece sessiz) - eski davranışın korunmuş hâli.
         await expect(select).toHaveValue('auto');
 
         // Üç seçenek de çevrilmiş olmalı (ham anahtar sızıntısı yok).

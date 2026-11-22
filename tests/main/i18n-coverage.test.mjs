@@ -1,5 +1,5 @@
 /**
- * i18n-coverage.test.mjs — release audit regression guard.
+ * i18n-coverage.test.mjs - release audit regression guard.
  *
  * Every static `data-i18n` / `t('key')` reference in the renderer must exist in
  * the English dictionary (and, through the parity test, in all 17 locales).

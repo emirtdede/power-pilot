@@ -1,5 +1,5 @@
 /**
- * console-client-sync.test.mjs — ajan → konsol heartbeat/sync hattı
+ * console-client-sync.test.mjs - ajan → konsol heartbeat/sync hattı
  * Taşıma enjekte edilir (fetchFn); gerçek ağ yok.
  */
 import { describe, it, expect, vi } from 'vitest';
@@ -45,7 +45,7 @@ function client({ store = storage(), fetchImpl = async () => res(200, {}), queue
     });
 }
 
-describe('ConsoleClient — yapılandırma ve taşıma', () => {
+describe('ConsoleClient - yapılandırma ve taşıma', () => {
     it('isConfigured üç alanı ister', () => {
         expect(client().isConfigured()).toBe(true);
         expect(client({ store: storage({ consoleUrl: null }) }).isConfigured()).toBe(false);
@@ -89,7 +89,7 @@ describe('ConsoleClient — yapılandırma ve taşıma', () => {
     });
 });
 
-describe('ConsoleClient — yanıt hata kodları', () => {
+describe('ConsoleClient - yanıt hata kodları', () => {
     it('TLS sertifika hatası ayrı kodla döner ve makbuzlar başarısız işaretlenir', async () => {
         const queue = { peekUnsentReceipts: () => [{ key: 'r1' }], markReceiptsFailed: vi.fn(), markReceiptsSent: vi.fn() };
         const c = client({
@@ -142,7 +142,7 @@ describe('ConsoleClient — yanıt hata kodları', () => {
     });
 });
 
-describe('ConsoleClient — kill-switch', () => {
+describe('ConsoleClient - kill-switch', () => {
     it('sunucu disabled=true → kalıcı ayar + audit, icra durur', async () => {
         const store = storage();
         const audit = { append: vi.fn() };
@@ -170,7 +170,7 @@ describe('ConsoleClient — kill-switch', () => {
     });
 });
 
-describe('ConsoleClient — emir doğrulama ve kuyruk', () => {
+describe('ConsoleClient - emir doğrulama ve kuyruk', () => {
     function queueSpy({ duplicate = false, throwOnEnqueue = false } = {}) {
         return {
             peekUnsentReceipts: () => [],

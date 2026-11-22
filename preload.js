@@ -57,13 +57,26 @@ contextBridge.exposeInMainWorld('electronAPI', {
     warningCancel: (pin) => ipcRenderer.invoke('warning-cancel', pin === undefined ? undefined : { pin }),
     warningSnooze: (minutes, pin) => ipcRenderer.invoke('warning-snooze', typeof minutes === 'object' ? minutes : { minutes, pin }),
     warningConfirm: (taskId) => ipcRenderer.invoke('warning-confirm', taskId ? { taskId } : undefined),
-    // AI Model API (WBS-7.5)
-    aiModelDownload: () => ipcRenderer.invoke('ai-model-download'),
-    aiModelLoad: () => ipcRenderer.invoke('ai-model-load'),
+    // AI Model API (WBS-7.5 + WP-3.3 3 Kademeli Yerel AI)
+    aiModelDownload: (tierId) => ipcRenderer.invoke('ai-model-download', tierId ? { tierId } : undefined),
+    aiModelCancel: () => ipcRenderer.invoke('ai-model-cancel'),
+    aiModelDelete: (tierId) => ipcRenderer.invoke('ai-model-delete', tierId ? { tierId } : undefined),
+    aiSelectTier: (tierId) => ipcRenderer.invoke('ai-select-tier', tierId ? { tierId } : undefined),
+    aiModelLoad: (tierId) => ipcRenderer.invoke('ai-model-load', tierId ? { tierId } : undefined),
     aiModelUnload: () => ipcRenderer.invoke('ai-model-unload'),
-    // Voice API (WBS-8.3)
+    // Voice API (WBS-8.3 + WP-4.2 Görev Çubuğu Üstü Sesli Dikte HUD)
     sttStatus: () => ipcRenderer.invoke('stt-status'),
     sttTranscribe: (payload) => ipcRenderer.invoke('stt-transcribe', payload),
+    getVoiceHudConfig: () => ipcRenderer.invoke('get-voice-hud-config'),
+    openVoiceHud: () => ipcRenderer.invoke('open-voice-hud'),
+    closeVoiceHud: () => ipcRenderer.send('close-voice-hud'),
+    voiceHudProcessAudio: (payload) => ipcRenderer.invoke('voice-hud-process-audio', payload),
+    voiceHudExecuteText: (text) => ipcRenderer.invoke('voice-hud-execute-text', { text }),
+    onVoiceHudTrigger: (callback) => {
+        const h = (event, action) => callback(action);
+        ipcRenderer.on('voice-hud-trigger', h);
+        return () => ipcRenderer.removeListener('voice-hud-trigger', h);
+    },
     // Device profiler API (WBS-E3)
     deviceEstimate: () => ipcRenderer.invoke('device-estimate'),
 
@@ -100,6 +113,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     createDesktopShortcut: () => ipcRenderer.invoke('create-desktop-shortcut'),
     saveCustomAppIcon: (payload) => ipcRenderer.invoke('save-custom-app-icon', payload),
     setUiZoom: (zoom) => ipcRenderer.invoke('set-ui-zoom', zoom),
+    getSystemTheme: () => ipcRenderer.invoke('get-system-theme'),
+    getGlobalShortcutStatus: () => ipcRenderer.invoke('get-global-shortcut-status'),
+    getSystemDiagnosticText: (args) => ipcRenderer.invoke('get-system-diagnostic-text', args),
 
     // Diagnostics & Crash Reports API (WP-5)
     getDiagnostics: () => ipcRenderer.invoke('get-diagnostics'),
@@ -126,7 +142,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
     openOneDriveFolder: () => ipcRenderer.invoke('onedrive-open-folder'),
     selectOneDriveFolder: () => ipcRenderer.invoke('onedrive-select-folder'),
     resetOneDriveFolder: () => ipcRenderer.invoke('onedrive-reset-folder'),
+    useCloudProvider: (providerId) => ipcRenderer.invoke('onedrive-use-provider', { providerId }),
     dismissOneDriveRecovery: () => ipcRenderer.invoke('onedrive-dismiss-recovery'),
+
+    // Software Update API (Channel-Aware: Store OFF / Portable Notify / Direct NSIS electron-updater)
+    getUpdateStatus: () => ipcRenderer.invoke('update-get-status'),
+    checkForUpdates: () => ipcRenderer.invoke('update-check'),
+    downloadUpdate: () => ipcRenderer.invoke('update-download'),
+    installUpdateNow: (pin) => ipcRenderer.invoke('update-install-now', pin === undefined ? undefined : { pin }),
+    setInstallUpdateOnQuit: (enabled) => ipcRenderer.invoke('update-set-install-on-quit', { enabled }),
+    openUpdateReleasePage: () => ipcRenderer.invoke('update-open-release-page'),
 
     // Enterprise pilot API (FAZ B/D) - konsol eşleştirme, envanter, denetim
     getInventory: () => ipcRenderer.invoke('get-inventory'),
@@ -135,24 +160,82 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getAudit: (args) => ipcRenderer.invoke('get-audit', args),
     consoleSync: () => ipcRenderer.invoke('console-sync'),
 
-    // Event listeners
-    onTimerCancelled: (callback) => ipcRenderer.on('timer-cancelled-from-tray', callback),
-    onWindowStateChanged: (callback) => ipcRenderer.on('window-state-changed', (event, state) => callback(state)),
-    onTimerTick: (callback) => ipcRenderer.on('timer-tick', (event, data) => callback(data)),
+    // Event listeners (D-04: tüm abonelikler removeListener temizlik fonksiyonu döner)
+    onTimerCancelled: (callback) => {
+        const h = (event, ...args) => callback(event, ...args);
+        ipcRenderer.on('timer-cancelled-from-tray', h);
+        return () => ipcRenderer.removeListener('timer-cancelled-from-tray', h);
+    },
+    onWindowStateChanged: (callback) => {
+        const h = (event, state) => callback(state);
+        ipcRenderer.on('window-state-changed', h);
+        return () => ipcRenderer.removeListener('window-state-changed', h);
+    },
+    onTimerTick: (callback) => {
+        const h = (event, data) => callback(data);
+        ipcRenderer.on('timer-tick', h);
+        return () => ipcRenderer.removeListener('timer-tick', h);
+    },
     getMiniLabels: () => ipcRenderer.invoke('get-mini-labels'),
     // WP-08.T3/T2: gerçek yürütme sonucu ve uykudan dönüş.
-    onTaskExecuted: (callback) => ipcRenderer.on('task-executed', (event, data) => callback(data)),
-    onTaskFailed: (callback) => ipcRenderer.on('task-failed', (event, data) => callback(data)),
+    onTaskExecuted: (callback) => {
+        const h = (event, data) => callback(data);
+        ipcRenderer.on('task-executed', h);
+        return () => ipcRenderer.removeListener('task-executed', h);
+    },
+    onTaskFailed: (callback) => {
+        const h = (event, data) => callback(data);
+        ipcRenderer.on('task-failed', h);
+        return () => ipcRenderer.removeListener('task-failed', h);
+    },
     // A6: kapatma Windows tarafından engellendi (açık uygulamalar onay bekliyor).
-    onShutdownVetoed: (callback) => ipcRenderer.on('shutdown-vetoed', (event, data) => callback(data)),
-    onSystemResumed: (callback) => ipcRenderer.on('system-resumed', () => callback()),
-    onRequestAutonomyChange: (callback) => ipcRenderer.on('request-autonomy-change', (event, mode) => callback(mode)),
-    onRequestTrayPinAction: (callback) => ipcRenderer.on('request-tray-pin-action', (event, reason) => callback(reason)),
+    onShutdownVetoed: (callback) => {
+        const h = (event, data) => callback(data);
+        ipcRenderer.on('shutdown-vetoed', h);
+        return () => ipcRenderer.removeListener('shutdown-vetoed', h);
+    },
+    onSystemResumed: (callback) => {
+        const h = () => callback();
+        ipcRenderer.on('system-resumed', h);
+        return () => ipcRenderer.removeListener('system-resumed', h);
+    },
+    onSystemThemeChanged: (callback) => {
+        const h = (event, data) => callback(data);
+        ipcRenderer.on('system-theme-changed', h);
+        return () => ipcRenderer.removeListener('system-theme-changed', h);
+    },
+    onUpdateStateChanged: (callback) => {
+        const h = (event, data) => callback(data);
+        ipcRenderer.on('update-state-changed', h);
+        return () => ipcRenderer.removeListener('update-state-changed', h);
+    },
+    onRequestAutonomyChange: (callback) => {
+        const h = (event, mode) => callback(mode);
+        ipcRenderer.on('request-autonomy-change', h);
+        return () => ipcRenderer.removeListener('request-autonomy-change', h);
+    },
+    onRequestTrayPinAction: (callback) => {
+        const h = (event, reason) => callback(reason);
+        ipcRenderer.on('request-tray-pin-action', h);
+        return () => ipcRenderer.removeListener('request-tray-pin-action', h);
+    },
     togglePauseAll: (pin) => ipcRenderer.invoke('toggle-pause-all', pin === undefined ? undefined : { pin }),
     quitApp: (pin) => ipcRenderer.invoke('quit-app', pin === undefined ? undefined : { pin }),
-    onRequestAiSilence: (callback) => ipcRenderer.on('request-ai-silence', (event, until) => callback(until)),
-    onWarningStarted: (callback) => ipcRenderer.on('warning-started', (event, data) => callback(data)),
-    onWarningTick: (callback) => ipcRenderer.on('warning-tick', (event, data) => callback(data)),
+    onRequestAiSilence: (callback) => {
+        const h = (event, until) => callback(until);
+        ipcRenderer.on('request-ai-silence', h);
+        return () => ipcRenderer.removeListener('request-ai-silence', h);
+    },
+    onWarningStarted: (callback) => {
+        const h = (event, data) => callback(data);
+        ipcRenderer.on('warning-started', h);
+        return () => ipcRenderer.removeListener('warning-started', h);
+    },
+    onWarningTick: (callback) => {
+        const h = (event, data) => callback(data);
+        ipcRenderer.on('warning-tick', h);
+        return () => ipcRenderer.removeListener('warning-tick', h);
+    },
     // WBS-9.4: Banner kapatma - üç terminal olaydan biri.
     // D-04: abonelikten çıkma fonksiyonu döner; HMR/yeniden yüklemede listener birikmez.
     onWarningEnded: (callback) => {

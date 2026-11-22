@@ -1,5 +1,5 @@
 /**
- * inventory.test.mjs — FAZ B
+ * inventory.test.mjs - FAZ B
  * powercfg -a ayrıştırma, NIC/subnet hesabı, toplama, offline eşiği.
  */
 import { describe, it, expect, vi } from 'vitest';

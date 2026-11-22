@@ -1,10 +1,10 @@
 /**
- * dom-token-safety.test.mjs — classList token sözleşmesi.
+ * dom-token-safety.test.mjs - classList token sözleşmesi.
  *
  * Gerçek hata (bu sürümde bulundu): kontrast düzeltmesi sırasında
  * `classList.add/remove/toggle` çağrılarına `'text-primary dark:text-primary-light'`
  * gibi BOŞLUK İÇEREN tek bir string verildi. `DOMTokenList` boşluk kabul etmez;
- * geçersiz token'ı sessizce reddeder — hata fırlatmaz, hiçbir şey yapmaz.
+ * geçersiz token'ı sessizce reddeder - hata fırlatmaz, hiçbir şey yapmaz.
  *
  * Kullanıcıya etkisi:
  *   - Görev filtresi (Tümü/Aktif) seçili durumu görsel olarak bozulurdu
@@ -37,7 +37,7 @@ function readLines(rel) {
     return fs.readFileSync(abs, 'utf8').split(/\r?\n/);
 }
 
-describe('classList güvenliği — token tek tek verilmeli', () => {
+describe('classList güvenliği - token tek tek verilmeli', () => {
     it('classList çağrılarında boşluk içeren token yok', () => {
         const offenders = [];
         for (const rel of SOURCES) {

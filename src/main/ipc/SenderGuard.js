@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * SenderGuard.js — WP-10.T1
+ * SenderGuard.js - WP-10.T1
  * Her IPC çağrısının çerçeve origin'i `app://powerpilot` olmalıdır.
  * `file://`, `http://`, `https://` ve boş origin reddedilir.
  */

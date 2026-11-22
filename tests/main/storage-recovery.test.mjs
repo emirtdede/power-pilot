@@ -1,5 +1,5 @@
 /**
- * Bozuk veri kurtarma — "program bozuk, hiçbir şey yapamıyorum" senaryosu.
+ * Bozuk veri kurtarma - "program bozuk, hiçbir şey yapamıyorum" senaryosu.
  *
  * Bulgu (P1): bozuk `powerpilot.db` veya bozuk eski `powerpilot_data.json`
  * durumunda uygulama açılıyor ama HİÇBİR görev oluşturulamıyordu
@@ -11,10 +11,10 @@
  * temiz depoyla açılır ve kullanılabilir olur. Eski JSON yolu zaten
  * `backups/powerpilot_data_corrupted_*.json` yedeği alır.
  *
- * Ölçüm (öncesi — scratch/probe-corrupt-data.cjs):
+ * Ölçüm (öncesi - scratch/probe-corrupt-data.cjs):
  *   bozuk DB   → görev oluşturma false, karantina yok
  *   bozuk JSON → uygulama kullanılamaz, yedek yok
- * Ölçüm (sonrası): 9/9 PASS — görev oluşturma true, karantina + yedek mevcut.
+ * Ölçüm (sonrası): 9/9 PASS - görev oluşturma true, karantina + yedek mevcut.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs';
@@ -114,7 +114,7 @@ describe('StorageRecovery.listBackups', () => {
     });
 });
 
-describe('StorageService — kurtarma yolu bağlı', () => {
+describe('StorageService - kurtarma yolu bağlı', () => {
     const svc = fs.readFileSync(
         path.join(here, '../../src/main/services/StorageService.js'),
         'utf8'

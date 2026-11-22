@@ -1,5 +1,5 @@
 /**
- * console-store.test.mjs — WP-03.T1..T8
+ * console-store.test.mjs - WP-03.T1..T8
  * T-CON-01..07: bozuk JSON, teslim/makbuz durum makinesi, ajan idempotency,
  * tek-uçuş sync, 100 ajan performansı, yedek/geri yükleme ve yedek sırasında
  * heartbeat gecikmesi.
@@ -62,7 +62,7 @@ afterEach(() => {
     for (const d of dirs.splice(0)) fs.rmSync(d, { recursive: true, force: true });
 });
 
-describe('ConsoleStore — WP-03', () => {
+describe('ConsoleStore - WP-03', () => {
     it('T-CON-01: bozuk JSON → bakım modu, kaynak korunur, bozuk yedek alınır', () => {
         const dir = freshDir();
         const source = path.join(dir, 'console-store.json');

@@ -1,5 +1,5 @@
 /**
- * audit-checkpoint.test.mjs — günlük audit checkpoint üretimi/doğrulaması
+ * audit-checkpoint.test.mjs - günlük audit checkpoint üretimi/doğrulaması
  *
  * Dosyalar GEÇİCİ dizinde gerçek fs ile yazılır; Event Log yazımı enjekte
  * edilir (PowerShell çalıştırılmaz).
@@ -24,7 +24,7 @@ const rows = (n = 2) => Array.from({ length: n }, (_, i) => ({
     recordHmac: `hmac-${i + 1}`
 }));
 
-describe('AuditCheckpoint — yazma', () => {
+describe('AuditCheckpoint - yazma', () => {
     it('dir yoksa hiçbir şey yazmaz', () => {
         const cp = new AuditCheckpoint({});
         expect(cp.ensureToday(rows())).toBeNull();
@@ -96,7 +96,7 @@ describe('AuditCheckpoint — yazma', () => {
     });
 });
 
-describe('AuditCheckpoint — doğrulama', () => {
+describe('AuditCheckpoint - doğrulama', () => {
     it('boş girdi ok kabul edilir', () => {
         const cp = new AuditCheckpoint({ dir });
         expect(cp.verify([])).toEqual({ ok: true, records: 0 });

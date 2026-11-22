@@ -1,5 +1,5 @@
 /**
- * after-pack.cjs — WP-15.T1
+ * after-pack.cjs - WP-15.T1
  * electron-builder 26'nın şema sürümü `wasmTrapHandlers` fuse'unu tanımıyor;
  * kalan fuses `electronFuses` ile, bu fuse ise doğrudan @electron/fuses ile
  * paketleme sonrası (imzadan önce) çevrilir.

@@ -1,5 +1,5 @@
 /**
- * Redact.js — WP-04.T6
+ * Redact.js - WP-04.T6
  * Log/denetim kayıtlarında sır alanlarını ve gömülü kimlik bilgilerini maskeler.
  * Kural: bilinmeyen nesnelerde derin kopya; hassas anahtar adları ve
  * "authorization: ...", "pin=...", PEM blokları metin içinde de maskelenir.

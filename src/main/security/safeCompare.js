@@ -1,5 +1,5 @@
 /**
- * safeCompare.js — WP-01.T8 / M-01
+ * safeCompare.js - WP-01.T8 / M-01
  * Uzunluk farkından zamanlama oracle'ı sızdırmamak için iki girdi de SHA-256
  * ile 32 bayta normalize edilir ve crypto.timingSafeEqual bir kez çağrılır.
  * Dönüşüm hataları istisna fırlatmaz; yalnızca false döner.

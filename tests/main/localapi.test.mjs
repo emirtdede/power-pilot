@@ -1,5 +1,5 @@
 /**
- * localapi.test.mjs — WBS-0.3 / TS-0.3
+ * localapi.test.mjs - WBS-0.3 / TS-0.3
  * Güç rotaları: 6/6 parite, bilinmeyen path 404.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';

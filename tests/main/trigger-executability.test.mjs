@@ -1,5 +1,5 @@
 /**
- * trigger-executability.test.mjs — P1-6 (üçüncü tur) kapısı
+ * trigger-executability.test.mjs - P1-6 (üçüncü tur) kapısı
  *
  * Denetim kusuru: `TRIGGER_TYPE` 13 tür ilan ediyordu ve `validateTaskData`
  * hepsini kabul ediyordu. Ama `TaskManager.evaluateTasks` yalnızca

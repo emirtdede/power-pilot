@@ -1,5 +1,5 @@
 /**
- * taskmanager-grace-approval.test.mjs — P1-6
+ * taskmanager-grace-approval.test.mjs - P1-6
  *
  * İki plasebo ayarın artık GERÇEK davranış olduğunu kanıtlar:
  *
@@ -13,7 +13,7 @@
  * 2. `remoteApprovalRequired`: uzaktan gelen görev (local_api/n8n/console)
  *    yerel insan onayı olmadan çalışmaz; sayaç dolarsa İPTAL edilir.
  *
- * GÜVENLİK: hiçbir OS güç komutu çalıştırılmaz — `PowerService` sahtedir.
+ * GÜVENLİK: hiçbir OS güç komutu çalıştırılmaz - `PowerService` sahtedir.
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
 
@@ -67,7 +67,7 @@ function harness({ settings = {}, warning, power } = {}) {
     };
 }
 
-describe('P1-6 graceSeconds — gerçek yerel gecikme', () => {
+describe('P1-6 graceSeconds - gerçek yerel gecikme', () => {
     it('shutdown için ayarlardaki graceSeconds PowerService’e geçer', async () => {
         const h = harness({ settings: { graceSeconds: 60 } });
         const task = h.tm.createTask({
@@ -175,7 +175,7 @@ describe('P1-6 graceSeconds — gerçek yerel gecikme', () => {
     });
 });
 
-describe('P1-6 remoteApprovalRequired — uzaktan görevde yerel onay', () => {
+describe('P1-6 remoteApprovalRequired - uzaktan görevde yerel onay', () => {
     it('ayar kapalıyken uzak görev onay penceresi açmaz', async () => {
         const showWarning = vi.fn(async () => ({ proceed: true }));
         const h = harness({ settings: {}, warning: { getActiveState: () => null, showWarning, cancelActiveWarning: vi.fn(), snoozeActiveWarning: vi.fn() } });

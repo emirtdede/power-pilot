@@ -1,5 +1,5 @@
 /**
- * directory-idle-core.test.mjs — klasör sabitliği taraması (saf fs)
+ * directory-idle-core.test.mjs - klasör sabitliği taraması (saf fs)
  * GEÇİCİ dizinlerde; sistem dizinlerine dokunulmaz.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -14,7 +14,7 @@ const safeRm = (t) => { try { fs.rmSync(t, { recursive: true, force: true, maxRe
 beforeEach(() => { dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-diridle-')); });
 afterEach(() => safeRm(dir));
 
-describe('DirectoryIdle — sabitler ve yardımcılar', () => {
+describe('DirectoryIdle - sabitler ve yardımcılar', () => {
     it('kısmi uzantılar tanınır', () => {
         expect(PARTIAL_EXT.has('.crdownload')).toBe(true);
         expect(isPartialFile('a.CRDOWNLOAD')).toBe(true);
@@ -29,7 +29,7 @@ describe('DirectoryIdle — sabitler ve yardımcılar', () => {
     });
 });
 
-describe('DirectoryIdle — scanDirectory', () => {
+describe('DirectoryIdle - scanDirectory', () => {
     it('olmayan yol DIRECTORY_UNAVAILABLE', () => {
         expect(scanDirectory(path.join(dir, 'yok'))).toMatchObject({ ok: false, code: 'DIRECTORY_UNAVAILABLE' });
     });

@@ -1,5 +1,5 @@
 /**
- * secrets.test.mjs — WP-04.T8
+ * secrets.test.mjs - WP-04.T8
  * T-SEC-01..09: düz metin taraması, yanlış kullanıcı/bozuk cipher, ACL,
  * PIN kilidi, Argon2id parametreleri, yedek temizliği, re-encrypt,
  * headless safeStorage ve log/audit redaksiyonu.

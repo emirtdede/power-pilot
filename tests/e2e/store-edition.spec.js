@@ -1,5 +1,5 @@
 /**
- * store-edition.spec.js — Microsoft Store (MSIX) kapsamı
+ * store-edition.spec.js - Microsoft Store (MSIX) kapsamı
  *
  * Store dağıtımında autostart Windows Başlangıç ayarlarına devredilir;
  * LAN erişimi, konsol ajanı ve servis modu kapalıdır. PP_STORE_BUILD=1

@@ -1,5 +1,5 @@
 /**
- * data-wipe.spec.js — "Verilerimi sil" akışı (Store politikası 10.2.7).
+ * data-wipe.spec.js - "Verilerimi sil" akışı (Store politikası 10.2.7).
  *
  * Doğrular:
  *  1. Ayarlar > Gizlilik kartı görünür ve düğme erişilebilir.

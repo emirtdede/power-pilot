@@ -1,5 +1,5 @@
 /**
- * DataWipe.js — "Verilerimi sil" akışı (Store politikası 10.2.7).
+ * DataWipe.js - "Verilerimi sil" akışı (Store politikası 10.2.7).
  *
  * Amaç: kullanıcı uygulamayı kaldırdığında/gizliliğini sıfırlamak istediğinde
  * tüm yerel verinin (görevler, ayarlar, geçmiş, anahtarlar, yedekler, modeller,
@@ -124,7 +124,7 @@ function removeWithRetry(target, { rm = fs.rmSync, attempts = 3 } = {}) {
  * yedekler, loglar, modeller …) silindiğinde true olur. Chromium'un kendi
  * çalışma klasörleri (GPUCache, DawnGraphiteCache, Network …) uygulama açıkken
  * kilitli olabilir ve yeniden oluşturulur; bunlar `optionalFailed` olarak
- * raporlanır ve kullanıcıya hata gösterilmez — içerikleri
+ * raporlanır ve kullanıcıya hata gösterilmez - içerikleri
  * `session.clearStorageData()` ile zaten boşaltılmıştır.
  * @returns {{ok:boolean, root:string, removed:string[], failed:Array<{path:string,error:string}>, optionalFailed:Array<{path:string,error:string}>}}
  */

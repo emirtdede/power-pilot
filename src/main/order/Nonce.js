@@ -1,5 +1,5 @@
 /**
- * Nonce.js — WP-01 / WP-03 / WP-11 ortak nonce semantiği.
+ * Nonce.js - WP-01 / WP-03 / WP-11 ortak nonce semantiği.
  * Nonce yalnızca sunucu tarafında üretilir; istemciden gelen değer biçim
  * doğrulamasından geçmeden kuyruğa/işaretlemeye alınmaz.
  */

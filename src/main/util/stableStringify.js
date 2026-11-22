@@ -1,5 +1,5 @@
 /**
- * stableStringify.js — deterministik JSON serileştirme (tek kaynak).
+ * stableStringify.js - deterministik JSON serileştirme (tek kaynak).
  *
  * Neden: nesne anahtarlarının sırası JavaScript motoruna ve oluşturulma
  * sırasına göre değişebilir. İmza (HMAC/Ed25519) ve idempotency anahtarı

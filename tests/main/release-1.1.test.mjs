@@ -1,5 +1,5 @@
 /**
- * release-1.1.test.mjs — WP-15 (T1/T2/T4/T7/T8) statik yayın kapısı.
+ * release-1.1.test.mjs - WP-15 (T1/T2/T4/T7/T8) statik yayın kapısı.
  */
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
@@ -14,7 +14,7 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const pkg = require('../../package.json');
 const mainJs = fs.readFileSync(path.join(ROOT, 'main.js'), 'utf8');
 
-describe('WP-15.T1 — Electron fuses', () => {
+describe('WP-15.T1 - Electron fuses', () => {
     it('tüm zorunlu fuses sertleştirilmiş değerde', () => {
         expect(pkg.build.electronFuses).toMatchObject({
             runAsNode: false,
@@ -35,7 +35,7 @@ describe('WP-15.T1 — Electron fuses', () => {
     });
 });
 
-describe('WP-15.T1b — paket hijyeni (ASAR integrity)', () => {
+describe('WP-15.T1b - paket hijyeni (ASAR integrity)', () => {
     it('build çıktıları ve test artefaktları app.asar dışında tutulur', () => {
         // Regresyon: derleme çıktıları paketlenirse asar her derlemede değişir ve
         // gömülü ASAR integrity özeti ile çakışıp uygulama açılışta çöker.
@@ -51,7 +51,7 @@ describe('WP-15.T1b — paket hijyeni (ASAR integrity)', () => {
     });
 });
 
-describe('WP-15.T2 — kod imzası', () => {
+describe('WP-15.T2 - kod imzası', () => {
     it('HSM/TPM sertifika deposu, SHA-256 ve HTTPS RFC 3161 kullanır', () => {
         const sign = pkg.build.win.signtoolOptions;
         expect(sign.signingHashAlgorithms).toEqual(['sha256']);
@@ -93,7 +93,7 @@ describe('WP-15.T2 — kod imzası', () => {
     });
 });
 
-describe('WP-15.T4 — yük/soak testi', () => {
+describe('WP-15.T4 - yük/soak testi', () => {
     it('100 ajan varsayılanı, kayıp/RSS kabul eşikleri ve soak raporu', () => {
         const script = fs.readFileSync(path.join(ROOT, 'scripts/load-test.mjs'), 'utf8');
         expect(script).toMatch(/arg\('agents', 100\)/);
@@ -105,7 +105,7 @@ describe('WP-15.T4 — yük/soak testi', () => {
     });
 });
 
-describe('WP-15.T7/T8 — sürüm, SBOM, yayın manifesti', () => {
+describe('WP-15.T7/T8 - sürüm, SBOM, yayın manifesti', () => {
     it('sürüm 1.0.0 ve changelog güncel', () => {
         expect(pkg.version).toBe('1.0.0');
         const changelog = fs.readFileSync(path.join(ROOT, 'CHANGELOG.md'), 'utf8');
@@ -124,7 +124,7 @@ describe('WP-15.T7/T8 — sürüm, SBOM, yayın manifesti', () => {
     });
 });
 
-describe('WP-10.T2/T6/T8 — CSP ve dış bağlantı allowlist', () => {
+describe('WP-10.T2/T6/T8 - CSP ve dış bağlantı allowlist', () => {
     it('app:// yanıtlarına CSP ve güvenlik başlıkları eklenir', () => {
         expect(mainJs).toMatch(/onHeadersReceived/);
         expect(mainJs).toMatch(/Content-Security-Policy/);

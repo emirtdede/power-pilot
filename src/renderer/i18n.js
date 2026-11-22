@@ -1,5 +1,5 @@
 /**
- * i18n.js — WP-14.T2 + 73-language catalog (Dev Cleaner parity)
+ * i18n.js - WP-14.T2 + 73-language catalog (Dev Cleaner parity)
  * Yalnızca aktif dil sözlüğü IPC ile yüklenir. 73 dilin tamamı listede
  * seçilebilir; çevirisi henüz diskte bulunmayan diller İngilizce (en)
  * fallback sözlüğünü kullanır.
@@ -163,7 +163,7 @@ let translations = {};
             if (root && root.classList && typeof root.classList.remove === 'function') {
                 root.classList.remove('i18n-pending');
             }
-        } catch (_) { /* sınırlı DOM (test/VM) — kapı yoksa yapılacak iş yok */ }
+        } catch (_) { /* sınırlı DOM (test/VM) - kapı yoksa yapılacak iş yok */ }
     };
     if (typeof setTimeout === 'function') setTimeout(revealSkeleton, 2000);
 

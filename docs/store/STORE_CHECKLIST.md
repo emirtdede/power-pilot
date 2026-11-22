@@ -1,4 +1,4 @@
-# Power Pilot — Mağaza Yayın Kontrol Listesi (WBS-10.2/10.3)
+# Power Pilot - Mağaza Yayın Kontrol Listesi (WBS-10.2/10.3)
 
 ## Otomatik (CI/kod ile doğrulananlar)
 
@@ -28,7 +28,7 @@
   Center notuna yapıştırıldı; uygulama-içi Bildir düğmesi test edildi.
 - [ ] **İmza:** NSIS için Azure Trusted Signing; Store içi Microsoft imzası
   (MSIX Store'a imzasız verilebilir, Microsoft yeniden imzalar).
-  Not: MSIX imzası bu makinede denenemedi — gömülü eski `signtool.exe`
+  Not: MSIX imzası bu makinede denenemedi - gömülü eski `signtool.exe`
   HTTPS zaman damgasını desteklemiyor ("A required function is not present").
   Paket üretimi ve manifest doğrulaması başarılı; yalnızca imzalama adımı
   gerçek mağaza sertifikası + güncel signtool ile yapılır.
@@ -50,7 +50,7 @@
 ## Bilerek Ertelenenler (gerekçeli)
 
 - **Otomatik güncelleme (electron-updater):** Yayın akışı (feed URL)
-  kararı olmadan bağlanmadı — feedsiz bağlamak ölü kod olurdu.
+  kararı olmadan bağlanmadı - feedsiz bağlamak ölü kod olurdu.
   Karar verilince tek adım: `repository.url` + `publish` yapılandırması
   ve `autoUpdater.checkForUpdatesAndNotify()` bağlantısı.
 - **Renderer bölme + Electron 43:** Bkz. F11.6 (aşağıda, ayrı faz).

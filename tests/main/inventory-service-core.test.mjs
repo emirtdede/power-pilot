@@ -1,5 +1,5 @@
 /**
- * inventory-service-core.test.mjs — envanter toplama + saf ayrıştırıcılar
+ * inventory-service-core.test.mjs - envanter toplama + saf ayrıştırıcılar
  * Tüm alt süreçler ve os çağrıları enjekte edilir (spawn yok).
  */
 import { describe, it, expect, vi } from 'vitest';
@@ -53,7 +53,7 @@ const defaultMap = () => ({
     'reg.exe': (args, cb) => cb(null, '    ScreenSaveTimeOut    REG_SZ    600')
 });
 
-describe('InventoryService — saf yardımcılar', () => {
+describe('InventoryService - saf yardımcılar', () => {
     it('parseSleepStates', () => {
         const s = InventoryService.parseSleepStates(POWERCFG_A);
         expect(s).toMatchObject({ standbyS3: true, hibernate: true, fastStartup: true, standbyS0: true, rawAvailable: true });
@@ -113,7 +113,7 @@ describe('InventoryService — saf yardımcılar', () => {
     });
 });
 
-describe('InventoryService — toplama', () => {
+describe('InventoryService - toplama', () => {
     it('getSleepStates hata durumunda unknown', async () => {
         const svc = new InventoryService({ execFn: (file, args, opts, cb) => cb(new Error('x'), ''), osModule: fakeOs() });
         await expect(svc.getSleepStates()).resolves.toEqual({ unknown: true });

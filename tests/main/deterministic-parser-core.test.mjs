@@ -1,5 +1,5 @@
 /**
- * deterministic-parser.test.mjs — Türkçe kural tabanlı ayrıştırıcı (K1b)
+ * deterministic-parser.test.mjs - Türkçe kural tabanlı ayrıştırıcı (K1b)
  */
 import { describe, it, expect } from 'vitest';
 import { parse, parseDurationMs, parseClockTarget, parseCount, parseCondition, findAction } from '../../src/main/services/DeterministicParser.js';

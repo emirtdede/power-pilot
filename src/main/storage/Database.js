@@ -1,5 +1,5 @@
 /**
- * Database.js — WP-11.T1
+ * Database.js - WP-11.T1
  * better-sqlite3 sarmalayıcısı: PRAGMA'lar, IMMEDIATE yazma transaction'ları,
  * quick_check, hata sınıfları ve güvenli kapatma.
  *

@@ -1,5 +1,5 @@
 /**
- * webhook-ssrf.test.mjs — WP-12.T1–T4, T-NET-01..05
+ * webhook-ssrf.test.mjs - WP-12.T1-T4, T-NET-01..05
  * SSRF kapısı, DNS pinleme, HTTPS sınırı, HMAC ve retry davranışı.
  */
 import { describe, it, expect, vi } from 'vitest';
@@ -50,7 +50,7 @@ function respond (req, onResponse, status, body = '') {
     });
 }
 
-describe('SsrfGuard — adres sınıfları (T-NET-01/02)', () => {
+describe('SsrfGuard - adres sınıfları (T-NET-01/02)', () => {
     it('özel/loopback/link-local/CGNAT/mapped/reserved reddedilir', () => {
         const blocked = [
             '127.0.0.1', '10.1.2.3', '172.16.0.1', '192.168.1.10',

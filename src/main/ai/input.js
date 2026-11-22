@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * input.js — WP-10.T9
+ * input.js - WP-10.T9
  * AI IPC girdileri için tek noktadan normalize + uzunluk sınırı.
  */
 

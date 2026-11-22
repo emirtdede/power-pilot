@@ -1,5 +1,5 @@
 /**
- * TaskSchedulerBridge.js — WP-05
+ * TaskSchedulerBridge.js - WP-05
  * Windows Görev Zamanlayıcı (schtasks.exe) yedeği: uygulama kapalıyken bile
  * koşulsuz zamanlanmış görevlerin kaçmamasını sağlar.
  *
@@ -215,7 +215,7 @@ class TaskSchedulerBridge {
     }
 
     /**
-     * ADR-08: argüman dizisi — kabuk yorumlaması yok.
+     * ADR-08: argüman dizisi - kabuk yorumlaması yok.
      * Görev tanımı XML dosyasından verilir; `/sd` tarih biçimi (yerel ayara
      * bağımlı) artık kullanılmıyor.
      */

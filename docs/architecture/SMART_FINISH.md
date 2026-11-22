@@ -1,4 +1,4 @@
-# Power Pilot — Smart Finish (Koşul Motoru)
+# Power Pilot - Smart Finish (Koşul Motoru)
 
 Smart Finish, güç eylemini yalnızca süreye bağlı çalıştırmaz; bilgisayardaki
 gerçek işin bittiğini ölçer. `SmartFinishEngine` koşulları **AND/OR** mantığıyla

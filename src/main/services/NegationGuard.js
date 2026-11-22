@@ -1,5 +1,5 @@
 /**
- * NegationGuard.js — WP-06.T1 (K-03)
+ * NegationGuard.js - WP-06.T1 (K-03)
  * Türkçe olumsuzluk koruması. "Kapatma", "kapatmayın", "kapanmasın" gibi
  * cümlelerde yıkıcı güç eylemi ÖNERİLMEZ ve ÇALIŞTIRILMAZ.
  *

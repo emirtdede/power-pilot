@@ -1,5 +1,5 @@
 /**
- * database-lock.test.mjs — O-09
+ * database-lock.test.mjs - O-09
  * Veri dizini kilidi: atomik oluşturma, canlı PID reddi, ölü/bozuk kilit devralma.
  */
 import { describe, it, expect, afterEach } from 'vitest';

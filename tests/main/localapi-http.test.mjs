@@ -1,5 +1,5 @@
 /**
- * localapi-http.test.mjs — LocalApiService HTTP katmanı (FAZ A/B)
+ * localapi-http.test.mjs - LocalApiService HTTP katmanı (FAZ A/B)
  *
  * Gerçek soket yalnızca `start/stop/restart` testlerinde ve 127.0.0.1 üzerinde
  * kullanılır. İstek/yönlendirme testleri `handleRequest`'e sahte req/res ile
@@ -110,7 +110,7 @@ async function call(svc, opts) {
     return { res, req, json: (() => { try { return JSON.parse(res.body); } catch (_) { return null; } })() };
 }
 
-describe('LocalApiService — static yardımcılar', () => {
+describe('LocalApiService - static yardımcılar', () => {
     it('roleOf bilinmeyen/boş rolde null (fail-closed)', () => {
         expect(LocalApiService.roleOf({ localApiKeyRole: 'admin' })).toBe('admin');
         expect(LocalApiService.roleOf({ localApiKeyRole: 'root' })).toBeNull();
@@ -140,7 +140,7 @@ describe('LocalApiService — static yardımcılar', () => {
     });
 });
 
-describe('LocalApiService — yapılandırma / status', () => {
+describe('LocalApiService - yapılandırma / status', () => {
     it('TLS materyali yoksa resolveTlsMaterial null', () => {
         const { svc } = makeService();
         expect(svc.resolveTlsMaterial({})).toBeNull();
@@ -217,7 +217,7 @@ describe('LocalApiService — yapılandırma / status', () => {
     });
 });
 
-describe('LocalApiService — kimlik doğrulama ve ACL', () => {
+describe('LocalApiService - kimlik doğrulama ve ACL', () => {
     it('loopback dışı + boş allowlist → 403 IP_NOT_ALLOWED', async () => {
         const { svc } = makeService();
         const { res, json } = await call(svc, { headers: authHeaders(), ip: '10.1.2.3' });
@@ -284,7 +284,7 @@ describe('LocalApiService — kimlik doğrulama ve ACL', () => {
     });
 });
 
-describe('LocalApiService — istek gövdesi ve idempotency', () => {
+describe('LocalApiService - istek gövdesi ve idempotency', () => {
     it('POST JSON olmayan içerik tipi → 415', async () => {
         const { svc } = makeService();
         const { res, json } = await call(svc, { method: 'POST', url: '/api/v1/tasks/timer', headers: authHeaders({ 'content-type': 'text/plain' }), body: {} });
@@ -356,7 +356,7 @@ describe('LocalApiService — istek gövdesi ve idempotency', () => {
     });
 });
 
-describe('LocalApiService — rol kapısı ve çekirdek uçlar', () => {
+describe('LocalApiService - rol kapısı ve çekirdek uçlar', () => {
     const asRole = (role) => makeService({ store: settings({ localApiKeyRole: role }) });
 
     it('viewer GET /status izinli, audit 403, POST 403', async () => {
@@ -471,7 +471,7 @@ describe('LocalApiService — rol kapısı ve çekirdek uçlar', () => {
     });
 });
 
-describe('LocalApiService — kurumsal uçlar', () => {
+describe('LocalApiService - kurumsal uçlar', () => {
     const h = () => authHeaders({ 'content-type': 'application/json' });
 
     it('GET /inventory: servis yoksa 503, varsa 200, hata 500', async () => {
@@ -592,7 +592,7 @@ describe('LocalApiService — kurumsal uçlar', () => {
     });
 });
 
-describe('LocalApiService — sunucu yaşam döngüsü (127.0.0.1)', () => {
+describe('LocalApiService - sunucu yaşam döngüsü (127.0.0.1)', () => {
     const started = [];
     afterEach(async () => {
         for (const svc of started.splice(0)) {

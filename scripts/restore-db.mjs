@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * restore-db.mjs — WP-11.T11
+ * restore-db.mjs - WP-11.T11
  * Şifreli `powerpilot.db` yedeğini doğrulayıp geri yükler.
  *
  * Kullanım:

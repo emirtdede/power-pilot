@@ -1,5 +1,5 @@
 /**
- * data-integrity.test.mjs — WP-11.T12
+ * data-integrity.test.mjs - WP-11.T12
  * T-STO-07..14: audit zinciri/checkpoint, enerji eşleştirme, muafiyet
  * penceresi, nonce, yedek şifreleme ve utilityProcess izolasyonu.
  */
@@ -31,7 +31,7 @@ const toMs = (ns) => ns / 1e6;
  *
  * `monitorEventLoopDelay`, tek bir uzun senkron bloğu da yakalar (setInterval
  * tabanlı örnekleme kaçırır). Bu taban, platformun süreç-açma fiyatıdır
- * (Windows'ta Defender/CreateProcess nedeniyle 77–285 ms olabilir) ve
+ * (Windows'ta Defender/CreateProcess nedeniyle 77-285 ms olabilir) ve
  * yedeğin kendi ek yükünü bundan ayırmak için kullanılır.
  */
 function measureSpawnBaseline() {
@@ -186,25 +186,25 @@ describe('WP-11 veri bütünlüğü', () => {
     });
 
     /**
-     * T-STO-13 — yedeğin ANA SÜREÇTE yapılmadığını kanıtlar.
+     * T-STO-13 - yedeğin ANA SÜREÇTE yapılmadığını kanıtlar.
      *
      * ESKİ ÖLÇÜM KUSURLUYDU: `event loop lag < 100 ms` mutlak eşiği, Windows'ta
      * `CreateProcess` maliyetinin altında kalıyordu. Ölçümle kanıtlandı: işi
      * hiç yapmayan boş bir `node -e "process.exit(0)"` çocuk süreci bile aynı
-     * makinede ana süreçte 77–285 ms gecikme üretiyor (Defender/CreateProcess).
+     * makinede ana süreçte 77-285 ms gecikme üretiyor (Defender/CreateProcess).
      * Yani 100 ms eşiği, DOĞRU bir uygulamada bile rastgele kırılıyordu;
      * koruduğu şeyi (izolasyon) değil, işletim sisteminin süreç açma fiyatını
      * ölçüyordu.
      *
      * Yerine iki kesin değişmez kondu:
-     *  A) YAPISAL: ana-süreç işçisi (`DbWorker`) yedeği kendisi yapamaz —
+     *  A) YAPISAL: ana-süreç işçisi (`DbWorker`) yedeği kendisi yapamaz -
      *     `backupDatabase`'i içe aktaramaz/çağıramaz, yalnızca süreç açar.
      *     Bu deterministiktir ve asıl kusuru (işi ana iş parçacığına almak)
      *     doğrudan yakalar.
      *  B) DAVRANIŞSAL: gerçek yedek çocuk süreçte TAMAMLANIR, şifreli dosya
      *     üretir (`quickCheck` çocuktan gelir).
      *  C) YANIT VEREBİLİRLİK: ana sürecin ek bloklaması, aynı makinede
-     *     ölçülen süreç-açma tabanına göre sınırlanır — platform maliyeti
+     *     ölçülen süreç-açma tabanına göre sınırlanır - platform maliyeti
      *     ölçümden çıkarılır, bizim kodumuzun ek yükü kalır.
      */
     it('T-STO-13: 10k görev yedeği ana süreçte yapılmaz (izolasyon)', async () => {

@@ -1,5 +1,5 @@
 /**
- * template-transfer.test.mjs — Faz 3 şablon içe/dışa aktarma kuralları
+ * template-transfer.test.mjs - Faz 3 şablon içe/dışa aktarma kuralları
  *
  * Dışa aktarım: yalnızca kullanıcı şablonları, sürümlü zarf.
  * İçe aktarım: boyut/sözdizimi/şema kapıları, sunucu tarafı kimlik üretimi,
@@ -16,7 +16,7 @@ const cloudTpl = {
     defaultConditionGroup: { operator: 'AND', conditions: [{ type: 'cpu_usage', operator: 'below', value: 10 }] }
 };
 
-describe('TemplateTransfer — dışa aktarım', () => {
+describe('TemplateTransfer - dışa aktarım', () => {
     it('yalnızca user_tpl_ kayıtlarını sürümlü zarfa koyar', () => {
         const payload = TemplateTransfer.collectExportable([
             { id: 'tpl_builtin', name: 'Hazır', action: 'sleep' },
@@ -37,7 +37,7 @@ describe('TemplateTransfer — dışa aktarım', () => {
     });
 });
 
-describe('TemplateTransfer — içe aktarım ayrıştırma', () => {
+describe('TemplateTransfer - içe aktarım ayrıştırma', () => {
     it('zarf ve düz dizi biçimlerini kabul eder', () => {
         const wrapped = TemplateTransfer.parseImportPayload(JSON.stringify({ templates: [cloudTpl] }));
         expect(wrapped.ok).toBe(true);
@@ -56,7 +56,7 @@ describe('TemplateTransfer — içe aktarım ayrıştırma', () => {
     });
 });
 
-describe('TemplateTransfer — birleştirme', () => {
+describe('TemplateTransfer - birleştirme', () => {
     it('geçerli şablonu yeni kimlikle kullanıcı şablonu olarak ekler', () => {
         const before = [{ id: 'tpl_builtin', name: 'Hazır', action: 'sleep' }];
         const merged = TemplateTransfer.mergeImportedTemplates([cloudTpl], before, 1700000000000);

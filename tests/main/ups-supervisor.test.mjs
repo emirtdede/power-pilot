@@ -1,5 +1,5 @@
 /**
- * ups-supervisor.test.mjs — P1-9
+ * ups-supervisor.test.mjs - P1-9
  *
  * UPS düşük-batarya gözetimi. Kanıtlanmış `upsmon` semantiği:
  * - `LB` + `OB` → geri sayım başlar, süre dolunca eylem uygulanır.

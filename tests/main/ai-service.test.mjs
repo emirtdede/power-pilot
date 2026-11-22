@@ -1,5 +1,5 @@
 /**
- * ai-service.test.mjs — WBS-7.3 / TS-7.3
+ * ai-service.test.mjs - WBS-7.3 / TS-7.3
  * AiService: sahte tamamlayıcı ile eşleme tablosu + davranış kapıları.
  * Gerçek model gerekmez; determinizm parametreleri iddia edilir.
  */

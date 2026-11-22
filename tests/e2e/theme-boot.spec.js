@@ -1,5 +1,5 @@
 /**
- * theme-boot.spec.js — PPX-021 / PPX-015
+ * theme-boot.spec.js - PPX-021 / PPX-015
  * TC-38, TC-39.
  *
  * Tema ilk boyamadan önce uygulanır (harici theme-boot.js, CSP uyumlu);

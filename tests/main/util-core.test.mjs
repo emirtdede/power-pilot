@@ -1,5 +1,5 @@
 /**
- * util-core.test.mjs — küçük yardımcı modüller (Redact/safeCompare/processNames/TimerRegistry)
+ * util-core.test.mjs - küçük yardımcı modüller (Redact/safeCompare/processNames/TimerRegistry)
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { redact, redactText, shouldMaskKey, REDACTED } from '../../src/main/security/Redact.js';

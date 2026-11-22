@@ -1,0 +1,191 @@
+﻿# Header, don't edit
+NLF v6
+# Start editing here
+# Language ID
+1087
+# Font and size - dash (-) means default
+-
+-
+# Codepage - dash (-) means ASCII code page
+1200
+# RTL - anything else than RTL means LTR
+-
+# Power Pilot custom NLF table
+# ^Branding
+Nullsoft Install System %s
+# ^SetupCaption
+$(^Name) орнату
+# ^UninstallCaption
+$(^Name) жою
+# ^LicenseSubCaption
+: License
+# ^ComponentsSubCaption
+: Орнату қалтасы
+# ^DirSubCaption
+: Орнату қалтасы
+# ^InstallingSubCaption
+: Орнатылуда
+# ^CompletedSubCaption
+: Аяқталды
+# ^UnComponentsSubCaption
+: Жойылуда
+# ^UnDirSubCaption
+: Орнату қалтасы
+# ^ConfirmSubCaption
+: Жойылуда
+# ^UninstallingSubCaption
+: Жойылуда
+# ^UnCompletedSubCaption
+: Аяқталды
+# ^BackBtn
+< &Артқа
+# ^NextBtn
+&Келесі >
+# ^AgreeBtn
+&Келісемін
+# ^AcceptBtn
+&Келісемін
+# ^DontAcceptBtn
+Бас тарту
+# ^InstallBtn
+&Орнату
+# ^UninstallBtn
+&Жою
+# ^CancelBtn
+Бас тарту
+# ^CloseBtn
+&Жабу
+# ^BrowseBtn
+&Шолу...
+# ^ShowDetailsBtn
+&Толығырақ көрсету
+# ^ClickNext
+Жалғастыру үшін Келесі түймесін басыңыз.
+# ^ClickInstall
+Орнатуды бастау үшін Орнату түймесін басыңыз.
+# ^ClickUninstall
+Жоюды бастау үшін Жою түймесін басыңыз.
+# ^Name
+Name
+# ^Completed
+Аяқталды
+# ^LicenseText
+Жалғастыру үшін Келесі түймесін басыңыз.
+# ^LicenseTextCB
+Жалғастыру үшін Келесі түймесін басыңыз.
+# ^LicenseTextRB
+Жалғастыру үшін Келесі түймесін басыңыз.
+# ^UnLicenseText
+Жалғастыру үшін Келесі түймесін басыңыз.
+# ^UnLicenseTextCB
+Жалғастыру үшін Келесі түймесін басыңыз.
+# ^UnLicenseTextRB
+Жалғастыру үшін Келесі түймесін басыңыз.
+# ^Custom
+Custom
+# ^ComponentsText
+Жалғастыру үшін Келесі түймесін басыңыз.
+# ^ComponentsSubText1
+Жалғастыру үшін Келесі түймесін басыңыз.
+# ^ComponentsSubText2_NoInstTypes
+Жалғастыру үшін Келесі түймесін басыңыз.
+# ^ComponentsSubText2
+Жалғастыру үшін Келесі түймесін басыңыз.
+# ^UnComponentsText
+Жалғастыру үшін Келесі түймесін басыңыз.
+# ^UnComponentsSubText1
+Жалғастыру үшін Келесі түймесін басыңыз.
+# ^UnComponentsSubText2_NoInstTypes
+Жалғастыру үшін Келесі түймесін басыңыз.
+# ^UnComponentsSubText2
+Жалғастыру үшін Келесі түймесін басыңыз.
+# ^DirText
+Орнатқыш $(^NameDA) қолданбасын төмендегі қалтаға орнатады. Басқа қалта таңдау үшін Шолу түймесін басыңыз. $_CLICK
+# ^DirSubText
+Мақсатты қалта
+# ^DirBrowseText
+$(^NameDA) орнатылатын қалтаны таңдаңыз:
+# ^UnDirText
+$(^NameDA) төмендегі қалтадан жойылады. $_CLICK
+# ^UnDirSubText
+""
+# ^UnDirBrowseText
+$(^NameDA) орнатылатын қалтаны таңдаңыз:
+# ^SpaceAvailable
+"Қолжетімді орын: "
+# ^SpaceRequired
+"Қажетті орын: "
+# ^UninstallingText
+$(^NameDA) төмендегі қалтадан жойылады. $_CLICK
+# ^UninstallingSubText
+Жойылатын жер:
+# ^FileError
+Error: \r\n\r\n$0
+# ^FileError_NoIgnore
+Error: \r\n\r\n$0
+# ^CantWrite
+"Error: "
+# ^CopyFailed
+Error
+# ^CopyTo
+"-> "
+# ^Registering
+"... "
+# ^Unregistering
+"... "
+# ^SymbolNotFound
+"Error: "
+# ^CouldNotLoad
+"Error: "
+# ^CreateFolder
+"+ "
+# ^CreateShortcut
+"+ "
+# ^CreatedUninstaller
+"+ "
+# ^Delete
+"- "
+# ^DeleteOnReboot
+"- "
+# ^ErrorCreatingShortcut
+"Error: "
+# ^ErrorCreating
+"Error: "
+# ^ErrorDecompressing
+Файлдарды ашу сәтсіз аяқталды. Орнатқышты қайта іске қосыңыз.
+# ^ErrorRegistering
+DLL Error
+# ^ExecShell
+"Exec: "
+# ^Exec
+"Exec: "
+# ^Extract
+"-> "
+# ^ErrorWriting
+"Error: "
+# ^InvalidOpcode
+Файлдарды ашу сәтсіз аяқталды. Орнатқышты қайта іске қосыңыз.
+# ^NoOLE
+"OLE: "
+# ^OutputFolder
+"-> "
+# ^RemoveFolder
+"- "
+# ^RenameOnReboot
+"-> "
+# ^Rename
+"-> "
+# ^Skipped
+"... "
+# ^CopyDetails
+Мәліметтерді көшіру
+# ^LogInstall
+Log
+# ^Byte
+B
+# ^Kilo
+ K
+# ^Mega
+ M
+# ^Giga
+ G

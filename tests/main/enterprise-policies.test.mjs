@@ -1,5 +1,5 @@
 /**
- * enterprise-policies.test.mjs — FAZ B
+ * enterprise-policies.test.mjs - FAZ B
  * 3 politika şablonu: doğrulama, göreve somutlaşma, WoL dalgalandırma.
  */
 import { describe, it, expect } from 'vitest';

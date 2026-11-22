@@ -1,5 +1,5 @@
 /**
- * Permissions.js — Electron izin kararları (saf, test edilebilir).
+ * Permissions.js - Electron izin kararları (saf, test edilebilir).
  *
  * Neden ayrı modül: izin mantığı `main.js` içinde satır arası duruyordu ve
  * yalnızca `notifications`'a izin veriyordu. Oysa "sesli komut" özelliği

@@ -1,5 +1,5 @@
 /**
- * packaged.spec.js — WP-15.T3
+ * packaged.spec.js - WP-15.T3
  * Paketlenmiş (ASAR + fuses) uygulamanın temiz kurulum sonrası çalıştığını
  * doğrular. Kurulum/yükseltme/kaldırma adımları `scripts/packaged-e2e.ps1`
  * tarafından yapılır; bu spec kurulum sonrası EXE'yi `PP_PACKAGED_EXE` ile alır.

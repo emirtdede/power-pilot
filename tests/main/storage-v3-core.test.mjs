@@ -1,5 +1,5 @@
 /**
- * storage-v3-core.test.mjs — StorageService v3 (SQLite) çekirdek yüzeyi
+ * storage-v3-core.test.mjs - StorageService v3 (SQLite) çekirdek yüzeyi
  *
  * Her test kendi GEÇİCİ userData dizininde gerçek SQLite dosyasıyla çalışır;
  * uygulamanın gerçek verisine dokunulmaz. Event Log/ACL gibi OS yan etkileri
@@ -33,7 +33,7 @@ afterEach(() => {
     safeRm(dir);
 });
 
-describe('StorageService — açılış', () => {
+describe('StorageService - açılış', () => {
     it('temiz dizinde v3 şema oluşturulur ve varsayılanlar yüklenir', () => {
         expect(fs.existsSync(svc.dbPath)).toBe(true);
         expect(svc.getSchemaVersion()).toBe(3);
@@ -114,11 +114,11 @@ describe('StorageService — açılış', () => {
     });
 });
 
-describe('StorageService — ayarlar', () => {
+describe('StorageService - ayarlar', () => {
     it('getSettings savunmacı kopya döner', () => {
         const a = svc.getSettings();
         a.language = 'hack';
-        // Varsayılan dil null ("kullanıcı seçmedi") — ilk çalıştırmada sistem
+        // Varsayılan dil null ("kullanıcı seçmedi") - ilk çalıştırmada sistem
         // dili algılanır. Dışarıdan yapılan mutasyon içeriği kirletmemeli.
         expect(svc.getSettings().language).toBeNull();
     });
@@ -192,7 +192,7 @@ describe('StorageService — ayarlar', () => {
     });
 });
 
-describe('StorageService — görev / geçmiş / koleksiyonlar', () => {
+describe('StorageService - görev / geçmiş / koleksiyonlar', () => {
     it('görev CRUD ve toplu API', () => {
         expect(svc.saveTasks('x')).toBe(false);
         expect(svc.saveTask(null)).toBe(false);
@@ -261,7 +261,7 @@ describe('StorageService — görev / geçmiş / koleksiyonlar', () => {
     });
 });
 
-describe('StorageService — nonce ve boot geçmişi', () => {
+describe('StorageService - nonce ve boot geçmişi', () => {
     it('consumeNonce atomik tek kullanım', () => {
         const exp = Date.now() + 60000;
         expect(svc.consumeNonce('n1', exp)).toBe(true);
@@ -299,7 +299,7 @@ describe('StorageService — nonce ve boot geçmişi', () => {
     });
 });
 
-describe('StorageService — audit zinciri (HMAC)', () => {
+describe('StorageService - audit zinciri (HMAC)', () => {
     const key = crypto.createHash('sha256').update('test-audit-key').digest();
 
     it('anahtarsız yazım fail-closed', () => {
@@ -361,7 +361,7 @@ describe('StorageService — audit zinciri (HMAC)', () => {
     });
 });
 
-describe('StorageService — yardımcılar', () => {
+describe('StorageService - yardımcılar', () => {
     it('atomicWrite + renameWithRetry çalışır, hata halinde tmp silinir', () => {
         const target = path.join(dir, 'out.json');
         svc.atomicWrite(target, '{"a":1}');

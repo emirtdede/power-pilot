@@ -1,5 +1,5 @@
 /**
- * validate.js — WBS-2.1 IPC doğrulama katmanı.
+ * validate.js - WBS-2.1 IPC doğrulama katmanı.
  * Saf fonksiyonlar (electron bağımlılığı yok) → vitest ile doğrudan test edilir.
  * İlke: reddet + gerekçe döndür; ASLA sessiz geçme, ASLA throw fırlatma (IPC çökmesin).
  */
@@ -41,7 +41,7 @@ const WEBHOOK_EVENTS = new Set([
     'task_cancelled', 'task_snoozed', 'power_action_started',
     // P1-6 (üçüncü tur): TaskManager bu olayı GERÇEKTEN üretiyordu
     // (iptal, OS komutu başladıktan sonra geldiğinde) ama listede olmadığı
-    // için hiçbir webhook ona abone olamıyordu — üretilen ama dinlenemeyen olay.
+    // için hiçbir webhook ona abone olamıyordu - üretilen ama dinlenemeyen olay.
     'task_cancel_too_late'
 ]);
 const MAC_RE = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$|^([0-9A-Fa-f]{12})$/;
@@ -172,7 +172,7 @@ function validateCondition(cond) {
     }
     // P1-6 (dördüncü tur): `stableSeconds` (koşul bazlı kararlılık süresi)
     // motor tarafından okunuyor ve form/şablonlar TARAFINDAN YAZILIYOR, ama
-    // hiç doğrulanmıyordu — yalnızca grup düzeyindeki `stabilitySeconds`
+    // hiç doğrulanmıyordu - yalnızca grup düzeyindeki `stabilitySeconds`
     // denetleniyordu. Negatif/metin bir değer sessizce bozuk koşul üretirdi.
     if (cond.stableSeconds !== undefined) {
         if (!Number.isInteger(cond.stableSeconds) || cond.stableSeconds < 0 || cond.stableSeconds > 3600) {
@@ -232,7 +232,7 @@ function validateTaskData(data) {
     if (typeof data.name === 'string' && data.name.trim().length === 0) {
         return fail('Görev adı boşluktan oluşamaz.', 'INVALID_NAME');
     }
-    // K2: Depolanmış XSS kapısı — ad innerHTML lavabolarına akıyor.
+    // K2: Depolanmış XSS kapısı - ad innerHTML lavabolarına akıyor.
     if (typeof data.name === 'string' && /[<>]/.test(data.name)) {
         return fail('Görev adı < ve > içeremez.', 'INVALID_NAME');
     }
@@ -422,17 +422,28 @@ function validateWol(payload) {
 
 const { ALL_LANGUAGE_CODES } = require('../i18n');
 const { APP_ICON_IDS } = require('../services/AppIconService');
+const { isValidGlobalAccelerator } = require('../services/GlobalShortcutService');
 const SUPPORTED_LANGUAGES = ALL_LANGUAGE_CODES;
 const THEME_IDS = [
     'obsidian', 'slate', 'navy', 'blue', 'cyan', 'indigo', 'purple',
-    'pink', 'red', 'orange', 'yellow', 'emerald', 'grass', 'lime'
+    'pink', 'red', 'orange', 'yellow', 'emerald', 'grass', 'lime', 'custom'
 ];
 
 const SETTINGS_SCHEMA = {
     autostart: 'boolean',
-    theme: ['light', 'dark'],
+    theme: ['light', 'dark', 'system'],
     themeId: THEME_IDS,
+    customThemeColor: { str: [7, 7], pattern: /^#[0-9a-fA-F]{6}$/ },
     appIcon: [...APP_ICON_IDS],
+    customIconColor: { str: [7, 7], pattern: /^#[0-9a-fA-F]{6}$/ },
+    syncIconWithTheme: 'boolean',
+    uiZoom: { int: [75, 150] },
+    fontScale: ['normal', 'large', 'xlarge'],
+    highContrast: 'boolean',
+    enhancedFocus: 'boolean',
+    readableSpacing: 'boolean',
+    reduceMotion: 'boolean',
+    onboardingCompleted: 'boolean',
     sidebarCollapsed: 'boolean',
     notifications: 'boolean',
     // null = kullanıcı henüz dil seçmedi → ilk çalıştırmada sistem dili algılanır.
@@ -512,7 +523,16 @@ const SETTINGS_SCHEMA = {
     protectedApps: { processList: 50, nullable: true },
     pinLengthMode: ['flex', '4', '6', '8'],
     autoBackupEnabled: 'boolean',
-    shortcuts: { shortcutMap: true }
+    shortcuts: { shortcutMap: true },
+    globalShortcutsEnabled: 'boolean',
+    globalShortcutToggleWindow: { globalShortcut: true },
+    globalShortcutQuickStart: { globalShortcut: true },
+    globalShortcutCancel: { globalShortcut: true },
+    globalShortcutVoiceHud: { globalShortcut: true },
+    aiTier: ['lite', 'balanced', 'powerful'],
+    voiceHudEnabled: 'boolean',
+    voiceReplyTtsEnabled: 'boolean',
+    autoCheckUpdates: 'boolean'
 };
 
 /**
@@ -560,7 +580,7 @@ function validateSettings(patch, currentSettings = {}, schema = SETTINGS_SCHEMA)
         if (rule && rule.num && (typeof val !== 'number' || !Number.isFinite(val) || val < rule.num[0] || val > rule.num[1])) {
             return fail(`${key} aralık dışı.`, 'INVALID_SETTING');
         }
-        // WP-01: izinli IP listesi — en fazla N kayıt, her biri IP/CIDR.
+        // WP-01: izinli IP listesi - en fazla N kayıt, her biri IP/CIDR.
         if (rule && rule.ipList) {            if (!Array.isArray(val) || val.length > rule.ipList || val.some(h => !isValidIpOrCidr(h))) {
                 return fail(`${key} en fazla ${rule.ipList} geçerli IP/CIDR içermeli.`, 'INVALID_SETTING');
             }
@@ -569,7 +589,7 @@ function validateSettings(patch, currentSettings = {}, schema = SETTINGS_SCHEMA)
                 return fail(`${key} yinelenen kayıt içeremez.`, 'INVALID_SETTING');
             }
         }
-        // P0-3: korunan uygulama listesi — her kayıt <ad>.exe biçiminde, yol yok.
+        // P0-3: korunan uygulama listesi - her kayıt <ad>.exe biçiminde, yol yok.
         if (rule && rule.processList) {
             const list = Array.isArray(val) ? val : null;
             const valid = list && list.length <= rule.processList &&
@@ -578,7 +598,7 @@ function validateSettings(patch, currentSettings = {}, schema = SETTINGS_SCHEMA)
                 return fail(`${key} en fazla ${rule.processList} adet "<ad>.exe" içermeli.`, 'INVALID_SETTING');
             }
         }
-        // WP-02.T11: mTLS istemci parmak izi allowlist'i — SHA-256 hex.
+        // WP-02.T11: mTLS istemci parmak izi allowlist'i - SHA-256 hex.
         if (rule && rule.fingerprintList) {
             const list = Array.isArray(val) ? val : null;
             const valid = list && list.length <= rule.fingerprintList &&
@@ -592,14 +612,14 @@ function validateSettings(patch, currentSettings = {}, schema = SETTINGS_SCHEMA)
             const ok = typeof val === 'string' && (val === 'unset' || /^\d{4}-(0[1-9]|1[0-2])$/.test(val));
             if (!ok) return fail(`${key} YYYY-MM biçiminde olmalı.`, 'INVALID_SETTING');
         }
-        // FAZ B: ajan id'si — kısa görünen ad.
+        // FAZ B: ajan id'si - kısa görünen ad.
         if (rule && rule.str && (typeof val !== 'string' || val.length < rule.str[0] || val.length > rule.str[1])) {
             return fail(`${key} ${rule.str[0]}..${rule.str[1]} karakter olmalı.`, 'INVALID_SETTING');
         }
         if (rule && rule.pattern && typeof val === 'string' && !rule.pattern.test(val)) {
             return fail(`${key} geçersiz karakter içeriyor.`, 'INVALID_SETTING');
         }
-        // FAZ B: konsol URL'si — http(s) şeması zorunlu (ajan outbound bağlanır).
+        // FAZ B: konsol URL'si - http(s) şeması zorunlu (ajan outbound bağlanır).
         if (rule && rule.consoleUrl) {
             if (typeof val !== 'string' || val.length > 512) return fail(`${key} en fazla 512 karakter.`, 'INVALID_SETTING');
             let parsed = null;
@@ -623,6 +643,11 @@ function validateSettings(patch, currentSettings = {}, schema = SETTINGS_SCHEMA)
                 if (typeof sv !== 'string' || sv.length < 1 || sv.length > 32 || !/^[A-Za-z0-9+,\-. ]+$/.test(sv)) {
                     return fail(`${key}.${sk} geçersiz tuş kombinasyonu.`, 'INVALID_SETTING');
                 }
+            }
+        }
+        if (rule && rule.globalShortcut) {
+            if (!isValidGlobalAccelerator(val)) {
+                return fail(`${key} en az bir değiştirici tuş içeren geçerli global kısayol olmalı.`, 'INVALID_SETTING');
             }
         }
     }

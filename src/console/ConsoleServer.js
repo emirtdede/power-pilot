@@ -1,5 +1,5 @@
 /**
- * ConsoleServer.js — FAZ B (şirket sunucusu).
+ * ConsoleServer.js - FAZ B (şirket sunucusu).
  * Tek-şirket pilot konsolu: ajan kayıt defteri (heartbeat), politika dağıtımı,
  * imzalı emir kuyruğu (ajan başına), dalgalı WoL işleri, denetim günlüğü.
  * Bağımsız Node çalıştırma: `node src/console/run.js` (şirket sunucusunda).
@@ -41,7 +41,7 @@ const MAX_RECEIPTS_PER_REQUEST = 100;
 const CONSOLE_RATE_WINDOW_MS = 60_000;
 const CONSOLE_RATE_MAX_REQUESTS = 300;
 
-// WP-01.T6: açık yetki matrisi — varsayılan reddet. Sıralı rol hiyerarşisi yok.
+// WP-01.T6: açık yetki matrisi - varsayılan reddet. Sıralı rol hiyerarşisi yok.
 const PERMISSIONS = {
     agent: new Set(['heartbeat', 'receipts']),
     viewer: new Set(['agents.read', 'gpo.read', 'policies.read', 'subnets.read']),
@@ -64,7 +64,7 @@ function hashKey(raw) {
 class ConsoleServer {
     /**
      * @param {object} opts - { storePath, keys: {viewer?, operator?, admin?, agent?} (hash'ler),
-     *   keyDir, secureKey } — Ed25519 özel anahtarı keyDir/console-signing-key.pem
+     *   keyDir, secureKey } - Ed25519 özel anahtarı keyDir/console-signing-key.pem
      *   dosyasında ACL+EFS ile tutulur; JSON'da yalnızca publicKey kalır.
      */
     constructor({ storePath = null, keys = {}, localSubnets = null, keyDir = null, secureKey = null, heartbeatSeconds = 60 } = {}) {
@@ -367,7 +367,7 @@ class ConsoleServer {
     }
 
     /**
-     * Denetim: GPO-kilit çatışması — GPO zorunlu kilit süresi, politika
+     * Denetim: GPO-kilit çatışması - GPO zorunlu kilit süresi, politika
      * idle-süresinden kısaysa GPO kazanır; konsol rozet gösterir.
      */
     gpoConflicts(idleMinutes) {
@@ -386,7 +386,7 @@ class ConsoleServer {
     }
 
     /**
-     * FAZ D: sıralı yeniden başlatma — biri dönmeden (taze bootAt) diğeri başlamaz.
+     * FAZ D: sıralı yeniden başlatma - biri dönmeden (taze bootAt) diğeri başlamaz.
      * Zaman-aşımında hedef atlanır (denetimde işaretli), kuyruk tıkanmaz.
      */
     advanceRolling(agentId, inventory) {
@@ -525,7 +525,7 @@ class ConsoleServer {
     }
 
     /**
-     * FAZ C: alt-ağ sınıflandırması — her subnet için hazır ajan sayısı + röle adayı.
+     * FAZ C: alt-ağ sınıflandırması - her subnet için hazır ajan sayısı + röle adayı.
      * Röle = çevrimiçi + readiness blocked-olmayan + (hedef değil) ilk ajan (deterministik).
      */
     subnets() {
@@ -633,7 +633,7 @@ class ConsoleServer {
 
     /**
      * Politika dağıtımı: doğrula → kaydet → hedef başına imzalı emir kuyrukla.
-     * FAZ C: wake emirleri ÇEVRİMİÇİ röleye gider (hedefe değil — hedef kapalı olabilir);
+     * FAZ C: wake emirleri ÇEVRİMİÇİ röleye gider (hedefe değil - hedef kapalı olabilir);
      * röle yoksa ve hedef konsolla aynı alt-ağdaysa konsol doğrudan gönderir,
      * aksi halde hedef 'röle-yok' diye atlanır.
      */
@@ -782,7 +782,7 @@ class ConsoleServer {
     }
 
     /**
-     * WP-02.T6: async durdurma — idle bağlantılar hemen, aktifler 5 sn sonra.
+     * WP-02.T6: async durdurma - idle bağlantılar hemen, aktifler 5 sn sonra.
      */
     async stop() {
         if (this.retentionTimer) {
@@ -895,7 +895,7 @@ class ConsoleServer {
     async route(method, p, body, res, role, parsed = null, identity = null) {
         if (!parsed) parsed = new URL(String(p), 'http://x');
         p = parsed.pathname;
-        // WP-03.T2: bakım modunda yazma yok — bellek moduna sessiz düşüş olmaz.
+        // WP-03.T2: bakım modunda yazma yok - bellek moduna sessiz düşüş olmaz.
         if (this.maintenanceMode && method !== 'GET') {
             this.sendJson(res, 503, {
                 error: this.maintenanceReason || 'Konsol depo bakım modunda; yazma reddedildi.',

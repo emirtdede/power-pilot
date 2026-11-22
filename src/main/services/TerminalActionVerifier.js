@@ -8,7 +8,7 @@
  *
  * Bu modül, terminal eylemin ardından kısa bir doğrulama penceresi açar:
  * süreç hâlâ çalışıyorsa (timer tetiklendiyse) kapatmanın engellendiği
- * kesinleşir. Timer süreçle birlikte ölürse hiçbir şey yapılmaz — yani
+ * kesinleşir. Timer süreçle birlikte ölürse hiçbir şey yapılmaz - yani
  * "kapanmadı" sinyali yalnızca gerçekten kapanmadığında üretilir.
  *
  * Saf ve test edilebilir: timer fonksiyonları enjekte edilir.

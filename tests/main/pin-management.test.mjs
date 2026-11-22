@@ -1,5 +1,5 @@
 /**
- * pin-management.test.mjs — K-01 / Y-02 regresyon testi.
+ * pin-management.test.mjs - K-01 / Y-02 regresyon testi.
  *
  * K-01: PIN kurulduktan sonra değiştirme/silme mevcut PIN doğrulaması ister;
  * aksi halde yerel erişimi olan biri PIN'i sıfırlayıp korumalı işlemleri

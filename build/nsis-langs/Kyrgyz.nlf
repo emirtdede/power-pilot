@@ -1,0 +1,191 @@
+﻿# Header, don't edit
+NLF v6
+# Start editing here
+# Language ID
+1088
+# Font and size - dash (-) means default
+-
+-
+# Codepage - dash (-) means ASCII code page
+1200
+# RTL - anything else than RTL means LTR
+-
+# Power Pilot custom NLF table
+# ^Branding
+Nullsoft Install System %s
+# ^SetupCaption
+$(^Name) орнотуу
+# ^UninstallCaption
+$(^Name) өчүрүү
+# ^LicenseSubCaption
+: License
+# ^ComponentsSubCaption
+: Орнотуу папкасы
+# ^DirSubCaption
+: Орнотуу папкасы
+# ^InstallingSubCaption
+: Орнотулууда
+# ^CompletedSubCaption
+: Аяктады
+# ^UnComponentsSubCaption
+: Өчүрүлүүдө
+# ^UnDirSubCaption
+: Орнотуу папкасы
+# ^ConfirmSubCaption
+: Өчүрүлүүдө
+# ^UninstallingSubCaption
+: Өчүрүлүүдө
+# ^UnCompletedSubCaption
+: Аяктады
+# ^BackBtn
+< &Артка
+# ^NextBtn
+&Кийинки >
+# ^AgreeBtn
+&Макулмун
+# ^AcceptBtn
+&Макулмун
+# ^DontAcceptBtn
+Жокко чыгаруу
+# ^InstallBtn
+&Орнотуу
+# ^UninstallBtn
+&Өчүрүү
+# ^CancelBtn
+Жокко чыгаруу
+# ^CloseBtn
+&Жабуу
+# ^BrowseBtn
+&Көрүү...
+# ^ShowDetailsBtn
+&Толугураак көрсөтүү
+# ^ClickNext
+Улантуу үчүн Кийинки баскычын басыңыз.
+# ^ClickInstall
+Орнотууну баштоо үчүн Орнотуу баскычын басыңыз.
+# ^ClickUninstall
+Өчүрүүнү баштоо үчүн Өчүрүү баскычын басыңыз.
+# ^Name
+Name
+# ^Completed
+Аяктады
+# ^LicenseText
+Улантуу үчүн Кийинки баскычын басыңыз.
+# ^LicenseTextCB
+Улантуу үчүн Кийинки баскычын басыңыз.
+# ^LicenseTextRB
+Улантуу үчүн Кийинки баскычын басыңыз.
+# ^UnLicenseText
+Улантуу үчүн Кийинки баскычын басыңыз.
+# ^UnLicenseTextCB
+Улантуу үчүн Кийинки баскычын басыңыз.
+# ^UnLicenseTextRB
+Улантуу үчүн Кийинки баскычын басыңыз.
+# ^Custom
+Custom
+# ^ComponentsText
+Улантуу үчүн Кийинки баскычын басыңыз.
+# ^ComponentsSubText1
+Улантуу үчүн Кийинки баскычын басыңыз.
+# ^ComponentsSubText2_NoInstTypes
+Улантуу үчүн Кийинки баскычын басыңыз.
+# ^ComponentsSubText2
+Улантуу үчүн Кийинки баскычын басыңыз.
+# ^UnComponentsText
+Улантуу үчүн Кийинки баскычын басыңыз.
+# ^UnComponentsSubText1
+Улантуу үчүн Кийинки баскычын басыңыз.
+# ^UnComponentsSubText2_NoInstTypes
+Улантуу үчүн Кийинки баскычын басыңыз.
+# ^UnComponentsSubText2
+Улантуу үчүн Кийинки баскычын басыңыз.
+# ^DirText
+Орноткуч $(^NameDA) колдонмосун төмөнкү папкага орнотот. Башка папка тандоо үчүн Көрүү баскычын басыңыз. $_CLICK
+# ^DirSubText
+Максаттуу папка
+# ^DirBrowseText
+$(^NameDA) орнотула турган папканы тандаңыз:
+# ^UnDirText
+$(^NameDA) төмөнкү папкадан өчүрүлөт. $_CLICK
+# ^UnDirSubText
+""
+# ^UnDirBrowseText
+$(^NameDA) орнотула турган папканы тандаңыз:
+# ^SpaceAvailable
+"Жеткиликтүү орун: "
+# ^SpaceRequired
+"Талап кылынган орун: "
+# ^UninstallingText
+$(^NameDA) төмөнкү папкадан өчүрүлөт. $_CLICK
+# ^UninstallingSubText
+Өчүрүлө турган жер:
+# ^FileError
+Error: \r\n\r\n$0
+# ^FileError_NoIgnore
+Error: \r\n\r\n$0
+# ^CantWrite
+"Error: "
+# ^CopyFailed
+Error
+# ^CopyTo
+"-> "
+# ^Registering
+"... "
+# ^Unregistering
+"... "
+# ^SymbolNotFound
+"Error: "
+# ^CouldNotLoad
+"Error: "
+# ^CreateFolder
+"+ "
+# ^CreateShortcut
+"+ "
+# ^CreatedUninstaller
+"+ "
+# ^Delete
+"- "
+# ^DeleteOnReboot
+"- "
+# ^ErrorCreatingShortcut
+"Error: "
+# ^ErrorCreating
+"Error: "
+# ^ErrorDecompressing
+Файлдарды ачуу ишке ашпады. Орноткучту кайра иштетиңиз.
+# ^ErrorRegistering
+DLL Error
+# ^ExecShell
+"Exec: "
+# ^Exec
+"Exec: "
+# ^Extract
+"-> "
+# ^ErrorWriting
+"Error: "
+# ^InvalidOpcode
+Файлдарды ачуу ишке ашпады. Орноткучту кайра иштетиңиз.
+# ^NoOLE
+"OLE: "
+# ^OutputFolder
+"-> "
+# ^RemoveFolder
+"- "
+# ^RenameOnReboot
+"-> "
+# ^Rename
+"-> "
+# ^Skipped
+"... "
+# ^CopyDetails
+Маалыматтарды көчүрүү
+# ^LogInstall
+Log
+# ^Byte
+B
+# ^Kilo
+ K
+# ^Mega
+ M
+# ^Giga
+ G

@@ -1,5 +1,5 @@
 /**
- * MiniWindowPlacement.js — mini zamanlayıcı penceresinin ekran yerleşimi.
+ * MiniWindowPlacement.js - mini zamanlayıcı penceresinin ekran yerleşimi.
  *
  * Neden ayrı ve saf bir modül: mini pencere daha önce her zaman
  * `screen.getPrimaryDisplay()` üzerine sabitleniyordu. Çoklu monitör
@@ -9,7 +9,7 @@
  *
  * Çözüm: mini pencere (1) ana pencerenin bulunduğu ekrana, (2) ana pencere
  * yoksa imlecin bulunduğu ekrana yerleşir; (3) her zaman o ekranın çalışma
- * alanı (workArea — görev çubuğu hariç) içinde kalacak şekilde kırpılır.
+ * alanı (workArea - görev çubuğu hariç) içinde kalacak şekilde kırpılır.
  *
  * Tüm fonksiyonlar saf: Electron'a bağımlı değil, enjekte edilen display
  * nesneleriyle çalışır; böylece birim testleri gerçek ekran gerektirmez.
@@ -129,12 +129,53 @@ function computePlacement(opts = {}) {
     });
 }
 
+const DEFAULT_HUD_WIDTH = 440;
+const DEFAULT_HUD_HEIGHT = 116;
+const DEFAULT_HUD_MARGIN = 18;
+
+/**
+ * WP-4.2: Görev çubuğunun tam üst-ortasında (workArea alt-orta) Sesli Dikte HUD konumunu hesaplar.
+ */
+function computeBottomCenterPosition({ workArea, width = DEFAULT_HUD_WIDTH, height = DEFAULT_HUD_HEIGHT, margin = DEFAULT_HUD_MARGIN } = {}) {
+    if (!workArea || typeof workArea.x !== 'number') {
+        return { x: 0, y: 0, width, height };
+    }
+    const winWidth = Math.max(1, Math.min(width, workArea.width));
+    const winHeight = Math.max(1, Math.min(height, workArea.height));
+    const safeMargin = Math.max(0, Math.min(margin, Math.floor(Math.min(workArea.width, workArea.height) / 4)));
+
+    const centerX = workArea.x + Math.round((workArea.width - winWidth) / 2);
+    const maxX = workArea.x + workArea.width - winWidth;
+    const maxY = workArea.y + workArea.height - winHeight;
+
+    const x = Math.min(Math.max(workArea.x, centerX), maxX);
+    const y = Math.min(Math.max(workArea.y, workArea.y + workArea.height - winHeight - safeMargin), maxY);
+
+    return { x: Math.round(x), y: Math.round(y), width: winWidth, height: winHeight };
+}
+
+function computeBottomCenterPlacement(opts = {}) {
+    const display = pickDisplay(opts);
+    const workArea = (display && (display.workArea || display.bounds)) || null;
+    return computeBottomCenterPosition({
+        workArea,
+        width: opts.width,
+        height: opts.height,
+        margin: opts.margin
+    });
+}
+
 module.exports = {
     DEFAULT_WIDTH,
     DEFAULT_HEIGHT,
     DEFAULT_MARGIN,
+    DEFAULT_HUD_WIDTH,
+    DEFAULT_HUD_HEIGHT,
+    DEFAULT_HUD_MARGIN,
     displayContainingPoint,
     pickDisplay,
     computePosition,
-    computePlacement
+    computePlacement,
+    computeBottomCenterPosition,
+    computeBottomCenterPlacement
 };

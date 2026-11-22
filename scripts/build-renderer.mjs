@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * build-renderer.mjs — WP-14.T2
+ * build-renderer.mjs - WP-14.T2
  * Tailwind CSS'i build zamanında üretir (runtime `vendor/tailwind.js` yok).
  * Çıktı deterministik ve minified'dir; release-check bu dosyanın varlığını arar.
  */

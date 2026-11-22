@@ -6,7 +6,7 @@ yalnızca `keyId`, tarih ve dağıtım bilgisini kaydedin.
 
 | Tarih | Kapsam | Eski `keyId` | Yeni `keyId` | Ajanlara dağıtım | Geri alma penceresi (24 saat) | Denetim kaydı |
 |---|---|---|---|---|---|---|
-| — | — | — | — | — | — | — |
+| - | - | - | - | - | - | - |
 
 ## Sütunlar
 

@@ -1,5 +1,5 @@
 /**
- * metric-collector-wp13.test.mjs — WP-13.T3/T4
+ * metric-collector-wp13.test.mjs - WP-13.T3/T4
  * 5 sn tick, _sampling kilidi, allSettled + 4 sn timeout, stale, diskIops.
  */
 import { describe, it, expect } from 'vitest';

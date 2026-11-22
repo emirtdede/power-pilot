@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * release-check.js — WBS-12/TS-12: release hijyeni kapısı.
+ * release-check.js - WBS-12/TS-12: release hijyeni kapısı.
  *
  * Kontroller:
  *  - package.json sürümü 1.1.0 (ve package-lock aynı).
@@ -222,6 +222,31 @@ function main() {
         issues.push(`check-i18n çalıştırılamadı: ${err.message}`);
     }
 
+    // Kalici uzun cizgi (en-dash, em-dash vb.) yasagi taramasi.
+    {
+        const skipDirs = new Set(['node_modules', '.git', 'dist', 'coverage', 'test-results', 'playwright-report', 'blob-report']);
+        const textExts = new Set(['.js', '.mjs', '.cjs', '.json', '.html', '.css', '.nsh', '.ps1', '.md', '.yml', '.yaml', '.txt', '.svg']);
+        const longDashRe = /[\u2012\u2013\u2014\u2015\u2e3a\u2e3b\ufe58\uff0d]/;
+        const emOffenders = [];
+        const walkEm = (dir) => {
+            for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+                const full = path.join(dir, entry.name);
+                if (entry.isDirectory()) {
+                    if (skipDirs.has(entry.name)) continue;
+                    walkEm(full);
+                } else if (entry.isFile() && textExts.has(path.extname(entry.name).toLowerCase())) {
+                    if (longDashRe.test(fs.readFileSync(full, 'utf8'))) {
+                        emOffenders.push(path.relative(ROOT, full).replace(/\\/g, '/'));
+                    }
+                }
+            }
+        };
+        walkEm(ROOT);
+        if (emOffenders.length > 0) {
+            issues.push(`Yasaklı uzun çizgi bulundu (${emOffenders.length} dosya): ${emOffenders.slice(0, 5).join(', ')}`);
+        }
+    }
+
     if (process.argv.includes('--strict-git')) {
         try {
             const out = execFileSync('git', ['status', '--porcelain'], { cwd: ROOT, encoding: 'utf8' });
@@ -236,7 +261,7 @@ function main() {
         for (const issue of issues) console.error(`  - ${issue}`);
         process.exit(1);
     }
-    console.log('[release-check] OK — sürüm, hedefler, pinler, i18n ve kaynak hijyeni doğrulandı.');
+    console.log('[release-check] OK - sürüm, hedefler, pinler, i18n ve kaynak hijyeni doğrulandı.');
     for (const note of notes) console.log(`[release-check] NOT: ${note}`);
 }
 

@@ -1,5 +1,5 @@
 /**
- * diagnostics.test.mjs — WP-5: DiagnosticsService, saf Node ZIP üretimi,
+ * diagnostics.test.mjs - WP-5: DiagnosticsService, saf Node ZIP üretimi,
  * gizli veri/yol maskeleme, destek paketi ve sabit support@vellium.dev / GitHub URL'leri.
  */
 import { describe, it, expect, afterEach } from 'vitest';

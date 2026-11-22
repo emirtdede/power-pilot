@@ -1,5 +1,5 @@
 /**
- * target-size.spec.js — PPX-005 / PPX-032 / PPX-033 / PPX-036
+ * target-size.spec.js - PPX-005 / PPX-032 / PPX-033 / PPX-036
  * TC-31…TC-33 (TC-48 mini-widget.spec.js'te).
  *
  * Hiçbir onay kutusu/radyo hedefi 24×24'ün altında değil; istatistik çipleri

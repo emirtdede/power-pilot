@@ -1,5 +1,5 @@
 /**
- * secrets-core.test.mjs — SecretStore (WP-04 / T-SEC-01/06/07)
+ * secrets-core.test.mjs - SecretStore (WP-04 / T-SEC-01/06/07)
  *
  * safeStorage enjekte edilir (sahte backend); dosya sistemi geçici dizinde
  * gerçek fs ile çalışır. Düz metin fallback yollarının reddedildiği doğrulanır.
@@ -37,7 +37,7 @@ afterEach(() => {
 const fileFor = (name = 'secrets.v1.json') => path.join(dir, name);
 const newStore = (opts = {}) => new SecretStore(Object.assign({ filePath: fileFor(), safeStorage: makeBackend() }, opts));
 
-describe('SecretStore — kurulum ve backend', () => {
+describe('SecretStore - kurulum ve backend', () => {
     it('dosya yolu zorunlu', () => {
         expect(() => new SecretStore({})).toThrow(/dosya yolu/);
         expect(() => new SecretStore()).toThrow(/dosya yolu/);
@@ -70,7 +70,7 @@ describe('SecretStore — kurulum ve backend', () => {
     });
 });
 
-describe('SecretStore — şifreleme/çözme hataları', () => {
+describe('SecretStore - şifreleme/çözme hataları', () => {
     it('boş değer INVALID_SECRET', async () => {
         await expect(newStore().encryptStringAsync('')).rejects.toMatchObject({ code: 'INVALID_SECRET' });
         await expect(newStore().encryptStringAsync(5)).rejects.toMatchObject({ code: 'INVALID_SECRET' });
@@ -119,7 +119,7 @@ describe('SecretStore — şifreleme/çözme hataları', () => {
     });
 });
 
-describe('SecretStore — kalıcılık', () => {
+describe('SecretStore - kalıcılık', () => {
     it('dosya yoksa boş yüklenir', () => {
         expect(newStore().corrupt).toBe(false);
     });
@@ -193,7 +193,7 @@ describe('SecretStore — kalıcılık', () => {
     });
 });
 
-describe('SecretStore — webhook senkronu', () => {
+describe('SecretStore - webhook senkronu', () => {
     const hook = (url, extra = {}) => Object.assign({ url }, extra);
 
     it('yeni sırları yazar, kaldırılan hook sırlarını temizler', async () => {
@@ -242,7 +242,7 @@ describe('SecretStore — webhook senkronu', () => {
     });
 });
 
-describe('SecretStore — migrasyon / hidrasyon / disk kopyası', () => {
+describe('SecretStore - migrasyon / hidrasyon / disk kopyası', () => {
     it('migrateFromData düz metin sırları şifreler ve alanları null\'lar', async () => {
         const s = newStore();
         const data = {
@@ -347,7 +347,7 @@ describe('SecretStore — migrasyon / hidrasyon / disk kopyası', () => {
     });
 });
 
-describe('SecretStore — sabitler', () => {
+describe('SecretStore - sabitler', () => {
     it('sır alan listeleri beklenen değerleri içerir', () => {
         expect(SECRET_SETTING_FIELDS).toContain('localApiKeyPem');
         expect(SECRET_SETTING_FIELDS).toContain('consoleAgentKey');

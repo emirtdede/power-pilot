@@ -1,4 +1,4 @@
-# Power Pilot — Privacy Policy / Gizlilik Politikası
+# Power Pilot - Privacy Policy / Gizlilik Politikası
 
 **Last updated / Son güncelleme:** 2026-11-17
 **Applies to / Geçerli olduğu sürüm:** Power Pilot 1.0.0 (Microsoft Store / MSIX) and

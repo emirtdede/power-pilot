@@ -1,5 +1,5 @@
 /**
- * ipAcl.js — LAN erişim kontrolü (WP-01).
+ * ipAcl.js - LAN erişim kontrolü (WP-01).
  *
  * Kurallar:
  *  - Yalnızca IP ve CIDR kabul edilir (hostname yok; DNS rebinding riski).

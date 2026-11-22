@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * check-i18n.js — WP-14.T4
+ * check-i18n.js - WP-14.T4
  * 17 dil, anahtar eşitliği, duplicate, {placeholder} parity, kullanılmayan rapor.
  * Hata varsa exit 1 (CI kalite kapısı).
  */
@@ -52,7 +52,7 @@ function readLang(dir, lang, errors) {
 
 /**
  * Ürün kaynak dosyaları: yalnızca uygulamanın gerçekten çalıştırdığı kod.
- * `tests/`, `docs/` ve `scripts/` bilinçli olarak dışarıda — bir anahtarın
+ * `tests/`, `docs/` ve `scripts/` bilinçli olarak dışarıda - bir anahtarın
  * yalnızca bir testte anılması onu "kullanılıyor" yapmaz.
  */
 function sourceFiles() {
@@ -81,7 +81,7 @@ function sourceFiles() {
  *
  * Eski sürüm yalnızca `t('key')` ve `data-i18n="key"` desenlerine bakıyordu ve
  * 86 anahtarı yanlışlıkla "kullanılmayan" bildiriyordu (gerçek ölü sayısı 0).
- * Kaçırılan gerçek kullanım biçimleri — hepsi bu kod tabanında mevcut:
+ * Kaçırılan gerçek kullanım biçimleri - hepsi bu kod tabanında mevcut:
  *
  *   1. Harita değeri      BUSY: 'aiBusy'                        (main.js:106)
  *   2. Nesne özelliği     dict.timeFormatDays                   (app.js:775)
@@ -115,7 +115,7 @@ function usedKeys(baseKeys = []) {
 
     const body = corpus.join('\n');
     for (const key of baseKeys) {
-        // Harita değeri, nesne özelliği, üçlü seçim vb. — tam kelime olarak geçiş.
+        // Harita değeri, nesne özelliği, üçlü seçim vb. - tam kelime olarak geçiş.
         const pattern = new RegExp(`(^|[^A-Za-z0-9_$])${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^A-Za-z0-9_$]|$)`);
         if (pattern.test(body)) keys.add(key);
     }

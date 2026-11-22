@@ -1,7 +1,7 @@
 /**
  * HealthMetrics.js
  *
- * C5 — yerel sağlık özeti.
+ * C5 - yerel sağlık özeti.
  *
  * ÖNEMLİ: Bu modül HİÇBİR veri toplamaz, göndermez veya ağa çıkarmaz.
  * Yalnızca zaten cihazda duran görev/geçmiş kayıtlarını toplayıp kullanıcıya

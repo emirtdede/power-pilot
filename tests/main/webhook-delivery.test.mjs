@@ -1,5 +1,5 @@
 /**
- * webhook-delivery.test.mjs — WebhookService teslimat/retry/redaksiyon
+ * webhook-delivery.test.mjs - WebhookService teslimat/retry/redaksiyon
  *
  * Ağ YOK: https.request, setTimeout ve DNS lookup enjekte edilir.
  */
@@ -68,7 +68,7 @@ function service({ hooks = [], handler, settings = {}, lookupFn = PUBLIC_LOOKUP,
     return { svc, retries };
 }
 
-describe('WebhookService — yük ve yardımcılar', () => {
+describe('WebhookService - yük ve yardımcılar', () => {
     it('buildPayload yalnızca beyaz listedeki alanları taşır', () => {
         const { svc } = service({ settings: { agentId: 'agent-9' } });
         const p = svc.buildPayload('task_created', { id: 't1', name: 'n', action: 'lock', source: 'ui', status: 'scheduled', consoleOrderId: 'secret' });
@@ -114,7 +114,7 @@ describe('WebhookService — yük ve yardımcılar', () => {
     });
 });
 
-describe('WebhookService — gönderim yolları', () => {
+describe('WebhookService - gönderim yolları', () => {
     it('geçersiz/sarmsız girdi', async () => {
         const { svc } = service();
         expect(await svc.sendPayload(null, {})).toMatchObject({ ok: false, code: 'INVALID_URL' });
@@ -224,7 +224,7 @@ describe('WebhookService — gönderim yolları', () => {
     });
 });
 
-describe('WebhookService — tetikleme ve eşzamanlılık', () => {
+describe('WebhookService - tetikleme ve eşzamanlılık', () => {
     it('triggerEvent yalnızca etkin + abone hook\'lara gönderir', async () => {
         const hooks = [
             { url: 'https://a.example/h', enabled: true, events: ['task_created'] },

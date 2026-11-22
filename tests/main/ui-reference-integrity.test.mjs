@@ -1,5 +1,5 @@
 /**
- * ui-reference-integrity.test.mjs — üçüncü tur yapısal kapı
+ * ui-reference-integrity.test.mjs - üçüncü tur yapısal kapı
  *
  * Denetimin bu turunda bulunan iki gerçek kusur sınıfı:
  *   1. VAR OLMAYAN EKRANLAR. Kullanıcıya gösterilen metinler olmayan
@@ -92,7 +92,7 @@ describe('A. Kenar çubuğu etiketi ile sayfa başlığı aynı ekranı aynı ad
 });
 
 describe('B. Kullanıcıya dönük ekran referansları gerçek etiketlere işaret eder', () => {
-    // Gerçek gezinti/başlık etiketleri (tr + en) — referansın hedefi bunlardan biri olmalı.
+    // Gerçek gezinti/başlık etiketleri (tr + en) - referansın hedefi bunlardan biri olmalı.
     const labelKeys = new Set();
     for (const d of LOCALES) {
         // tüm dillerde ortak anahtar kümesi tr/en ile aynı olduğundan yalnızca

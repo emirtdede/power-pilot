@@ -1,5 +1,5 @@
 /**
- * Dekoratif ikonlar — ekran okuyucu kirliliği (WCAG 1.1.1 / 4.1.2).
+ * Dekoratif ikonlar - ekran okuyucu kirliliği (WCAG 1.1.1 / 4.1.2).
  *
  * Bulgu: `material-symbols-outlined` span'ları ligatürle çalışır; metin
  * içerikleri "error", "power_settings_new", "delete_sweep" gibi ANLAMSIZ
@@ -24,7 +24,7 @@ const htmlFiles = ['src/index.html', 'src/mini.html'];
 
 describe('dekoratif ikonlar ekran okuyucudan gizli', () => {
     for (const rel of htmlFiles) {
-        it(`${rel} — tüm ikon span’larında aria-hidden`, () => {
+        it(`${rel} - tüm ikon span’larında aria-hidden`, () => {
             const src = read(rel);
             const tags = src.match(/<span\b[^>]*material-symbols-outlined[^>]*>/g) || [];
             expect(tags.length, `${rel} içinde ikon bulunmalı`).toBeGreaterThan(0);

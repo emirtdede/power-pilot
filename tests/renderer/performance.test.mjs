@@ -1,5 +1,5 @@
 /**
- * performance.test.mjs — WP-13.T7/T8
+ * performance.test.mjs - WP-13.T7/T8
  * 100 görevde delta güncelleme yalnızca süre hücrelerini değiştirir.
  */
 import { describe, it, expect } from 'vitest';

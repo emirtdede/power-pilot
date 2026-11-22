@@ -1,5 +1,5 @@
 /**
- * agents/diagnoseAgent.js — F9.1 + WP-8
+ * agents/diagnoseAgent.js - F9.1 + WP-8
  * Deterministik teşhisçi: aktif uygulama diline (TR / EN) uyumlu sade açıklama.
  */
 'use strict';

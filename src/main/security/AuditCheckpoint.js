@@ -1,5 +1,5 @@
 /**
- * AuditCheckpoint.js — WP-11.T7
+ * AuditCheckpoint.js - WP-11.T7
  * Günlük audit checkpoint dosyası (`audit-checkpoints/YYYY-MM-DD.json`) ve
  * Windows Event Log özeti. Amaç: audit tablosu silinip yeniden yazılsa bile
  * (teorik olarak HMAC anahtarı ele geçmeden) gün sonu kanıtının yokluğunu

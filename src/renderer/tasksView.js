@@ -1,5 +1,5 @@
 /**
- * tasksView.js — WP-13.T7
+ * tasksView.js - WP-13.T7
  * Görev tablosu delta yardımcıları. Tam render yalnızca görev kümesi
  * (id/status/action/trigger) değiştiğinde; aksi halde sadece süre hücreleri.
  */
@@ -36,7 +36,7 @@
             if (!task || !cell) return;
             const next = (task.trigger && task.trigger.targetTime)
                 ? formatFn(task.trigger.targetTime)
-                : '—';
+                : '-';
             if (cell.textContent !== next) {
                 cell.textContent = next;
                 changed += 1;

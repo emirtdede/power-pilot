@@ -1,6 +1,6 @@
 /**
- * safety.test.mjs — SafetyPolicyEngine: korunan-app, uzaktan-kapatma kuralı, hata toleransı.
- * exec constructor enjeksiyonuyla verilir (yerleşik modül mock'una güvenilmez) —
+ * safety.test.mjs - SafetyPolicyEngine: korunan-app, uzaktan-kapatma kuralı, hata toleransı.
+ * exec constructor enjeksiyonuyla verilir (yerleşik modül mock'una güvenilmez) -
  * gerçek tasklist/PowerShell ASLA çalışmaz, testler milisaniyelerdedir.
  */
 import { describe, it, expect, vi } from 'vitest';

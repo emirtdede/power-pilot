@@ -1,5 +1,5 @@
 /**
- * electron-builder.config.cjs — WP-15.T2
+ * electron-builder.config.cjs - WP-15.T2
  * package.json'daki sabit yapılandırmanın üzerine yalnızca imzalama
  * alanlarını ortamdan çözer. `WIN_CERT_SUBJECT` yoksa imzalama atlanır
  * (yerel paketleme); release CI'da HSM/TPM sertifika konu adı zorunludur.

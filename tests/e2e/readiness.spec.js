@@ -1,5 +1,5 @@
 /**
- * readiness.spec.js — Faz 3 son kullanıcı özellikleri
+ * readiness.spec.js - Faz 3 son kullanıcı özellikleri
  *
  * Kapsam:
  *  1. Tekrarlayan program UI'si (günlük / özel günler) gerçekten görev üretir

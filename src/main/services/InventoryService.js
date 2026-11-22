@@ -1,5 +1,5 @@
 /**
- * InventoryService.js — FAZ B.
+ * InventoryService.js - FAZ B.
  * Cihaz envanteri toplar: kimlik, OS/build, uyku tipleri (powercfg -a),
  * ağ arayüzleri (MAC/IP/subnet), ajan sürümü, toplama zamanı.
  * Konsol heartbeat gövdesi de budur. exec/os DI ile test edilir.

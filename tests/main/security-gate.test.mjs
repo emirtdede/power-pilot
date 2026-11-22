@@ -1,5 +1,5 @@
 /**
- * security-gate.test.mjs — `scripts/security-check.mjs` gerçekten temiz geçmeli
+ * security-gate.test.mjs - `scripts/security-check.mjs` gerçekten temiz geçmeli
  *
  * Neden: CI'da bu kapı kırmızıysa sürüm çıkmaz. Kapı bir kez XML **ad alanı**
  * tanımlayıcısını (`http://schemas.microsoft.com/...`) "düz HTTP istemci"

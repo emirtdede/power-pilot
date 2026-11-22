@@ -1,5 +1,5 @@
 /**
- * store-packaging.test.mjs — MSIX paket sözleşmesi (statik)
+ * store-packaging.test.mjs - MSIX paket sözleşmesi (statik)
  *
  * Store yapılandırmasının kapsamı, StartupTask uzantısı ve paket hijyeni
  * sessizce bozulmasın.

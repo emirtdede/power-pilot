@@ -1,5 +1,5 @@
 /**
- * i18n-all.spec.js — WP-14.T6
+ * i18n-all.spec.js - WP-14.T6
  * 17 dilin tamamı ana ekran + ayarlar görünümünde eksik anahtar/undefined
  * üretmeden açılır; Arapça RTL yönünü uygular.
  */

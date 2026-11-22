@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * warningActions.js — Uyarı bannerı eylemleri (Durdur / Ertele).
+ * warningActions.js - Uyarı bannerı eylemleri (Durdur / Ertele).
  *
  * Neden ayrı modül: `requireCancelPin` async'tir. main.js'teki IPC gövdeleri
  * async olmadığı için dönen Promise await edilmiyordu; Promise her zaman

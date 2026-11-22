@@ -1,5 +1,5 @@
 /**
- * stt-service.test.mjs — WBS-8.1 / TS-8.1
+ * stt-service.test.mjs - WBS-8.1 / TS-8.1
  * SttService: enerji kapısı, dil eşlemesi, fail-closed yolları (sahte binding).
  * Gerçek model/mikrofon gerekmez.
  */
@@ -25,7 +25,7 @@ function stubBinding(text = 'bilgisayarı kapat', calls = null) {
                 if (calls) calls.push({ bytes: buf.byteLength, opts });
                 return { promise: Promise.resolve({ result: text, segments: [] }) };
             }),
-            release: vi.fn(async () => {})
+            release: vi.fn(async () => { })
         }))
     };
 }
@@ -39,8 +39,9 @@ describe('SttService kapılar (TS-8.1)', () => {
     });
 
     it('model sabitleri doğrulanmış değerlerdir', () => {
-        expect(STT_MODELS.base.sha256).toBe('465707469ff3a37a2b9b8d8f89f2f99de7299dac');
-        expect(STT_MODELS.tiny.sha256).toBe('bd577a113a864445d4c299885e0cb97d4ba92b5f');
+        expect(STT_MODELS.base.sha256).toBe('60ed5bc3dd14eea856493d334349b405782ddcaf0028d4b5df4088345fba2efe');
+        expect(STT_MODELS.tiny.sha256).toBe('be07e048e1e599ad46341c8d2a135645097a538221678b7acdd1b1919c6e1b21');
+        expect(STT_MODELS['small-q5_1'].sha256).toBe('ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb');
         expect(SAMPLE_RATE).toBe(16000);
         expect(MIN_SAMPLES).toBe(8000);
         expect(MAX_SAMPLES).toBe(240000);
@@ -109,7 +110,7 @@ describe('SttService kapılar (TS-8.1)', () => {
         const binding = {
             initWhisper: vi.fn(async () => ({
                 transcribeData: vi.fn(async () => { throw new Error('boom'); }),
-                release: vi.fn(async () => {})
+                release: vi.fn(async () => { })
             }))
         };
         const svc = new SttService({ modelDir: '/yok', whisperModule: binding });
@@ -123,11 +124,31 @@ describe('SttService kapılar (TS-8.1)', () => {
         expect(SttService.speechRatio([])).toBe(0);
     });
 
-    it('unload bağlamı temizler', async () => {
-        const binding = stubBinding();
+    it('unload bağlamı temizler ve aktif deşifre sürerken bitmesini bekler (BUG-03 / CLEAN-02)', async () => {
+        const order = [];
+        const binding = {
+            initWhisper: vi.fn(async () => ({
+                transcribeData: vi.fn(async () => ({
+                    promise: new Promise((resolve) => {
+                        setTimeout(() => {
+                            order.push('transcribe_done');
+                            resolve({ result: '45 dakika sonra kapat', segments: [] });
+                        }, 30);
+                    })
+                })),
+                release: vi.fn(async () => {
+                    order.push('released');
+                })
+            }))
+        };
         const svc = new SttService({ modelDir: '/yok', whisperModule: binding });
         svc.context = await binding.initWhisper({ filePath: 'x' });
-        await svc.unload();
+        const [txRes] = await Promise.all([
+            svc.transcribePcm(voicedArray(16000), 'tr'),
+            svc.unload()
+        ]);
+        expect(txRes.ok).toBe(true);
         expect(svc.context).toBeNull();
+        expect(order).toEqual(['transcribe_done', 'released']);
     });
 });

@@ -1,5 +1,5 @@
 /**
- * orderqueue-executor.test.mjs — emir kuyruğu + icra hattı
+ * orderqueue-executor.test.mjs - emir kuyruğu + icra hattı
  * Depo sahte bellek; TaskManager/DeviceService enjekte edilir. Ağ/OS yok.
  */
 import { describe, it, expect, vi } from 'vitest';
@@ -21,7 +21,7 @@ function memStore(initial = {}) {
 
 const signed = (nonce = 'n1', over = {}) => ({ order: { nonce, action: 'lock', params: {}, targets: ['a'], ...over }, signature: 'sig' });
 
-describe('OrderQueue — kuyruk', () => {
+describe('OrderQueue - kuyruk', () => {
     it('anahtar türetimi: nonce → idempotencyKey → null', () => {
         expect(OrderQueue.keyOf(signed('abc'))).toBe('nonce:abc');
         expect(OrderQueue.keyOf({ order: {}, idempotencyKey: 'k' })).toBe('key:k');
@@ -137,7 +137,7 @@ describe('OrderQueue — kuyruk', () => {
     });
 });
 
-describe('OrderExecutor — icra hattı', () => {
+describe('OrderExecutor - icra hattı', () => {
     function harness(over = {}) {
         const taskManager = Object.assign({
             createTask: vi.fn((data) => ({ id: 'task_new', consoleOrderId: data.consoleOrderId })),

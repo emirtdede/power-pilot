@@ -1,4 +1,4 @@
-# Power Pilot — Kurumsal Pilot Kılavuzu (FAZ B, tek şirket)
+# Power Pilot - Kurumsal Pilot Kılavuzu (FAZ B, tek şirket)
 
 ## Mimari (1 sayfa)
 
@@ -25,7 +25,7 @@ dalgalı (varsayılan 20'li dalga, 5sn aralık) gönderilir.
 2. `GET /api/v1/console-key` (admin) → `publicKey`'i alın.
 3. Her PC'de Power Pilot **Ayarlar → Entegrasyonlar → Kurumsal Konsol**: URL (`http://srv:8443`),
    `consolePublicKeyPem` (konsol anahtarı) + `consoleAgentKey` (ajan heartbeat
-   sırrı — ham değer yalnızca ajanda durur, konsolda hash'i tutulur).
+   sırrı - ham değer yalnızca ajanda durur, konsolda hash'i tutulur).
    (Denetim notu: ajan sırrı sunmak zorunda olduğundan ham tutulur;
    sızıntıda konsolda anahtar döndürülür, ajan etkilenmez.)
 4. Ajan 60sn içinde heartbeat atar; `GET /api/v1/agents` ile görün.
@@ -63,7 +63,7 @@ operator 403 alır). Muaf cihazın engellemesi denetimde
 - Politika silme ajandaki kurulu görevi `revoke-policy` ile iptal eder;
    zaten ÇALIŞMIŞ görev geri alınamaz.
 
-## FAZ C — Ağ gerçekleri (tamamlandı)
+## FAZ C - Ağ gerçekleri (tamamlandı)
 
 - Her ajan `wolReadiness` raporlar: `ready` / `degraded` / `blocked` (S0-hibernate-yok)
   / `unknown` + gerekçe + öneri. `GET /api/v1/subnets` her alt-ağı
@@ -74,7 +74,7 @@ operator 403 alır). Muaf cihazın engellemesi denetimde
   `röle-yok` diye raporda kalır, yama penceresi uyanık-makinelerle planlanır.
 - Dalgalandırma korunur (20'li dalga / 5sn aralık, `notBefore`).
 
-## FAZ D — Sunucu profili + UPS + dürüst enerji (tamamlandı)
+## FAZ D - Sunucu profili + UPS + dürüst enerji (tamamlandı)
 - `deviceRole: server` olan cihaza konsoldan `sleep`/`hibernate`/`shutdown`
   **yasak** (403 değil, icra-öncesi `blocked_by_policy` + denetim).
   `restart` yalnızca `requiresMaintenanceWindow` + bakım penceresi içinde.
@@ -85,14 +85,14 @@ operator 403 alır). Muaf cihazın engellemesi denetimde
   Ayar: `upsEnabled` + `upsHost` + `upsName`. `OB`/`LB` konsol rozeti olur.
 - Enerji: `2.5h` sabiti KALDIRILDI. Kapanış→sonraki-açılış = gerçek süre;
   eşleşmeyen kapanış beyanlı `assumedOffHours` ile damgalı tahmin, beyan
-  yoksa sayı uydurulmaz (`missing: [offhours]`, arayüz "—" gösterir).
+  yoksa sayı uydurulmaz (`missing: [offhours]`, arayüz "-" gösterir).
 - GPO: ajan `ScreenSaveTimeOut` + GPO-zorunluluğunu raporlar; GPO kilit
   süresi politika `idleMinutes`'ten kısaysa konsol "GPO ile çakışıyor" rozeti
   gösterir (çakışmada GPO kazanır).
 - KVKK: konsola giden gerekçelerde ham `*.exe` adı taşınmaz
   (`sanitizeForConsole` → `korunan-uygulama`); tam ad yalnızca yerel logda.
   Aydınlatma metni şablonu pilot sözleşmesine eklenir.
-- EDR: ajan `shutdown /s`, `rundll32 LockWorkStation` çağırır — pilot öncesi
+- EDR: ajan `shutdown /s`, `rundll32 LockWorkStation` çağırır - pilot öncesi
   Defender/SentinelOne allowlist dokümanı IT'ye verilir; ikili kod-imzalı
   dağıtılır.
 - Fiyat (pilot sonrası): cihaz-başı/ay + on-prem bakım; pilot tek-fiyat,
@@ -103,9 +103,9 @@ operator 403 alır). Muaf cihazın engellemesi denetimde
 - **Headless servis:** `node src/agent/headless.js [veri-dizini]` Electron'sız
   aynı yığını koşar; `scripts/install-service.ps1 -Install` NSSM ile Windows
   Servisi kurar (SYSTEM, otomatik başlatma). Serviste scheduler-yedeği yok
-  (schtasks GUI bağlamı ister) — birincil 1sn döngüsü + konsol emirleri çalışır.
+  (schtasks GUI bağlamı ister) - birincil 1sn döngüsü + konsol emirleri çalışır.
 - **Kill-switch:** `POST /api/v1/agents/:id/disable` (yalnızca admin) ajanı
-  uzaktan durdurur — ajan emir almaz, icra yapmaz, güvenlik motoru TÜM
+  uzaktan durdurur - ajan emir almaz, icra yapmaz, güvenlik motoru TÜM
   kaynakları engeller; heartbeat sürer, `enable` ile geri açılır.
 - **Makbuz döngüsü:** icra sonuçları sonraki heartbeat ile konsola döner;
   konsol denetimine `order_receipt` işlenir. Teslim+icra+makbuz kapalı-döngüdür.

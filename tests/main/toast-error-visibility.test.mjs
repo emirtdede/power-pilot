@@ -1,5 +1,5 @@
 /**
- * Hata bildirimleri — "Bildirimleri Göster" ayarından bağımsız görünmeli.
+ * Hata bildirimleri - "Bildirimleri Göster" ayarından bağımsız görünmeli.
  *
  * Bulgu: `showToast` ilk satırda `localStorage.notifications === 'false'` ise
  * **her türde** erken dönüyordu (öncesi: `if (!showNotifs) return;`). Yani

@@ -1,5 +1,5 @@
 /**
- * UpsMonitor.js — FAZ D + WP-12.T8
+ * UpsMonitor.js - FAZ D + WP-12.T8
  * NUT-uyumlu UPS izleme. Tek TCP bağlantısı, `LIST VAR` yanıtı
  * `END LIST VAR` gelene kadar parse edilir; 5 sn timeout, 55 sn cache.
  * GPL lisanslı NUT kodundan bağımsız temiz-oda istemci.

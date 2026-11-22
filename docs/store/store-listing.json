@@ -1,5 +1,5 @@
 {
-  "_comment": "C3 — Microsoft Store başvuru metinleri. Her dilde: appName (<=256), shortDescription (<=270), description (<=10000), features (<=10 adet, her biri <=200). Bu dosya tests/main/store-listing.test.mjs tarafından doğrulanır; Partner Center'a kopyala-yapıştır kaynağıdır.",
+  "_comment": "C3 - Microsoft Store başvuru metinleri. Her dilde: appName (<=256), shortDescription (<=270), description (<=10000), features (<=10 adet, her biri <=200). Bu dosya tests/main/store-listing.test.mjs tarafından doğrulanır; Partner Center'a kopyala-yapıştır kaynağıdır.",
   "version": 1,
   "productId": "9NQJTP1BKP5R",
   "languages": {

@@ -1,5 +1,5 @@
 /**
- * responsive.spec.js — Premium UI / 100% responsive sözleşmesi
+ * responsive.spec.js - Premium UI / 100% responsive sözleşmesi
  *
  * Her görünüm, birden çok pencere boyutunda:
  *  - yatay taşma üretmez (scrollWidth <= clientWidth + 1),

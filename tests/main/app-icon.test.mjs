@@ -1,5 +1,5 @@
 /**
- * app-icon.test.mjs — Çoklu çözünürlüklü marka ikonları, Microsoft Store MSIX
+ * app-icon.test.mjs - Çoklu çözünürlüklü marka ikonları, Microsoft Store MSIX
  * varlık bütünlüğü ve 4 seçilebilir masaüstü/uygulama ikonu sözleşmesi.
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
@@ -11,6 +11,8 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const AppIconService = require('../../src/main/services/AppIconService.js');
+const ColorPalette = require('../../src/shared/customColorPalette.js');
+const { ALL_LANGUAGES } = require('../../src/main/i18n.js');
 const { validateSettings } = require('../../src/main/ipc/validate.js');
 const StorageService = require('../../src/main/services/StorageService.js');
 
@@ -43,13 +45,17 @@ function readIcoSizes(filePath) {
     return sizes.sort((a, b) => a - b);
 }
 
-describe('AppIconService — varlık bütünlüğü ve Microsoft Store uyumu', () => {
-    it('4 seçilebilir ikonun SVG, PNG ve 7-boyutlu ICO dosyaları mevcut', () => {
+describe('AppIconService - varlık bütünlüğü ve Microsoft Store uyumu', () => {
+    it('4 klasik + 14 tema-uyumlu (18 statik) + özel renk (19 toplam) ikonun varlıkları mevcut', () => {
         expect(AppIconService.DEFAULT_APP_ICON).toBe('monochrome-dark');
-        expect(AppIconService.APP_ICON_IDS).toEqual([
+        expect(AppIconService.CLASSIC_APP_ICON_IDS).toEqual([
             'monochrome-dark', 'monochrome-light', 'monochrome-contrast', 'classic-cyan'
         ]);
-        for (const id of AppIconService.APP_ICON_IDS) {
+        expect(AppIconService.THEME_APP_ICON_IDS).toHaveLength(14);
+        expect(AppIconService.STATIC_APP_ICON_IDS).toHaveLength(18);
+        expect(AppIconService.APP_ICON_IDS).toHaveLength(19);
+        expect(AppIconService.APP_ICON_IDS).toContain('custom');
+        for (const id of AppIconService.STATIC_APP_ICON_IDS) {
             for (const ext of ['svg', 'png', 'ico']) {
                 const file = path.join(root, 'src', 'assets', 'icons', `${id}.${ext}`);
                 expect(fs.existsSync(file), `${id}.${ext} eksik`).toBe(true);
@@ -99,7 +105,7 @@ describe('AppIconService — varlık bütünlüğü ve Microsoft Store uyumu', (
     });
 });
 
-describe('AppIconService — ayar doğrulama ve çalışma zamanı uygulaması', () => {
+describe('AppIconService - ayar doğrulama ve çalışma zamanı uygulaması', () => {
     it('validateSettings 4 geçerli ikonu kabul eder, geçersizi reddeder', () => {
         for (const id of AppIconService.APP_ICON_IDS) {
             expect(validateSettings({ appIcon: id }).ok).toBe(true);
@@ -299,11 +305,22 @@ describe('AppIconService — ayar doğrulama ve çalışma zamanı uygulaması',
             isEmpty: () => false,
             resize: vi.fn(() => resizedImg)
         };
+        // Windows pencere/görev çubuğu ikonu (targetSize: null) doğrudan 7-kareli .ico yolunu döner
+        expect(AppIconService.buildRuntimeIconPayload('classic-cyan', {
+            icoPath: packedIco,
+            pngPath: packedPng,
+            nativeImage: { createFromPath: () => baseImg },
+            targetSize: null,
+            platform: 'win32'
+        })).toBe(packedIco);
+
+        // NativeImage resize dalı (Tray / Notification)
         const payload = AppIconService.buildRuntimeIconPayload('classic-cyan', {
             icoPath: packedIco,
             pngPath: packedPng,
             nativeImage: { createFromPath: () => baseImg },
-            targetSize: 32
+            targetSize: 32,
+            platform: 'win32'
         });
         expect(payload).toBe(resizedImg);
 
@@ -349,5 +366,191 @@ describe('AppIconService — ayar doğrulama ve çalışma zamanı uygulaması',
         });
         expect(overlayFn).toHaveBeenCalledWith(null, '');
         expect(execCalls.filter((c) => /powershell/i.test(c.file)).length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('writeCustomIconFiles çoklu çözünürlüklü özel renk ICO/PNG/SVG üretir, eskiyi temizler ve uygular', () => {
+        const userData = freshDir('pp-custom-icon-');
+        const desktop = freshDir('pp-custom-desktop-');
+        const lnk = path.join(desktop, 'Power Pilot.lnk');
+        fs.writeFileSync(lnk, '');
+        const realPng = fs.readFileSync(path.join(root, 'src', 'assets', 'icons', 'theme-purple.png')).toString('base64');
+        const makeFrames = () => [16, 24, 32, 48, 64].map((size) => ({
+            size,
+            kind: 'rgba',
+            base64: Buffer.alloc(size * size * 4, 220).toString('base64')
+        })).concat([
+            { size: 128, kind: 'png', base64: realPng },
+            { size: 256, kind: 'png', base64: realPng }
+        ]);
+
+        const first = AppIconService.writeCustomIconFiles('#8b5cf6', makeFrames(), { userDataDir: userData });
+        expect(first.ok).toBe(true);
+        expect(fs.existsSync(first.icoPath)).toBe(true);
+        expect(fs.existsSync(first.pngPath)).toBe(true);
+        expect(fs.existsSync(first.svgPath)).toBe(true);
+        expect(readIcoSizes(first.icoPath)).toEqual([16, 24, 32, 48, 64, 128, 256]);
+
+        const second = AppIconService.writeCustomIconFiles('#e11d48', makeFrames(), { userDataDir: userData });
+        expect(second.ok).toBe(true);
+        expect(fs.existsSync(second.icoPath)).toBe(true);
+        expect(fs.existsSync(first.icoPath)).toBe(false);
+
+        const mainWin = { isDestroyed: () => false, setIcon: vi.fn() };
+        const miniWin = { isDestroyed: () => false, setIcon: vi.fn() };
+        const tray = { isDestroyed: () => false, setImage: vi.fn() };
+        const written = [];
+        const fakeShell = {
+            readShortcutLink: () => ({ target: 'C:\\Program Files\\Power Pilot\\Power Pilot.exe' }),
+            writeShortcutLink: (p, op, details) => { written.push({ p, op, details }); return true; }
+        };
+        const applied = AppIconService.applyAppIcon('custom', {
+            customIconColor: '#e11d48',
+            userDataDir: userData,
+            mainWindow: mainWin,
+            miniWindow: miniWin,
+            tray,
+            shell: fakeShell,
+            rootDir: root,
+            desktopDirs: [desktop],
+            startMenuDirs: [],
+            taskbarDirs: [],
+            isPortable: false,
+            isStoreBuild: false,
+            isPackaged: false,
+            platform: 'win32',
+            execFileImpl: vi.fn()
+        });
+        expect(applied.ok).toBe(true);
+        expect(applied.iconId).toBe('custom');
+        expect(applied.icoPath).toBe(second.icoPath);
+        expect(mainWin.setIcon).toHaveBeenCalledWith(second.icoPath);
+        expect(tray.setImage).toHaveBeenCalledWith(second.icoPath);
+        expect(written[0].details.icon).toBe(second.icoPath);
+    });
+});
+
+describe('Özel Renk Teması, Erişilebilirlik ve NSIS 73-Dil Kurulum Sözleşmesi', () => {
+    it('customColorPalette WCAG AA kontrastlı açık/koyu tema ve ikon paleti üretir', () => {
+        for (const hex of ['#09090b', '#facc15', '#8b5cf6', '#e11d48', '#06b6d4']) {
+            const tokens = ColorPalette.buildCustomThemeTokens(hex);
+            expect(tokens.hex).toBe(hex);
+            expect(tokens.light['--accent']).toMatch(/^#[0-9a-f]{6}$/);
+            expect(tokens.dark['--accent']).toMatch(/^#[0-9a-f]{6}$/);
+            expect(tokens.lightContrast).toBeGreaterThanOrEqual(4.5);
+            expect(tokens.darkContrast).toBeGreaterThanOrEqual(4.5);
+            const iconP = ColorPalette.buildCustomIconPalette(hex);
+            const svg = ColorPalette.buildBrandIconSvg(iconP);
+            expect(svg).toContain('<svg');
+            expect(svg).toContain(iconP.bg1);
+        }
+        const css = ColorPalette.buildCustomCssText('#8b5cf6', '#e11d48');
+        expect(css).toContain("html[data-theme='custom']");
+        expect(css).toContain("html.dark[data-theme='custom']");
+        expect(css).toContain("html[data-app-icon='custom']");
+    });
+
+    it('validateSettings yeni özel tema, ikon, yakınlaştırma ve erişilebilirlik ayarlarını doğrular', () => {
+        expect(validateSettings({
+            themeId: 'custom',
+            customThemeColor: '#8b5cf6',
+            customIconColor: '#e11d48',
+            syncIconWithTheme: true,
+            uiZoom: 125,
+            fontScale: 'xlarge',
+            highContrast: true,
+            enhancedFocus: true,
+            readableSpacing: true,
+            reduceMotion: true,
+            onboardingCompleted: true
+        }).ok).toBe(true);
+
+        expect(validateSettings({ customThemeColor: 'red' }).ok).toBe(false);
+        expect(validateSettings({ customIconColor: '#12345' }).ok).toBe(false);
+        expect(validateSettings({ uiZoom: 74 }).ok).toBe(false);
+        expect(validateSettings({ uiZoom: 151 }).ok).toBe(false);
+        expect(validateSettings({ uiZoom: 75 }).ok).toBe(true);
+        expect(validateSettings({ uiZoom: 150 }).ok).toBe(true);
+        expect(validateSettings({ fontScale: 'giant' }).ok).toBe(false);
+    });
+
+    it('build/installer.nsh 73 dilin tamamını, 0 dil sızıntısı NLF/LangString tablolarını, yazısız görselleri ve anında ikon tazelemeyi doğrular', () => {
+        const nsh = fs.readFileSync(path.join(root, 'build', 'installer.nsh'), 'utf8');
+        const langPack = fs.readFileSync(path.join(root, 'build', 'nsis-langs', 'powerpilot-73langs.nsh'), 'utf8');
+        const dlgTitles = fs.readFileSync(path.join(root, 'build', 'nsis-langs', 'langdialog-titles.nsh'), 'utf8');
+        const assetsScript = fs.readFileSync(path.join(root, 'scripts', 'generate-installer-assets.cjs'), 'utf8');
+
+        expect(ALL_LANGUAGES).toHaveLength(73);
+        for (const lang of ALL_LANGUAGES) {
+            expect(nsh, `NSIS kurulumunda dil kodu eksik: ${lang.id}`).toContain(`"${lang.id}"`);
+            if (lang.id !== 'en') {
+                expect(dlgTitles, `LangDLL başlığı eksik: ${lang.id}`).toContain(`\${Case} "${lang.id}"`);
+            }
+        }
+        // 53 yerlesik NSIS .nlf (Ingilizce addLangs ile) + 19 ozel Unicode NLF (Turkiye Turkcesi dahil) = 73 tam yerel NSIS tablosu
+        const builtinNlfMatches = langPack.match(/^LoadLanguageFile "\$\{NSISDIR\}/gm) || [];
+        const customNlfMatches = langPack.match(/^LoadLanguageFile "\$\{BUILD_RESOURCES_DIR\}/gm) || [];
+        expect(builtinNlfMatches).toHaveLength(53);
+        expect(customNlfMatches).toHaveLength(19);
+        const nlfFiles = fs.readdirSync(path.join(root, 'build', 'nsis-langs')).filter((f) => f.endsWith('.nlf'));
+        expect(nlfFiles).toHaveLength(19);
+        expect(nlfFiles).toContain('TurkishTR.nlf');
+
+        // UTF-8 BOM zorunlulugu: NSIS 3.0.4.1 !include dosyalarini BOM olmadan ANSI codepage ile okuyarak Turkce karakterleri bozar
+        const bomRequiredFiles = [
+            path.join(root, 'build', 'installer.nsh'),
+            path.join(root, 'build', 'nsis-langs', 'powerpilot-73langs.nsh'),
+            path.join(root, 'build', 'nsis-langs', 'langdialog-titles.nsh'),
+            ...nlfFiles.map((f) => path.join(root, 'build', 'nsis-langs', f))
+        ];
+        for (const f of bomRequiredFiles) {
+            const raw = fs.readFileSync(f);
+            expect([raw[0], raw[1], raw[2]], `UTF-8 BOM eksik: ${path.basename(f)}`).toEqual([0xef, 0xbb, 0xbf]);
+        }
+
+        // Tum dillerde mojibake yasak + Turkiye Turkcesi (tr-TR / LCID 1055) satirlarinda eski NSIS yazim hatalari olmamali
+        const mojibakeRe = /[\uFFFD]|Ã[\u0080-\u00BF]|Ä[\u0080-\u00BF]|Å[\u0080-\u00BF]/;
+        const brokenTrRe = /şeçiniz|Litfen|Tamamlandır|kadırılım|Kaldırım işlemeni|bilgisayariniza|programlari|Programi|dizinde kurulacak/;
+        expect(langPack).not.toMatch(mojibakeRe);
+        expect(nsh).not.toMatch(mojibakeRe);
+        const trLines = langPack.split(/\r?\n/).filter((line) => /\s1055\s/.test(line)).join('\n');
+        expect(trLines.length).toBeGreaterThan(500);
+        expect(trLines).not.toMatch(brokenTrRe);
+        const trNlf = fs.readFileSync(path.join(root, 'build', 'nsis-langs', 'TurkishTR.nlf'), 'utf8');
+        expect(trNlf).toContain('\r\n1055\r\n');
+        expect(trNlf).toContain('\r\n1200\r\n');
+        expect(trNlf).toContain('Kurulum Klasörü');
+        expect(trNlf).not.toMatch(mojibakeRe);
+        expect(trNlf).not.toMatch(brokenTrRe);
+
+        // Tum 73 dil icin ozel Setup + Uninstall LangString sayilari birebir 73 olmali
+        expect((langPack.match(/LangString PP_WelcomeTitle /g) || [])).toHaveLength(73);
+        expect((langPack.match(/LangString PP_UnWelcomeTitle /g) || [])).toHaveLength(73);
+        expect((langPack.match(/LangString PP_UnDataCheck /g) || [])).toHaveLength(73);
+        // 72 Ingilizce disi dilin tamaminda electron-builder assistedMessages + messages cevrilmis olmali
+        expect((langPack.match(/LangString chooseInstallationOptions /g) || [])).toHaveLength(72);
+        expect((langPack.match(/LangString onlyForMe /g) || [])).toHaveLength(72);
+        expect((langPack.match(/LangString appRunning /g) || [])).toHaveLength(72);
+
+        expect(nsh).toContain('GetUserDefaultUILanguage');
+        expect(nsh).toContain('StrCpy $SelectedLangCode "en"');
+        expect(nsh).toContain('installer-language.json');
+        expect(nsh).toContain('LangDLL::LangDialog');
+        expect(nsh).toContain('InstallLanguageLcid');
+        expect(nsh).toContain('DeleteUserDataFlag');
+        expect(nsh).toContain('UAC_IsInnerInstance');
+        // Aninda ikon gorunumu: DisplayIcon & kisayollar uninstallerIcon.ico + SHCNF_FLUSH + ie4uinit -show
+        expect(nsh).toContain('uninstallerIcon.ico');
+        expect(nsh).toContain('ie4uinit.exe');
+        expect(nsh).toContain('0x1005');
+        // AV sezgisel kural temizligi: kaldirmada -ExecutionPolicy Bypass kullanilmamali (yorum satirlari haric)
+        const nshCode = nsh.replace(/^\s*;.*$/gm, '');
+        expect(nshCode).not.toMatch(/ExecutionPolicy\s+Bypass/i);
+        // LogicLib Switch dize karşılaştırır: onaltılık 0x.. etiket kalmamalı.
+        expect(nsh).not.toMatch(/\$\{Case\}\s+0x/i);
+
+        // Setup ve Uninstall SVG gorsellerindeki tum <text> ogeleri yalnizca "Power Pilot" olmali (VELLIUM ve aciklayici yazi yasak)
+        const svgTexts = [...assetsScript.matchAll(/<text\b[^>]*>([^<]+)<\/text>/g)].map((m) => m[1].trim());
+        expect(svgTexts).toEqual(['Power Pilot', 'Power Pilot', 'Power Pilot']);
+        expect(assetsScript).not.toMatch(/VELLIUM/i);
     });
 });

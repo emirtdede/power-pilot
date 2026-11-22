@@ -1,5 +1,5 @@
 /**
- * tls.test.mjs — WP-02.T11
+ * tls.test.mjs - WP-02.T11
  * T-TLS-01..11: konsol HTTPS zorunluluğu, loopback kaçış kapısı, istemci TLS,
  * mTLS parmak izi, LAN/TLS doğrulaması, timing-safe karşılaştırma, stop/start,
  * idempotency/iptal kodları ve istek sınırları.

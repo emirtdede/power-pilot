@@ -1,5 +1,5 @@
 /**
- * UpsSupervisor.js — P1-9
+ * UpsSupervisor.js - P1-9
  *
  * NUT `upsmon`'in kanıtlanmış davranışının sade karşılığı: UPS "LB" (low
  * battery) bayrağını görünce beklemeden kapatmak yerine KISA bir geri sayım
@@ -8,7 +8,7 @@
  *
  * Ölçülen kusur: envanter toplama UPS uyarısını yalnızca `log.warn` ile
  * yazıyordu. Sunucu profili için "UPS izleme" ayarı açık olsa bile elektrik
- * kesintisinde makine pil bitene kadar çalışmaya devam ediyordu — yani ayar
+ * kesintisinde makine pil bitene kadar çalışmaya devam ediyordu - yani ayar
  * görünürde vardı, davranışta yoktu.
  *
  * Tasarım kararları (hepsi test edilebilir, saf DI):

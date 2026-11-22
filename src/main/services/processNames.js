@@ -1,5 +1,5 @@
 /**
- * processNames.js — Süreç adı kanonikleştirme (WP-04).
+ * processNames.js - Süreç adı kanonikleştirme (WP-04).
  *
  * Windows'ta aynı süreç `chrome`, `chrome.exe`, `CHROME.EXE` olarak
  * raporlanabilir. Koşul motoru ve güvenlik motoru tek biçim kullanır.

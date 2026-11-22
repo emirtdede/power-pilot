@@ -1,5 +1,5 @@
 /**
- * Modal erişilebilirliği — WCAG 2.4.3 (Focus Order) / 4.1.2 (Name, Role, Value).
+ * Modal erişilebilirliği - WCAG 2.4.3 (Focus Order) / 4.1.2 (Name, Role, Value).
  *
  * Bulgu: modallerde (`#modal-pin`, `#modal-delete-data`, `#modal-eula`,
  * `#modal-privacy`, `#modal-oss`, `#modal-confirm-link`) şunlar yoktu:

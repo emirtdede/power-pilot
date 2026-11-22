@@ -1,5 +1,5 @@
 /**
- * storage-flush-migrate.test.mjs — StorageService satır yazımı ve migrasyon dalları
+ * storage-flush-migrate.test.mjs - StorageService satır yazımı ve migrasyon dalları
  * Geçici dizinde gerçek SQLite ile; OS yan etkisi yok.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -25,7 +25,7 @@ afterEach(() => {
     safeRm(dir);
 });
 
-describe('StorageService — save() tüm koleksiyonlar', () => {
+describe('StorageService - save() tüm koleksiyonlar', () => {
     it('tüm tablolar tek yazımda doldurulur, ikinci yazım değişiklik üretmez', () => {
         svc.data.tasks = [{ id: 't1', status: 'scheduled', action: 'lock', createdAt: 'x' }];
         svc.data.history = [{ id: 'h1', timestamp: 'x', resultCode: 'success', action: 'lock' }];
@@ -101,7 +101,7 @@ describe('StorageService — save() tüm koleksiyonlar', () => {
     });
 });
 
-describe('StorageService — migrasyon dalları', () => {
+describe('StorageService - migrasyon dalları', () => {
     it('v0 → v3 tüm koleksiyonlar ve varsayılanlar', () => {
         const out = svc.migrate({ version: 0, history: [{ id: 'h' }], webhooks: [{ url: 'https://a' }] }, 0);
         expect(out.version).toBe(3);

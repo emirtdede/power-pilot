@@ -5,7 +5,7 @@
  *
  * Tek kaynaklı (vektör SVG) marka ve ikon üretim hattı:
  *  - 4 seçilebilir uygulama ikonu varyantı (SVG + 256px PNG + 7-kareli multi-DPI ICO)
- *    1. monochrome-dark     (VARSAYILAN — Siyah Zemin · Koyu Monokrom)
+ *    1. monochrome-dark     (VARSAYILAN - Siyah Zemin · Koyu Monokrom)
  *    2. monochrome-light    (Beyaz Zemin · Açık Monokrom)
  *    3. monochrome-contrast (Saf Siyah-Beyaz · Yüksek Kontrast)
  *    4. classic-cyan        (Klasik · Cyan)
@@ -23,9 +23,14 @@
 const fs = require('fs');
 const path = require('path');
 const { _electron: electron } = require('@playwright/test');
+const { THEME_ICON_PALETTES, buildBrandIconSvg } = require('../src/shared/customColorPalette');
 
 const ROOT = path.resolve(__dirname, '..');
 const SVG_NS = ['http', '://www.w3.org/2000/svg'].join('');
+
+const THEME_VARIANT_SVGS = Object.fromEntries(
+    Object.entries(THEME_ICON_PALETTES).map(([id, palette]) => [id, buildBrandIconSvg(palette)])
+);
 
 const ICON_VARIANTS = {
     'monochrome-dark': `<svg xmlns="${SVG_NS}" viewBox="0 0 256 256" width="256" height="256">
@@ -85,7 +90,8 @@ const ICON_VARIANTS = {
   <circle cx="128" cy="128" r="62" fill="none" stroke="#d2dae2" stroke-width="4" opacity="0.5"/>
   <path d="M136 64 L76 148 L120 148 L112 196 L180 108 L136 108 Z" fill="url(#bolt-grad)" filter="drop-shadow(0px 4px 6px rgba(0,0,0,0.4))"/>
 </svg>
-`
+`,
+    ...THEME_VARIANT_SVGS
 };
 
 // Microsoft Store sertifikasyonu: BadgeLogo tamamen şeffaf arka plan üzerinde
@@ -163,13 +169,13 @@ function encodeIcoBmpFrame(rgba, size) {
 
 /**
  * Çoklu çözünürlüklü ICO dosyası oluşturur:
- *  - 16, 24, 32, 48, 64 px: 32-bit BGRA BMP DIB (NSIS + Win32 evrensel uyum)
- *  - 128, 256 px: kayıpsız RGBA PNG (Windows Vista/10/11 yüksek DPI standardı)
+ *  - 16, 24, 32, 48, 64, 128 px: 32-bit BGRA BMP DIB (NSIS + Explorer + Denetim Masası evrensel uyum)
+ *  - 256 px: kayıpsız RGBA PNG (Windows Vista/10/11 yüksek DPI standardı)
  */
 function encodeMultiResIco(frames) {
     const count = frames.length;
     const headerSize = 6 + count * 16;
-    const payloads = frames.map((f) => (f.size <= 64 ? encodeIcoBmpFrame(f.rgba, f.size) : f.png));
+    const payloads = frames.map((f) => (f.size <= 128 ? encodeIcoBmpFrame(f.rgba, f.size) : f.png));
     const totalSize = headerSize + payloads.reduce((sum, p) => sum + p.length, 0);
     const out = Buffer.alloc(totalSize);
 
@@ -353,7 +359,7 @@ async function main() {
                 svg,
                 width: size,
                 height: size,
-                wantRgba: size <= 64
+                wantRgba: size <= 128
             });
         }
     }
@@ -422,7 +428,7 @@ async function main() {
             fs.writeFileSync(path.join(appxDir, fileName), buf);
         }
 
-        console.log(`[generate-brand-assets] OK — 4 ikon varyantı (SVG/PNG/7-boyutlu ICO), kök ikonlar, ${STORE_SCALES.length} Microsoft Store MSIX varlığı ve Partner Center logoları üretildi.`);
+        console.log(`[generate-brand-assets] OK - 4 ikon varyantı (SVG/PNG/7-boyutlu ICO), kök ikonlar, ${STORE_SCALES.length} Microsoft Store MSIX varlığı ve Partner Center logoları üretildi.`);
     } finally {
         await app.close();
     }

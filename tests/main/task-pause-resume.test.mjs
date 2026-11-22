@@ -1,16 +1,16 @@
 /**
- * task-pause-resume.test.mjs — P1-6 (üçüncü tur) duraklat/sürdür kapısı
+ * task-pause-resume.test.mjs - P1-6 (üçüncü tur) duraklat/sürdür kapısı
  *
  * Denetim kusuru: `task.enabled` beş yürütme yolunda GERÇEK bir kapıydı
  * (`evaluateTasks`, `getActiveTasks`, `hasInFlight`, `runScheduledTask`,
  * `TaskSchedulerBridge`), `statusDisabled` 17 dilde çeviriye sahipti,
- * renderer `task.enabled !== false` kontrolünü yapıyordu — ama hiçbir kod
+ * renderer `task.enabled !== false` kontrolünü yapıyordu - ama hiçbir kod
  * yolu `enabled` alanını ASLA false yapmıyordu ve `disabled` durumu hiçbir
  * yerde atanmıyordu.
  *
  * Sonuç: kullanıcı bir görevi geçici olarak durduramıyordu; tek seçenek
  * iptal etmekti (geri dönüşü olmayan terminal durum). Altyapı tamdı, kapı
- * yoktu — `directory_idle` ile aynı sınıf kusur.
+ * yoktu - `directory_idle` ile aynı sınıf kusur.
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
 

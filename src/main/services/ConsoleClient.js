@@ -1,5 +1,5 @@
 /**
- * ConsoleClient.js — FAZ B (ajan tarafı).
+ * ConsoleClient.js - FAZ B (ajan tarafı).
  * Ajan KENDİSİ konsola bağlanır (outbound HTTPS): güvenlik duvarı/NAT dostu.
  * sync(): envanter topla → heartbeat POST → gelen emirleri imzayla doğrula →
  * kuyruğa al → makbuzları bildir. İmzasız emir kuyruğa GİRMEZ (denetimde red yazılır).
@@ -53,7 +53,7 @@ class ConsoleClient {
     }
 
     /**
-     * Test/legacy fetch adaptörü — fetch semantiğiyle aynı yanıtı döner.
+     * Test/legacy fetch adaptörü - fetch semantiğiyle aynı yanıtı döner.
      */
     fetchTransport(fetchFn) {
         return async (url, opts) => {

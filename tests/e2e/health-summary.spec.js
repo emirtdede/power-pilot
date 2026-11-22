@@ -1,5 +1,5 @@
 /**
- * health-summary.spec.js — C5 yerel sağlık özeti (E2E)
+ * health-summary.spec.js - C5 yerel sağlık özeti (E2E)
  *
  * Ürün "telemetri yok, her şey cihazda" diyor. Bu test Hakkında
  * ekranındaki özetin gerçekten dolduğunu, ham kod sızdırmadığını ve

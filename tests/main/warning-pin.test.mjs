@@ -1,5 +1,5 @@
 /**
- * warning-pin.test.mjs — C-01/C-02 regresyon testi.
+ * warning-pin.test.mjs - C-01/C-02 regresyon testi.
  *
  * Denetim bulgusu: `warning-cancel` / `warning-snooze` IPC gövdeleri async
  * olmadığı için `requireCancelPin(...)` await edilmiyordu. Dönen Promise her

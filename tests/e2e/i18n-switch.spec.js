@@ -1,5 +1,5 @@
 /**
- * i18n-switch.spec.js — oturum içi dil değişimi
+ * i18n-switch.spec.js - oturum içi dil değişimi
  *
  * Yeniden yükleme olmadan dil değiştiğinde yalnızca statik `data-i18n`
  * düğümleri değil, çalışma zamanında üretilen metinler de (pencere

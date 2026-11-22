@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * distribution.js — dağıtım kanalı ve özellik kapsamı.
+ * distribution.js - dağıtım kanalı ve özellik kapsamı.
  *
  * İki yüzey vardır:
  *  - Store (MSIX): Microsoft Store politikalarına uygun tüketici sürümü.

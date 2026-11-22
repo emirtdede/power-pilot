@@ -1,5 +1,5 @@
 /**
- * flags.js — WP-00.T4
+ * flags.js - WP-00.T4
  * Derleme zamanı sabitleri. Bunlar çalışma zamanında DEĞİŞTİRİLEMEZ ve
  * güvenlik davranışını eski (açık) kipe döndüren bir anahtar YOKTUR.
  *

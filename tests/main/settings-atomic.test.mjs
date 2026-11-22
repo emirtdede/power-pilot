@@ -1,5 +1,5 @@
 /**
- * settings-atomic.test.mjs — O-11 / O-20 / K-04
+ * settings-atomic.test.mjs - O-11 / O-20 / K-04
  *
  * O-11/O-20: dil, enerji ve otonomi ayarları tek IPC'de, PIN doğrulandıktan
  * sonra yazılır. Renderer PIN istemini iptal ederse sunucuda kısmi kayıt

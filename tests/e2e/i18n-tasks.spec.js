@@ -23,7 +23,7 @@ test('i18n kapsamı, görev görünümü ve sürüm bilgisi', async () => {
 
         await window.waitForFunction(() => {
             const el = document.getElementById('app-version');
-            return el && el.innerText && el.innerText !== 'v—';
+            return el && el.innerText && el.innerText !== 'v-';
         });
         expect((await window.locator('#app-version').innerText()).trim()).toBe('v1.0.0');
 

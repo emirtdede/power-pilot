@@ -1,5 +1,5 @@
 /**
- * db-auditlog-core.test.mjs — Db sarmalayıcı + AuditLog zinciri
+ * db-auditlog-core.test.mjs - Db sarmalayıcı + AuditLog zinciri
  * Geçici dizinde gerçek SQLite; electron/os yan etkisi yok.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -16,7 +16,7 @@ const safeRm = (t) => { try { fs.rmSync(t, { recursive: true, force: true, maxRe
 beforeEach(() => { dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-db-')); });
 afterEach(() => safeRm(dir));
 
-describe('Db — açma/PRAGMA/transaction', () => {
+describe('Db - açma/PRAGMA/transaction', () => {
     it('geçersiz yol StorageError', () => {
         expect(() => new Db('')).toThrow(StorageError);
         try { new Db(''); } catch (err) { expect(err.code).toBe('INVALID_DB_PATH'); }
@@ -127,7 +127,7 @@ describe('Db.acquireLock', () => {
     });
 });
 
-describe('AuditLog — legacy SHA-256 zinciri', () => {
+describe('AuditLog - legacy SHA-256 zinciri', () => {
     const memStorage = () => {
         let list = [];
         return {

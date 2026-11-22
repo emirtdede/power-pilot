@@ -1,4 +1,4 @@
-# Power Pilot — Otomasyon Motoru (`TaskManager`)
+# Power Pilot - Otomasyon Motoru (`TaskManager`)
 
 `TaskManager` eşzamanlı görevleri, zamanlamaları, Smart Finish koşullarını ve
 güvenlik politikalarını yöneten çekirdek modüldür. 1 saniyelik tik döngüsü
@@ -37,18 +37,18 @@ Her sonuç `EXECUTION_RESULT_CODE` ile kaydedilir (`success`,
 tik → koşul değerlendir → uyarı/onay → güvenlik kapıları → güç eylemi → doğrulama → sonuç
 ```
 
-1. **Koşul/Smart Finish** — `SmartFinishEngine` kararlılık süresiyle onaylar.
-2. **Uyarı** — `WarningManager` geri sayımı gösterir. Bu süre **iptal
+1. **Koşul/Smart Finish** - `SmartFinishEngine` kararlılık süresiyle onaylar.
+2. **Uyarı** - `WarningManager` geri sayımı gösterir. Bu süre **iptal
    penceresidir**: dolarsa eylem çalışır. `requireConfirmation: true` ise
    dolarsa iptal (katı mod).
-3. **Güvenlik** — `SafetyPolicyEngine.evaluate()`; ayrıntı:
+3. **Güvenlik** - `SafetyPolicyEngine.evaluate()`; ayrıntı:
    [`SAFETY_POLICIES.md`](SAFETY_POLICIES.md).
-4. **İcra** — `PowerService.execute(action, { forceClose, graceSeconds })`.
+4. **İcra** - `PowerService.execute(action, { forceClose, graceSeconds })`.
    Terminal eylemlerde `shutdown /t n` ile gerçek yerel gecikme uygulanır.
-5. **Doğrulama** — `TerminalActionVerifier` eylemin gerçekten gerçekleştiğini
+5. **Doğrulama** - `TerminalActionVerifier` eylemin gerçekten gerçekleştiğini
    doğrular; süreç hâlâ ayaktaysa "kapatma engellendi" raporu üretilir
    (sessiz başarı yok). Gecikme varsa doğrulama penceresi o kadar ötelenir.
-6. **Sonuç** — Geçmiş + denetim zinciri + webhook.
+6. **Sonuç** - Geçmiş + denetim zinciri + webhook.
 
 ---
 
@@ -57,7 +57,7 @@ tik → koşul değerlendir → uyarı/onay → güvenlik kapıları → güç e
 | Ayar | Çözümleyici | Davranış |
 |---|---|---|
 | `forceCloseApps` | `resolveForceClose` | `/f` ile kapatma |
-| `graceSeconds` | `resolveGraceSeconds` | `/t n` + `shutdown /a` iptali, 0–600 sn |
+| `graceSeconds` | `resolveGraceSeconds` | `/t n` + `shutdown /a` iptali, 0-600 sn |
 | `remoteApprovalRequired` | `resolveRemoteApproval` | Uzak kaynakta yerel onay; yoksa iptal |
 | `upsAutoActionEnabled` | `UpsSupervisor` | UPS `LB`+`OB` → geri sayım → eylem |
 | `prewarnSeconds` | `createTask` | Yeni görevlere varsayılan uyarı süresi |

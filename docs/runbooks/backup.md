@@ -7,7 +7,7 @@ Power Pilot sırları **asla** `powerpilot_data.json` içinde tutmaz. Sırlar
 | Yedek türü | İçerik | Taşınabilir mi? |
 |---|---|---|
 | Veri dışa aktarımı | görevler, geçmiş, ayarlar (sırlar hariç), şablonlar, denetim | Evet |
-| `secrets.v1.json` | şifreli sırlar | **Hayır** — yalnızca aynı Windows kullanıcısı/makinesi çözebilir |
+| `secrets.v1.json` | şifreli sırlar | **Hayır** - yalnızca aynı Windows kullanıcısı/makinesi çözebilir |
 
 ## Dışa aktarma (önerilen)
 

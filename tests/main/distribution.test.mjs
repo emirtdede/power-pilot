@@ -1,5 +1,5 @@
 /**
- * distribution.test.mjs — Store (MSIX) / Pro özellik kapsamı.
+ * distribution.test.mjs - Store (MSIX) / Pro özellik kapsamı.
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
 

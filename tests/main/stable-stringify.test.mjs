@@ -1,5 +1,5 @@
 /**
- * stableStringify sözleşmesi — imza/idempotency determinizmi.
+ * stableStringify sözleşmesi - imza/idempotency determinizmi.
  *
  * Regresyon: fonksiyon ConsoleStore.js ve MigrateV2.js içinde birebir
  * kopyalanmıştı. İki kopyadan biri değişse HMAC imzaları ve migrasyon
@@ -11,7 +11,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { stableStringify } = require('../../src/main/util/stableStringify.js');
 
-describe('stableStringify — deterministik JSON', () => {
+describe('stableStringify - deterministik JSON', () => {
     it('anahtar sırası farklı iki nesne aynı çıktıyı verir', () => {
         const a = { z: 1, a: 2, m: { y: 3, b: 4 } };
         const b = { m: { b: 4, y: 3 }, a: 2, z: 1 };

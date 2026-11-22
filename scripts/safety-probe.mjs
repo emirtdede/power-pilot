@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * safety-probe.mjs — P0/BLOCKER-001 tanı aracı (SALT-OKUNUR)
+ * safety-probe.mjs - P0/BLOCKER-001 tanı aracı (SALT-OKUNUR)
  *
  * Gerçek SafetyPolicyEngine'i üretimdeki gibi çalıştırır ve varsayılan
  * `safetyPolicy` ile bir `user_interface` görevinin kararını yazdırır.
@@ -69,7 +69,7 @@ async function main() {
     if (opts.json) {
         process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
     } else {
-        process.stdout.write('Power Pilot — güvenlik sondası (salt-okunur, eylem yürütülmez)\n');
+        process.stdout.write('Power Pilot - güvenlik sondası (salt-okunur, eylem yürütülmez)\n');
         process.stdout.write(`  powercfg /requests yeteneği : ${capability.available === true ? 'VAR' : 'YOK'}${capability.available ? '' : ' (yükseltme gerekli)'}\n`);
         process.stdout.write(`  kod                         : ${capability.code || 'yok'}\n`);
         process.stdout.write(`  karar                       : ${verdict.allowed ? 'ALLOWED' : `BLOCKED (${verdict.reasonCode})`}\n`);

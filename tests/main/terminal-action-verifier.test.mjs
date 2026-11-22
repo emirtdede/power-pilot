@@ -1,5 +1,5 @@
 /**
- * terminal-action-verifier.test.mjs — A6 kapatma vetosu tespiti
+ * terminal-action-verifier.test.mjs - A6 kapatma vetosu tespiti
  *
  * Saf mantık: timer fonksiyonları enjekte edilir, gerçek bekleme yok,
  * hiçbir OS güç komutu çalıştırılmaz.

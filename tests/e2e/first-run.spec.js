@@ -1,9 +1,9 @@
 /**
- * first-run.spec.js — ilk açılış rehberi ve PIN çıkmazı
+ * first-run.spec.js - ilk açılış rehberi ve PIN çıkmazı
  *
  * PPX-016 (T-08.17) tek kurulum deneyimi:
- *  S1 — sihirbazı atlayan kullanıcı rehberi GÖRMEZ.
- *  S2 — sihirbaz zaten tamamlanmışsa rehber görünür ve 1 görev oluşturur.
+ *  S1 - sihirbazı atlayan kullanıcı rehberi GÖRMEZ.
+ *  S2 - sihirbaz zaten tamamlanmışsa rehber görünür ve 1 görev oluşturur.
  *
  * (Eski tek senaryo, PPX-016 kararıyla bilinçli olarak ikiye bölündü.)
  */

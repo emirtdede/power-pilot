@@ -1,5 +1,5 @@
 /**
- * scheduler.test.mjs — WBS-2.2 / TS-2.2
+ * scheduler.test.mjs - WBS-2.2 / TS-2.2
  * TaskSchedulerBridge: komut inşası, Store yasağı, lead-time, argv ayrıştırma.
  * Gerçek schtasks ASLA çalışmaz (sahte exec enjeksiyonu).
  */
@@ -51,7 +51,7 @@ describe('paketlenmemiş electron.exe koruması', () => {
     });
 });
 
-describe('removeAllTasks — sahipsiz kayıt temizliği (P1)', () => {
+describe('removeAllTasks - sahipsiz kayıt temizliği (P1)', () => {
     it('yalnızca \\PowerPilot klasöründeki görevleri siler, başkalarına dokunmaz', async () => {
         const calls = [];
         const queryOutput = [
@@ -286,7 +286,7 @@ describe('WP-05 güvenlik kabul testleri (T-SCH-01..04)', () => {
     });
 });
 
-describe('forwardRunTask — second-instance iletimi (P0-2)', () => {
+describe('forwardRunTask - second-instance iletimi (P0-2)', () => {
     it('Chromium bayrakları arasından id bulunur ve çalıştırılır', () => {
         const runTaskNow = vi.fn(() => true);
         const removeTask = vi.fn(async () => true);

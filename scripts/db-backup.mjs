@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * db-backup.mjs — WP-11.T11
+ * db-backup.mjs - WP-11.T11
  * `powerpilot.db` için VACUUM INTO + AES-256-GCM yedek.
  *
  * Kullanım:

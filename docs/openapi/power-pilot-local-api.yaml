@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Power Pilot Local API
-  description: Local REST API for controlling Power Pilot automation tasks, retrieving device status, and triggering power actions.
+  description: Full-parity local REST API for controlling Power Pilot headlessly via CLI, MCP, scripts, and enterprise automation.
   version: 1.0.0
   contact:
     name: Vellium
@@ -13,7 +13,7 @@ servers:
 paths:
   /status:
     get:
-      summary: Get device and app status
+      summary: Get device, daemon/headless flag, and app status
       security:
         - ApiKeyAuth: []
       responses:
@@ -21,37 +21,91 @@ paths:
           description: OK
   /tasks:
     get:
-      summary: List all automation tasks
+      summary: List all automation tasks (paginated, optional status filter)
       security:
         - ApiKeyAuth: []
       responses:
         '200':
           description: OK
+    post:
+      summary: Create a full automation task (triggers, SmartFinish conditions, recurrence, chains)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '201':
+          description: Task Created
   /tasks/timer:
     post:
       summary: Create a quick timer automation task
       security:
         - ApiKeyAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - action
-                - durationMs
-              properties:
-                name:
-                  type: string
-                action:
-                  type: string
-                  enum: [shutdown, restart, sleep, hibernate, lock, signout]
-                durationMs:
-                  type: integer
       responses:
         '201':
           description: Task Created
+  /tasks/clear-finished:
+    post:
+      summary: Remove all terminal (completed, cancelled, failed, blocked, expired) tasks
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Cleared
+  /tasks/pause-all:
+    post:
+      summary: Toggle or set global automation pause kill-switch
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Updated
+  /tasks/{id}:
+    delete:
+      summary: Delete a non-running task by id
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Deleted
+  /tasks/{id}/cancel:
+    post:
+      summary: Cancel a scheduled task by id
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Task Cancelled
+  /tasks/{id}/pause:
+    post:
+      summary: Pause a task by id
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Task Paused
+  /tasks/{id}/resume:
+    post:
+      summary: Resume a paused task by id
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Task Resumed
+  /tasks/{id}/snooze:
+    post:
+      summary: Snooze an active or scheduled task by 1..1440 minutes
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Task Snoozed
+  /tasks/{id}/run-now:
+    post:
+      summary: Immediately execute a task through the full safety and warning pipeline
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Task Started
   /power/lock:
     post:
       summary: Schedule workstation lock via safety pipeline (5s + warning)
@@ -100,20 +154,296 @@ paths:
       responses:
         '200':
           description: OK
-  /tasks/{id}/cancel:
-    post:
-      summary: Cancel a scheduled task by id
+  /templates:
+    get:
+      summary: List built-in and custom automation templates
       security:
         - ApiKeyAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
       responses:
         '200':
-          description: Task Cancelled
+          description: OK
+    post:
+      summary: Create a custom template or override a built-in template
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '201':
+          description: Template Saved
+  /templates/restore-defaults:
+    post:
+      summary: Restore hidden built-in templates and optionally reset overrides
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Restored
+  /templates/{id}:
+    delete:
+      summary: Delete a user template or hide a built-in template
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Deleted
+  /templates/{id}/reset:
+    post:
+      summary: Reset a built-in template override
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Reset
+  /templates/{id}/run:
+    post:
+      summary: Instantiate and start a task directly from a template
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '201':
+          description: Task Created
+  /settings:
+    get:
+      summary: Read redacted application settings with secretPresence flags
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+    patch:
+      summary: Update schema-validated application settings (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Updated
+  /settings/security:
+    patch:
+      summary: Update security posture flags (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Updated
+  /security/status:
+    get:
+      summary: Get TLS/mTLS, API key rotation, PIN, storage, and audit security posture
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+  /history:
+    get:
+      summary: Get task execution history
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: Clear execution history (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Cleared
+  /statistics:
+    get:
+      summary: Get energy savings statistics (hours, kWh, cost, CO2)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+  /health:
+    get:
+      summary: Get local reliability and automation health summary
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+  /wol/devices:
+    get:
+      summary: List saved Wake-on-LAN devices
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+    put:
+      summary: Save Wake-on-LAN target devices list
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Saved
+  /wol/send:
+    post:
+      summary: Send Wake-on-LAN magic packet by MAC or saved device
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Sent
+  /webhooks:
+    get:
+      summary: List configured HTTPS webhooks with secrets redacted (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+    put:
+      summary: Save SSRF-guarded HTTPS webhooks (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Saved
+  /webhooks/test:
+    post:
+      summary: Send live test payload to an HTTPS webhook (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Tested
+  /ups/test:
+    post:
+      summary: Query NUT UPS server status
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+  /cloud/status:
+    get:
+      summary: Get serverless cloud backup status (OneDrive / multi-cloud)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+  /cloud/connect:
+    post:
+      summary: Connect cloud sync folder (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Connected
+  /cloud/disconnect:
+    post:
+      summary: Disconnect cloud sync (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Disconnected
+  /cloud/sync:
+    post:
+      summary: Sync backup snapshot now
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Synced
+  /cloud/restore:
+    post:
+      summary: Restore latest valid backup from cloud folder (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Restored
+  /cloud/provider:
+    post:
+      summary: Switch detected cloud provider (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Switched
+  /cloud/autosync:
+    patch:
+      summary: Toggle automatic cloud sync on change (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Updated
+  /ai/parse:
+    post:
+      summary: Parse natural-language power command offline (and optionally execute)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Parsed
+  /ai/assist:
+    post:
+      summary: Run local multi-agent assistant (command, template, docs QA, diagnose, energy)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+  /ai/diagnose:
+    post:
+      summary: Diagnose why a power action was blocked or skipped
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+  /docs/search:
+    get:
+      summary: Offline documentation RAG search
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+  /diagnostics:
+    get:
+      summary: Get sanitized diagnostics snapshot and logs (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: Clear stored diagnostic logs (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Cleared
+  /diagnostics/bundle:
+    post:
+      summary: Generate masked ZIP support bundle (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '201':
+          description: Bundle Created
+  /updates/status:
+    get:
+      summary: Get update service status and channel info
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+  /updates/check:
+    post:
+      summary: Check for updates (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Checked
   /inventory:
     get:
       summary: Get device inventory (FAZ B enterprise)
@@ -158,12 +488,6 @@ paths:
       summary: Revoke a policy exemption, admin only (FAZ B enterprise)
       security:
         - ApiKeyAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: Exemption Revoked
@@ -187,42 +511,14 @@ paths:
       summary: Remove a maintenance window, admin only (FAZ B enterprise)
       security:
         - ApiKeyAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: Window Removed
   /audit:
     get:
       summary: Get hash-chained audit log, admin only (FAZ B enterprise)
-      description: Returns paginated audit entries. Pass verify=1 to include chain verification (expensive, separate by default).
       security:
         - ApiKeyAuth: []
-      parameters:
-        - name: limit
-          in: query
-          required: false
-          schema:
-            type: integer
-            default: 100
-            minimum: 1
-            maximum: 500
-        - name: beforeSeq
-          in: query
-          required: false
-          schema:
-            type: integer
-        - name: verify
-          in: query
-          required: false
-          description: Set to 1 to include chain verification in the response.
-          schema:
-            type: string
-            enum: ['1']
       responses:
         '200':
           description: OK
@@ -234,6 +530,220 @@ paths:
       responses:
         '200':
           description: OK
+  /warning:
+    get:
+      summary: Inspect active pre-action warning countdown state
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+  /warning/confirm:
+    post:
+      summary: Confirm active warning countdown to execute immediately
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Confirmed
+  /warning/snooze:
+    post:
+      summary: Snooze active warning countdown (enforces Cancel PIN if configured)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Snoozed
+  /warning/cancel:
+    post:
+      summary: Cancel active warning countdown and task (enforces Cancel PIN if configured)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Cancelled
+  /ai/status:
+    get:
+      summary: Get local AI LLM/STT model, RAM readiness, and download state
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+  /ai/model/download:
+    post:
+      summary: Start SHA-256 verified local AI model download in background (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '202':
+          description: Download Started
+  /ai/model/load:
+    post:
+      summary: Load installed local GGUF LLM into memory (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Loaded
+  /ai/model/unload:
+    post:
+      summary: Unload local GGUF LLM from memory (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Unloaded
+  /ai/energy:
+    get:
+      summary: Get local AI energy advisor insight from verified statistics
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+  /ai/suggest:
+    get:
+      summary: Get local AI automation suggestion from execution history
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+  /ai/dismiss-suggestion:
+    post:
+      summary: Dismiss a local AI suggestion topic
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Dismissed
+  /device/estimate:
+    post:
+      summary: Profile device hardware wattage and optionally persist to settings
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+  /console/sync:
+    post:
+      summary: Trigger manual enterprise console sync and drain signed orders (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Synced
+  /updates/download:
+    post:
+      summary: Download verified pending update package (admin only, Direct NSIS)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Downloaded
+  /updates/install-on-quit:
+    patch:
+      summary: Toggle install-update-on-quit flag (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Updated
+  /updates/install:
+    post:
+      summary: Install downloaded update now (admin only; enforces Cancel PIN when tasks active)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Installing
+  /cloud/folder:
+    put:
+      summary: Set custom local cloud sync directory path (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Updated
+  /cloud/folder/reset:
+    post:
+      summary: Reset cloud sync directory to auto-detected default (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Reset
+  /cloud/dismiss-recovery:
+    post:
+      summary: Dismiss cloud recovery prompt for fresh install (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Dismissed
+  /export/settings:
+    get:
+      summary: Export sanitized settings JSON without secrets (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+  /import/settings:
+    post:
+      summary: Import validated settings JSON payload (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Imported
+  /export/templates:
+    get:
+      summary: Export custom automation templates JSON payload
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+  /import/templates:
+    post:
+      summary: Import and merge automation templates JSON payload
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Imported
+  /security/cancel-pin:
+    get:
+      summary: Check whether Cancel PIN lock is configured
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+    put:
+      summary: Configure or rotate Argon2id Cancel PIN (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: PIN Set
+    delete:
+      summary: Clear Cancel PIN after verifying current PIN (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: PIN Cleared
+  /security/rotate-key:
+    post:
+      summary: Rotate Local REST API key and refresh cli-connection.json (admin only)
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Key Rotated
 components:
   securitySchemes:
     ApiKeyAuth:

@@ -1,5 +1,5 @@
 /**
- * agents/templateAgent.js — WP-8
+ * agents/templateAgent.js - WP-8
  * Doğal dil (TR + EN) girdisinden doğrulanmış Power Pilot Otomasyon Şablonu
  * önerisi üretir. Sadece taslak öneri döndürür; kullanıcı onaylamadan diske yazmaz.
  */

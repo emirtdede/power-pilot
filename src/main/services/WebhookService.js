@@ -1,5 +1,5 @@
 /**
- * WebhookService.js — WP-12
+ * WebhookService.js - WP-12
  * SSRF-korumalı, HTTPS-only, HMAC imzalı webhook teslimatı.
  * Ağ hatası/5xx/429 için en fazla 3 deneme; yönlendirme izlenmez.
  */

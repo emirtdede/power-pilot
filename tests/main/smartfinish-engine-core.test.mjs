@@ -1,5 +1,5 @@
 /**
- * smartfinish-engine-core.test.mjs — Smart Finish koşul değerlendirmesi
+ * smartfinish-engine-core.test.mjs - Smart Finish koşul değerlendirmesi
  *
  * Metrikler enjekte edilir; dosya/klasör koşulları GEÇİCİ dizinde gerçek
  * dosyalarla sınanır. OS güç eylemi yoktur.
@@ -34,7 +34,7 @@ let dir;
 beforeEach(() => { dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-sf-')); });
 afterEach(() => { try { fs.rmSync(dir, { recursive: true, force: true }); } catch (_) { /* yut */ } });
 
-describe('SmartFinishEngine — grup mantığı', () => {
+describe('SmartFinishEngine - grup mantığı', () => {
     it('koşul yoksa sağlanmaz', () => {
         const { engine } = engineWith(metrics());
         expect(engine.evaluateTask({ id: 't' })).toMatchObject({ satisfied: false });
@@ -106,7 +106,7 @@ describe('SmartFinishEngine — grup mantığı', () => {
     });
 });
 
-describe('SmartFinishEngine — tek koşullar', () => {
+describe('SmartFinishEngine - tek koşullar', () => {
     it('process_running: çalışıyor/kapalı/geçersiz/stale', () => {
         const { engine } = engineWith(metrics({ runningProcesses: ['code.exe'] }));
         expect(engine.evaluateSingleCondition({ type: CONDITION_TYPE.PROCESS_RUNNING, processName: 'code.exe' }, metrics({ runningProcesses: ['code.exe'] })).satisfied).toBe(true);
@@ -148,7 +148,7 @@ describe('SmartFinishEngine — tek koşullar', () => {
     });
 });
 
-describe('SmartFinishEngine — dosya koşulları', () => {
+describe('SmartFinishEngine - dosya koşulları', () => {
     it('file_stable: yok / klasör / symlink / kısmi dosya / izleme / sabit', () => {
         const { engine } = engineWith(metrics());
         const file = path.join(dir, 'data.bin');

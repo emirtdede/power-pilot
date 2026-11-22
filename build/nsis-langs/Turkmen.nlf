@@ -1,0 +1,191 @@
+﻿# Header, don't edit
+NLF v6
+# Start editing here
+# Language ID
+1090
+# Font and size - dash (-) means default
+-
+-
+# Codepage - dash (-) means ASCII code page
+1200
+# RTL - anything else than RTL means LTR
+-
+# Power Pilot custom NLF table
+# ^Branding
+Nullsoft Install System %s
+# ^SetupCaption
+$(^Name) Gurnama
+# ^UninstallCaption
+$(^Name) Aýyrmak
+# ^LicenseSubCaption
+: License
+# ^ComponentsSubCaption
+: Gurnama Bukjasy
+# ^DirSubCaption
+: Gurnama Bukjasy
+# ^InstallingSubCaption
+: Gurnalýar
+# ^CompletedSubCaption
+: Tamamlandy
+# ^UnComponentsSubCaption
+: Aýrylýar
+# ^UnDirSubCaption
+: Gurnama Bukjasy
+# ^ConfirmSubCaption
+: Aýrylýar
+# ^UninstallingSubCaption
+: Aýrylýar
+# ^UnCompletedSubCaption
+: Tamamlandy
+# ^BackBtn
+< &Yza
+# ^NextBtn
+&Indiki >
+# ^AgreeBtn
+&Razy
+# ^AcceptBtn
+&Razy
+# ^DontAcceptBtn
+Ýatyr
+# ^InstallBtn
+&Gurna
+# ^UninstallBtn
+&Aýyr
+# ^CancelBtn
+Ýatyr
+# ^CloseBtn
+&Ýap
+# ^BrowseBtn
+&Gözle...
+# ^ShowDetailsBtn
+&Jikme-jiklikleri görkez
+# ^ClickNext
+Dowam etmek üçin Indiki düwmesine basyň.
+# ^ClickInstall
+Gurnamagy başlatmak üçin Gurna düwmesine basyň.
+# ^ClickUninstall
+Aýyrmagy başlatmak üçin Aýyr düwmesine basyň.
+# ^Name
+Name
+# ^Completed
+Tamamlandy
+# ^LicenseText
+Dowam etmek üçin Indiki düwmesine basyň.
+# ^LicenseTextCB
+Dowam etmek üçin Indiki düwmesine basyň.
+# ^LicenseTextRB
+Dowam etmek üçin Indiki düwmesine basyň.
+# ^UnLicenseText
+Dowam etmek üçin Indiki düwmesine basyň.
+# ^UnLicenseTextCB
+Dowam etmek üçin Indiki düwmesine basyň.
+# ^UnLicenseTextRB
+Dowam etmek üçin Indiki düwmesine basyň.
+# ^Custom
+Custom
+# ^ComponentsText
+Dowam etmek üçin Indiki düwmesine basyň.
+# ^ComponentsSubText1
+Dowam etmek üçin Indiki düwmesine basyň.
+# ^ComponentsSubText2_NoInstTypes
+Dowam etmek üçin Indiki düwmesine basyň.
+# ^ComponentsSubText2
+Dowam etmek üçin Indiki düwmesine basyň.
+# ^UnComponentsText
+Dowam etmek üçin Indiki düwmesine basyň.
+# ^UnComponentsSubText1
+Dowam etmek üçin Indiki düwmesine basyň.
+# ^UnComponentsSubText2_NoInstTypes
+Dowam etmek üçin Indiki düwmesine basyň.
+# ^UnComponentsSubText2
+Dowam etmek üçin Indiki düwmesine basyň.
+# ^DirText
+Gurnaýjy $(^NameDA) programmasyny aşakdaky bukja gurnar. Başga bukja saýlamak üçin Gözle düwmesine basyň. $_CLICK
+# ^DirSubText
+Maksat Bukja
+# ^DirBrowseText
+$(^NameDA) gurnaljak bukjany saýlaň:
+# ^UnDirText
+$(^NameDA) aşakdaky bukjadan aýrylar. $_CLICK
+# ^UnDirSubText
+""
+# ^UnDirBrowseText
+$(^NameDA) gurnaljak bukjany saýlaň:
+# ^SpaceAvailable
+"Elýeterli ýer: "
+# ^SpaceRequired
+"Gerekli ýer: "
+# ^UninstallingText
+$(^NameDA) aşakdaky bukjadan aýrylar. $_CLICK
+# ^UninstallingSubText
+Aýrylýan ýer:
+# ^FileError
+Error: \r\n\r\n$0
+# ^FileError_NoIgnore
+Error: \r\n\r\n$0
+# ^CantWrite
+"Error: "
+# ^CopyFailed
+Error
+# ^CopyTo
+"-> "
+# ^Registering
+"... "
+# ^Unregistering
+"... "
+# ^SymbolNotFound
+"Error: "
+# ^CouldNotLoad
+"Error: "
+# ^CreateFolder
+"+ "
+# ^CreateShortcut
+"+ "
+# ^CreatedUninstaller
+"+ "
+# ^Delete
+"- "
+# ^DeleteOnReboot
+"- "
+# ^ErrorCreatingShortcut
+"Error: "
+# ^ErrorCreating
+"Error: "
+# ^ErrorDecompressing
+Faýllary açyp bolmady. Gurnaýjyny täzeden işlediň.
+# ^ErrorRegistering
+DLL Error
+# ^ExecShell
+"Exec: "
+# ^Exec
+"Exec: "
+# ^Extract
+"-> "
+# ^ErrorWriting
+"Error: "
+# ^InvalidOpcode
+Faýllary açyp bolmady. Gurnaýjyny täzeden işlediň.
+# ^NoOLE
+"OLE: "
+# ^OutputFolder
+"-> "
+# ^RemoveFolder
+"- "
+# ^RenameOnReboot
+"-> "
+# ^Rename
+"-> "
+# ^Skipped
+"... "
+# ^CopyDetails
+Jikme-jiklikleri göçür
+# ^LogInstall
+Log
+# ^Byte
+B
+# ^Kilo
+ K
+# ^Mega
+ M
+# ^Giga
+ G

@@ -1,5 +1,5 @@
 /**
- * a11y.spec.js — C4 erişilebilirlik kapısı (E2E)
+ * a11y.spec.js - C4 erişilebilirlik kapısı (E2E)
  *
  * Kilitleyen gerçek hata: süre seçicideki 6 ikon-only artır/azalt düğmesinin
  * erişilebilir adı yoktu; ekran okuyucu "düğme" diyordu (WCAG 4.1.2).

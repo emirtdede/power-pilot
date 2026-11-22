@@ -1,0 +1,191 @@
+﻿# Header, don't edit
+NLF v6
+# Start editing here
+# Language ID
+1109
+# Font and size - dash (-) means default
+-
+-
+# Codepage - dash (-) means ASCII code page
+1200
+# RTL - anything else than RTL means LTR
+-
+# Power Pilot custom NLF table
+# ^Branding
+Nullsoft Install System %s
+# ^SetupCaption
+$(^Name) တပ်ဆင်ခြင်း
+# ^UninstallCaption
+$(^Name) ဖယ်ရှားခြင်း
+# ^LicenseSubCaption
+: License
+# ^ComponentsSubCaption
+: တပ်ဆင်မည့် ဖိုဒါ
+# ^DirSubCaption
+: တပ်ဆင်မည့် ဖိုဒါ
+# ^InstallingSubCaption
+: တပ်ဆင်နေသည်
+# ^CompletedSubCaption
+: ပြီးဆုံးပြီ
+# ^UnComponentsSubCaption
+: ဖယ်ရှားနေသည်
+# ^UnDirSubCaption
+: တပ်ဆင်မည့် ဖိုဒါ
+# ^ConfirmSubCaption
+: ဖယ်ရှားနေသည်
+# ^UninstallingSubCaption
+: ဖယ်ရှားနေသည်
+# ^UnCompletedSubCaption
+: ပြီးဆုံးပြီ
+# ^BackBtn
+< &နောက်သို့
+# ^NextBtn
+&ရှေ့သို့ >
+# ^AgreeBtn
+&သဘောတူသည်
+# ^AcceptBtn
+&သဘောတူသည်
+# ^DontAcceptBtn
+ပယ်ဖျက်မည်
+# ^InstallBtn
+&တပ်ဆင်မည်
+# ^UninstallBtn
+&ဖယ်ရှားမည်
+# ^CancelBtn
+ပယ်ဖျက်မည်
+# ^CloseBtn
+&ပိတ်မည်
+# ^BrowseBtn
+&ရှာဖွေမည်...
+# ^ShowDetailsBtn
+&အသေးစိတ်ပြမည်
+# ^ClickNext
+ဆက်လက်လုပ်ဆောင်ရန် ရှေ့သို့ ကို နှိပ်ပါ။
+# ^ClickInstall
+တပ်ဆင်ခြင်းစတင်ရန် တပ်ဆင်မည် ကို နှိပ်ပါ။
+# ^ClickUninstall
+ဖယ်ရှားခြင်းစတင်ရန် ဖယ်ရှားမည် ကို နှိပ်ပါ။
+# ^Name
+Name
+# ^Completed
+ပြီးဆုံးပြီ
+# ^LicenseText
+ဆက်လက်လုပ်ဆောင်ရန် ရှေ့သို့ ကို နှိပ်ပါ။
+# ^LicenseTextCB
+ဆက်လက်လုပ်ဆောင်ရန် ရှေ့သို့ ကို နှိပ်ပါ။
+# ^LicenseTextRB
+ဆက်လက်လုပ်ဆောင်ရန် ရှေ့သို့ ကို နှိပ်ပါ။
+# ^UnLicenseText
+ဆက်လက်လုပ်ဆောင်ရန် ရှေ့သို့ ကို နှိပ်ပါ။
+# ^UnLicenseTextCB
+ဆက်လက်လုပ်ဆောင်ရန် ရှေ့သို့ ကို နှိပ်ပါ။
+# ^UnLicenseTextRB
+ဆက်လက်လုပ်ဆောင်ရန် ရှေ့သို့ ကို နှိပ်ပါ။
+# ^Custom
+Custom
+# ^ComponentsText
+ဆက်လက်လုပ်ဆောင်ရန် ရှေ့သို့ ကို နှိပ်ပါ။
+# ^ComponentsSubText1
+ဆက်လက်လုပ်ဆောင်ရန် ရှေ့သို့ ကို နှိပ်ပါ။
+# ^ComponentsSubText2_NoInstTypes
+ဆက်လက်လုပ်ဆောင်ရန် ရှေ့သို့ ကို နှိပ်ပါ။
+# ^ComponentsSubText2
+ဆက်လက်လုပ်ဆောင်ရန် ရှေ့သို့ ကို နှိပ်ပါ။
+# ^UnComponentsText
+ဆက်လက်လုပ်ဆောင်ရန် ရှေ့သို့ ကို နှိပ်ပါ။
+# ^UnComponentsSubText1
+ဆက်လက်လုပ်ဆောင်ရန် ရှေ့သို့ ကို နှိပ်ပါ။
+# ^UnComponentsSubText2_NoInstTypes
+ဆက်လက်လုပ်ဆောင်ရန် ရှေ့သို့ ကို နှိပ်ပါ။
+# ^UnComponentsSubText2
+ဆက်လက်လုပ်ဆောင်ရန် ရှေ့သို့ ကို နှိပ်ပါ။
+# ^DirText
+တပ်ဆင်သည့်ပရိုဂရမ်သည် $(^NameDA) ကို အောက်ပါဖိုဒါတွင် တပ်ဆင်ပါမည်။ အခြားဖိုဒါရွေးရန် ရှာဖွေမည် ကို နှိပ်ပါ။ $_CLICK
+# ^DirSubText
+သိမ်းဆည်းမည့် ဖိုဒါ
+# ^DirBrowseText
+$(^NameDA) တပ်ဆင်မည့် ဖိုဒါကို ရွေးချယ်ပါ:
+# ^UnDirText
+$(^NameDA) ကို အောက်ပါဖိုဒါမှ ဖယ်ရှားပါမည်။ $_CLICK
+# ^UnDirSubText
+""
+# ^UnDirBrowseText
+$(^NameDA) တပ်ဆင်မည့် ဖိုဒါကို ရွေးချယ်ပါ:
+# ^SpaceAvailable
+"ရရှိနိုင်သော နေရာလွတ်: "
+# ^SpaceRequired
+"လိုအပ်သော နေရာလွတ်: "
+# ^UninstallingText
+$(^NameDA) ကို အောက်ပါဖိုဒါမှ ဖယ်ရှားပါမည်။ $_CLICK
+# ^UninstallingSubText
+ဖယ်ရှားမည့် နေရာ:
+# ^FileError
+Error: \r\n\r\n$0
+# ^FileError_NoIgnore
+Error: \r\n\r\n$0
+# ^CantWrite
+"Error: "
+# ^CopyFailed
+Error
+# ^CopyTo
+"-> "
+# ^Registering
+"... "
+# ^Unregistering
+"... "
+# ^SymbolNotFound
+"Error: "
+# ^CouldNotLoad
+"Error: "
+# ^CreateFolder
+"+ "
+# ^CreateShortcut
+"+ "
+# ^CreatedUninstaller
+"+ "
+# ^Delete
+"- "
+# ^DeleteOnReboot
+"- "
+# ^ErrorCreatingShortcut
+"Error: "
+# ^ErrorCreating
+"Error: "
+# ^ErrorDecompressing
+ဖိုင်များ ဖြည်ရာတွင် မအောင်မြင်ပါ။ တပ်ဆင်သည့်ဖိုင်ကို ပြန်ဖွင့်ပါ။
+# ^ErrorRegistering
+DLL Error
+# ^ExecShell
+"Exec: "
+# ^Exec
+"Exec: "
+# ^Extract
+"-> "
+# ^ErrorWriting
+"Error: "
+# ^InvalidOpcode
+ဖိုင်များ ဖြည်ရာတွင် မအောင်မြင်ပါ။ တပ်ဆင်သည့်ဖိုင်ကို ပြန်ဖွင့်ပါ။
+# ^NoOLE
+"OLE: "
+# ^OutputFolder
+"-> "
+# ^RemoveFolder
+"- "
+# ^RenameOnReboot
+"-> "
+# ^Rename
+"-> "
+# ^Skipped
+"... "
+# ^CopyDetails
+အသေးစိတ်ကို ကူးယူမည်
+# ^LogInstall
+Log
+# ^Byte
+B
+# ^Kilo
+ K
+# ^Mega
+ M
+# ^Giga
+ G

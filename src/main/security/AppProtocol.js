@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * AppProtocol.js — WP-10.T1/T2
+ * AppProtocol.js - WP-10.T1/T2
  * Renderer `file://` yerine `app://` özel protokolünden yüklenir.
  * Protokol "standard + secure" olarak kaydedilir; böylece origin ayrımı,
  * CSP ve `will-navigate` denetimleri güvenilir çalışır.

@@ -1,15 +1,15 @@
 /**
- * tests/e2e/helpers/a11y.js — PPX yardımcıları (bağımlılıksız, saf DOM).
+ * tests/e2e/helpers/a11y.js - PPX yardımcıları (bağımlılıksız, saf DOM).
  *
- * `contrast(fg, bg)`  : WCAG 2.x bağıl parlaklık oranı (1–21).
+ * `contrast(fg, bg)`  : WCAG 2.x bağıl parlaklık oranı (1-21).
  * `rectOverlap(a, b)` : iki DOMRect'in kesişim alanı (px²).
  * `visibleFocusables(page, root)` : odaklanabilir + görünür öğe listesi.
  * `waitForStable(page, ms)` : yerleşim/animasyon oturması için bekleme.
  *
- * Hiçbir paket kullanılmaz (axe-core reddedildi — plan §3/D9).
+ * Hiçbir paket kullanılmaz (axe-core reddedildi - plan §3/D9).
  */
 
-/** '#rrggbb' | '#rgb' | 'rgb(r, g, b)' → [r, g, b] (0–255). */
+/** '#rrggbb' | '#rgb' | 'rgb(r, g, b)' → [r, g, b] (0-255). */
 function parseColor(value) {
     const s = String(value || '').trim();
     let m = s.match(/^#([0-9a-f]{3})$/i);

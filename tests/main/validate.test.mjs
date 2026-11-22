@@ -1,5 +1,5 @@
 /**
- * validate.test.mjs — WBS-2.1 / TS-2.1
+ * validate.test.mjs - WBS-2.1 / TS-2.1
  * IPC doğrulama katmanı birim testleri (saf fonksiyonlar, mock yok).
  */
 import { describe, it, expect } from 'vitest';

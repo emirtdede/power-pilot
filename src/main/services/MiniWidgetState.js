@@ -1,5 +1,5 @@
 /**
- * MiniWidgetState — mini pencere sayaç durumunun TEK hesap noktası.
+ * MiniWidgetState - mini pencere sayaç durumunun TEK hesap noktası.
  *
  * NEDEN VAR (bulunan kusur):
  *   Mini pencere, `taskManager.getActiveTasks().length > 0` olduğunda açılıyor
@@ -7,7 +7,7 @@
  *   pencerenin renderer'ı gönderiyordu (`app.js` `updateDisplay` →
  *   `updateMiniTimer`). Sonuç: hızlı zamanlayıcı dışında bir görev aktifken
  *   (Smart Finish, şablon, zamanlanmış görev, zincir) mini pencere açılıyor ama
- *   içi **`--` / `00:00`** kalıyordu — kullanıcıya "sayaç var" izlenimi verip
+ *   içi **`--` / `00:00`** kalıyordu - kullanıcıya "sayaç var" izlenimi verip
  *   hiçbir bilgi vermeyen boş bir widget.
  *
  *   Ölçüm (öncesi): `createTask({trigger:{type:'duration',durationMs:3600000}})`

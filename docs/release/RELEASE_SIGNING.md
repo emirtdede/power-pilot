@@ -1,4 +1,4 @@
-# Power Pilot — Windows İmzalama ve Dağıtım Prosedürü (1.1.0)
+# Power Pilot - Windows İmzalama ve Dağıtım Prosedürü (1.1.0)
 
 ## 1. Hedef
 
@@ -26,7 +26,7 @@ imzasız üretilir; release CI'da değişken zorunludur. SHA-256 +
 > `npm run pack` gerçek CLI yerine yapılandırma dosyasını çalıştırıp **0 koduyla
 > hiç derleme yapmıyordu**. `.cjs` uzantısı bu gölgelemeyi kaldırır.
 
-### 2.1 Yerel (bütçesiz) imzalama — kendinden imzalı sertifika
+### 2.1 Yerel (bütçesiz) imzalama - kendinden imzalı sertifika
 
 Üretimde HSM/TPM zorunludur. Bütçe yoksa yerel/şirket içi dağıtım için
 kendinden imzalı sertifika ile imzalanabilir:

@@ -1,5 +1,5 @@
 /**
- * MigrateV2.js — WP-11.T4
+ * MigrateV2.js - WP-11.T4
  * v2 JSON deposunu (`powerpilot_data.json`) v3 SQLite deposuna atomik taşır.
  *
  * Güvenlik sırası:
@@ -35,7 +35,7 @@ function fileSha256(filePath) {
 }
 
 function contentChecksum(value) {
-    // Deterministik anahtar sıralı JSON — doğrulama için yeterli.
+    // Deterministik anahtar sıralı JSON - doğrulama için yeterli.
     return sha256(stableStringify(value));
 }
 
@@ -152,8 +152,8 @@ function validateMigratedTarget(target, { sourceSha, checksum }) {
  * @param {string} opts.userDataPath
  * @param {string} [opts.jsonPath]
  * @param {string} [opts.dbPath]
- * @param {Function} opts.writeAll (db, data) => void — tek transaction içinde tüm satırları yazar
- * @param {Function} [opts.normalize] (data) => data — StorageService normalizasyonu
+ * @param {Function} opts.writeAll (db, data) => void - tek transaction içinde tüm satırları yazar
+ * @param {Function} [opts.normalize] (data) => data - StorageService normalizasyonu
  * @returns {{status:string, counts?:object, sha256?:string, backupPath?:string, error?:string}}
  */
 function migrateV2({ userDataPath, jsonPath = null, dbPath = null, writeAll, normalize = null } = {}) {

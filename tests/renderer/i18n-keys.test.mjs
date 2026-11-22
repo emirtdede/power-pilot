@@ -1,5 +1,5 @@
 /**
- * i18n-keys.test.mjs — dil sızıntısı sözleşmesi (statik)
+ * i18n-keys.test.mjs - dil sızıntısı sözleşmesi (statik)
  *
  * Üç kapı:
  *  - Şablonlarda ve JS'te başvurulan her i18n anahtarı sözlükte var olmalı
@@ -37,7 +37,7 @@ function referencedKeys() {
     return keys;
 }
 
-describe('i18n — anahtar sözleşmesi', () => {
+describe('i18n - anahtar sözleşmesi', () => {
     it('şablon/JS başvurularının tamamı tr sözlüğünde var', () => {
         const tr = dict('tr');
         const missing = [...referencedKeys()].filter((key) => !(key in tr));
@@ -60,7 +60,7 @@ describe('i18n — anahtar sözleşmesi', () => {
     });
 });
 
-describe('i18n — erişilebilir adlar', () => {
+describe('i18n - erişilebilir adlar', () => {
     for (const file of htmlFiles) {
         it(`${file}: ikon-only düğmeler i18n ile adlandırılmış`, () => {
             const { document } = new JSDOM(read(file)).window;
@@ -88,7 +88,7 @@ describe('i18n — erişilebilir adlar', () => {
     });
 });
 
-describe('i18n — açılış kapısı (yanlış dil flaşı yok)', () => {
+describe('i18n - açılış kapısı (yanlış dil flaşı yok)', () => {
     it('iskelet i18n-pending ile gizlenir ve CSS kapısı tanımlı', () => {
         const { document } = new JSDOM(read('src/index.html')).window;
         expect(document.documentElement.classList.contains('i18n-pending')).toBe(true);

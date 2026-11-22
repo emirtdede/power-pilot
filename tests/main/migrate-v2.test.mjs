@@ -1,5 +1,5 @@
 /**
- * migrate-v2.test.mjs — v2 JSON → v3 SQLite migrasyonu
+ * migrate-v2.test.mjs - v2 JSON → v3 SQLite migrasyonu
  * Gerçek dosyalar GEÇİCİ dizinde; hedef DB gerçek SQLite. Uygulama verisi yok.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -81,7 +81,7 @@ function writeLegacy(data = legacyData()) {
     return file;
 }
 
-describe('MigrateV2 — saf yardımcılar', () => {
+describe('MigrateV2 - saf yardımcılar', () => {
     it('stableStringify deterministik', () => {
         expect(stableStringify({ b: 1, a: [2, { d: 3, c: 4 }] })).toBe('{"a":[2,{"c":4,"d":3}],"b":1}');
         expect(stableStringify(null)).toBe('null');
@@ -148,7 +148,7 @@ describe('MigrateV2 — saf yardımcılar', () => {
     });
 });
 
-describe('MigrateV2 — migrateV2', () => {
+describe('MigrateV2 - migrateV2', () => {
     it('yazıcı yoksa StorageError', () => {
         expect(() => migrateV2({ userDataPath: dir })).toThrow();
     });

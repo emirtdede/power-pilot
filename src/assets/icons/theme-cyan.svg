@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0e7490"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="bolt-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#cffafe"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="url(#bg-grad)"/>
+  <circle cx="128" cy="128" r="80" fill="none" stroke="#a5f3fc" stroke-width="12" stroke-dasharray="20 15" stroke-linecap="round" opacity="0.92"/>
+  <circle cx="128" cy="128" r="62" fill="none" stroke="#ecfeff" stroke-width="4" opacity="0.44"/>
+  <path d="M136 64 L76 148 L120 148 L112 196 L180 108 L136 108 Z" fill="url(#bolt-grad)" filter="drop-shadow(0px 4px 6px rgba(8,51,68,0.42))"/>
+</svg>

@@ -1,5 +1,5 @@
 /**
- * fixtures.mjs — WP-00.T3
+ * fixtures.mjs - WP-00.T3
  * Deterministik test verisi fabrikaları: görev, emir, muafiyet, bakım
  * penceresi, eski JSON verisi, TLS materyali ve sahte schtasks.
  */
@@ -69,7 +69,7 @@ export function makeMaintenanceWindow(overrides = {}) {
     };
 }
 
-/** Eski (v0/v1) JSON veri dosyası — migrasyon testleri için. */
+/** Eski (v0/v1) JSON veri dosyası - migrasyon testleri için. */
 export function makeLegacyData(version = 0, overrides = {}) {
     return {
         version,

@@ -1,5 +1,5 @@
 /**
- * OrderSchema.js — WP-01.T1
+ * OrderSchema.js - WP-01.T1
  * OrderV2 yapısal doğrulayıcısı. İmza doğrulamasından ÖNCE çalışır; amaç
  * imza katmanına yalnızca dar, tipli ve sınırlı bir nesne ulaştırmaktır.
  *

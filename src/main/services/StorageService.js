@@ -1,11 +1,11 @@
 /**
- * StorageService.js — WP-11.T3/T5/T6/T7/T9
+ * StorageService.js - WP-11.T3/T5/T6/T7/T9
  * Uygulama deposu v3: SQLite (`powerpilot.db`) tek gerçek kaynak; `this.data`
  * yalnızca API uyumluluğu için hidratlanmış bellek görünümüdür.
  *
  * - Yazmalar BEGIN IMMEDIATE transaction'ı içinde, yalnızca DEĞİŞEN satırlar.
  * - v2 JSON açılışta atomik migrate edilir (MigrateV2); bozuk JSON'da bakım
- *   modu — kaynak dosya üzerine ASLA yazılmaz.
+ *   modu - kaynak dosya üzerine ASLA yazılmaz.
  * - Audit log HMAC-SHA256 zinciri + günlük checkpoint (WP-11.T7).
  * - Boot kayıtları dakika anahtarıyla tekilleştirilir, 365 gün saklanır.
  */
@@ -75,7 +75,7 @@ function legacyAuditHash(rec) {
 
 class StorageService {
     // userDataPathOverride: yalnızca test izolasyonu için (üretimde verilmez,
-    // app.getPath('userData') kullanılır). Açık DI — sessiz fallback yok.
+    // app.getPath('userData') kullanılır). Açık DI - sessiz fallback yok.
     constructor(userDataPathOverride = null) {
         this.userDataPath = userDataPathOverride || app.getPath('userData');
         this.dbPath = path.join(this.userDataPath, DB_FILE);
@@ -95,12 +95,27 @@ class StorageService {
         this._stmts = new Map();
         this._snapshots = {};
         this.auditCheckpoint = null;
+        this._changeListener = null;
 
         this.init();
     }
 
     setSecretStore(secretStore) {
         this.secretStore = secretStore || null;
+    }
+
+    setChangeListener(listener) {
+        this._changeListener = typeof listener === 'function' ? listener : null;
+    }
+
+    _notifyChange(reason, options = {}) {
+        if (options && options.silent === true) return;
+        if (!this._changeListener) return;
+        try {
+            this._changeListener(reason);
+        } catch (err) {
+            log.warn('[StorageService] Degisiklik dinleyici hatasi (yutuldu):', err && err.message);
+        }
     }
 
     getDefaultData() {
@@ -114,7 +129,17 @@ class StorageService {
                 autostart: false,
                 theme: 'dark',
                 themeId: 'obsidian',
+                customThemeColor: '#3b82f6',
                 appIcon: 'monochrome-dark',
+                customIconColor: '#3b82f6',
+                syncIconWithTheme: false,
+                uiZoom: 100,
+                fontScale: 'normal',
+                highContrast: false,
+                enhancedFocus: false,
+                readableSpacing: false,
+                reduceMotion: false,
+                onboardingCompleted: false,
                 sidebarCollapsed: false,
                 notifications: true,
                 language: null, // null = kullanıcı seçmedi → ilk çalıştırmada sistem dili
@@ -207,6 +232,11 @@ class StorageService {
                 protectedApps: null,
                 pinLengthMode: 'flex',
                 autoBackupEnabled: true,
+                oneDriveConnected: false,
+                oneDriveAutoSync: true,
+                oneDriveCustomDir: null,
+                oneDriveLastSyncAt: null,
+                oneDriveRecoveryDismissed: false,
                 wakeMode: 'run',
                 wakeToleranceMinutes: 10,
                 shortcuts: {
@@ -216,6 +246,15 @@ class StorageService {
                     settings: 'Ctrl+,',
                     docs: 'F1'
                 },
+                globalShortcutsEnabled: false,
+                globalShortcutToggleWindow: 'Ctrl+Alt+P',
+                globalShortcutQuickStart: 'Ctrl+Alt+S',
+                globalShortcutCancel: 'Ctrl+Alt+X',
+                globalShortcutVoiceHud: 'Ctrl+Shift+Space',
+                aiTier: 'balanced',
+                voiceHudEnabled: true,
+                voiceReplyTtsEnabled: true,
+                autoCheckUpdates: false,
                 templateOverrides: {},
                 hiddenBuiltInTemplates: []
             },
@@ -300,7 +339,7 @@ class StorageService {
      *
      * Öncesinde yalnızca bakım moduna düşülüyordu: uygulama açılıyor ama HİÇBİR
      * görev oluşturulamıyor ("Task could not be created") ve kullanıcıya çıkış
-     * yolu gösterilmiyordu — son kullanıcı için "program bozuk" demekti.
+     * yolu gösterilmiyordu - son kullanıcı için "program bozuk" demekti.
      *
      * Burada bozuk dosya SİLİNMEZ: `quarantine/` altına taşınır (destek/veri
      * kurtarma umudu korunur) ve temiz bir veritabanıyla devam edilir. Karantina
@@ -474,7 +513,7 @@ class StorageService {
 
     /**
      * WP-11.T9: ölü pencereler (start === end) devre dışı bırakılır; sessiz
-     * silme yok — kullanıcıya uyarı metni taşınır.
+     * silme yok - kullanıcıya uyarı metni taşınır.
      */
     normalizeMaintenanceWindows() {
         const list = Array.isArray(this.data.maintenanceWindows) ? this.data.maintenanceWindows : [];
@@ -533,6 +572,7 @@ class StorageService {
                 this._flushInventory(payload.inventory || null);
                 this._flushBoot(payload.bootHistory || []);
             });
+            this._notifyChange('save');
             return true;
         } catch (err) {
             log.error('[StorageService] Yazma hatası:', err);
@@ -1045,23 +1085,23 @@ class StorageService {
      * Toplu kayıt API'si korunur; yalnızca değişen satırlar yazılır.
      * (T-STO-01: 1000 görevden biri güncellenince 1 satır.)
      */
-    saveTasks(tasks) {
+    saveTasks(tasks, options = {}) {
         if (!Array.isArray(tasks)) return false;
         this.data.tasks = tasks;
-        return this._persist(() => this._flushTasks(this._diskTasks()));
+        return this._persist(() => this._flushTasks(this._diskTasks()), 'tasks', options);
     }
 
-    saveTask(task) {
+    saveTask(task, options = {}) {
         if (!task || !task.id) return false;
         const index = this.data.tasks.findIndex((t) => t && t.id === task.id);
         if (index >= 0) this.data.tasks[index] = task;
         else this.data.tasks.push(task);
-        return this._persist(() => this._flushTasks(this._diskTasks()));
+        return this._persist(() => this._flushTasks(this._diskTasks()), 'tasks', options);
     }
 
-    deleteTask(taskId) {
+    deleteTask(taskId, options = {}) {
         this.data.tasks = this.data.tasks.filter((t) => !t || t.id !== taskId);
-        return this._persist(() => this._flushTasks(this._diskTasks()));
+        return this._persist(() => this._flushTasks(this._diskTasks()), 'tasks', options);
     }
 
     _diskTasks() {
@@ -1069,13 +1109,14 @@ class StorageService {
         return payload.tasks || [];
     }
 
-    _persist(fn) {
+    _persist(fn, reason = 'data', options = {}) {
         if (this.maintenanceMode || !this.db) return false;
         try {
             this.db.write(() => {
                 this._setMeta('updated_at', nowIso());
                 fn();
             });
+            this._notifyChange(reason, options);
             return true;
         } catch (err) {
             log.error('[StorageService] Kalıcılaştırma hatası:', err);
@@ -1100,7 +1141,13 @@ class StorageService {
     addHistoryRecord(record) {
         this.data.history.unshift(record);
         if (this.data.history.length > MAX_HISTORY) this.data.history = this.data.history.slice(0, MAX_HISTORY);
-        return this._persist(() => this._flushHistory(this._historyForDisk()));
+        return this._persist(() => this._flushHistory(this._historyForDisk()), 'history');
+    }
+
+    replaceHistory(records, options = {}) {
+        const list = Array.isArray(records) ? records.slice(0, MAX_HISTORY) : [];
+        this.data.history = list;
+        return this._persist(() => this._flushHistory(this._historyForDisk()), 'history', options);
     }
 
     _historyForDisk() {
@@ -1110,7 +1157,7 @@ class StorageService {
 
     clearHistory() {
         this.data.history = [];
-        return this._persist(() => this._flushHistory([]));
+        return this._persist(() => this._flushHistory([]), 'history');
     }
 
     // --- Settings API ------------------------------------------------------
@@ -1129,7 +1176,7 @@ class StorageService {
         }
     }
 
-    updateSettings(newSettings) {
+    updateSettings(newSettings, options = {}) {
         if (!newSettings || typeof newSettings !== 'object' || Array.isArray(newSettings)) return false;
         const safe = {};
         for (const [key, value] of Object.entries(newSettings)) {
@@ -1140,7 +1187,7 @@ class StorageService {
         // çağırana açık hata ver; sessiz "başarılı" yanıt üretilmez.
         const previous = this.data.settings;
         this.data.settings = Object.assign({}, previous, safe);
-        const ok = this._persist(() => this._flushSettings(this._settingsForDisk()));
+        const ok = this._persist(() => this._flushSettings(this._settingsForDisk()), 'settings', options);
         if (!ok) {
             this.data.settings = previous;
             throw Object.assign(new Error('Ayarlar kalıcılaştırılamadı.'), { code: 'SETTINGS_PERSIST_FAILED' });
@@ -1168,12 +1215,12 @@ class StorageService {
         return this.data.webhooks || [];
     }
 
-    saveWebhooks(webhooks) {
+    saveWebhooks(webhooks, options = {}) {
         this.data.webhooks = Array.isArray(webhooks) ? webhooks : [];
         return this._persist(() => {
             const payload = this.secretStore ? this.secretStore.stripForDisk(this.data) : this.data;
             this._flushCollection('webhooks', payload.webhooks || []);
-        });
+        }, 'webhooks', options);
     }
 
     // --- Templates / profiles / kurumsal koleksiyonlar ---------------------
@@ -1182,48 +1229,48 @@ class StorageService {
         return this.data.templates || [];
     }
 
-    saveTemplates(templates) {
+    saveTemplates(templates, options = {}) {
         this.data.templates = Array.isArray(templates) ? templates : [];
         return this._persist(() => {
             const payload = this.secretStore ? this.secretStore.stripForDisk(this.data) : this.data;
             this._flushCollection('templates', payload.templates || []);
-        });
+        }, 'templates', options);
     }
 
     getDeviceProfiles() {
         return this.data.deviceProfiles || [];
     }
 
-    saveDeviceProfiles(profiles) {
+    saveDeviceProfiles(profiles, options = {}) {
         this.data.deviceProfiles = Array.isArray(profiles) ? profiles : [];
         return this._persist(() => {
             const payload = this.secretStore ? this.secretStore.stripForDisk(this.data) : this.data;
             this._flushCollection('device_profiles', payload.deviceProfiles || []);
-        });
+        }, 'profiles', options);
     }
 
     getExemptions() {
         return Array.isArray(this.data.exemptions) ? this.data.exemptions : [];
     }
 
-    saveExemptions(list) {
+    saveExemptions(list, options = {}) {
         this.data.exemptions = Array.isArray(list) ? list : [];
         return this._persist(() => {
             const payload = this.secretStore ? this.secretStore.stripForDisk(this.data) : this.data;
             this._flushCollection('exemptions', payload.exemptions || []);
-        });
+        }, 'exemptions', options);
     }
 
     getMaintenanceWindows() {
         return Array.isArray(this.data.maintenanceWindows) ? this.data.maintenanceWindows : [];
     }
 
-    saveMaintenanceWindows(list) {
+    saveMaintenanceWindows(list, options = {}) {
         this.data.maintenanceWindows = Array.isArray(list) ? list : [];
         return this._persist(() => {
             const payload = this.secretStore ? this.secretStore.stripForDisk(this.data) : this.data;
             this._flushCollection('maintenance_windows', payload.maintenanceWindows || []);
-        });
+        }, 'maintenanceWindows', options);
     }
 
     // --- Orders / nonce ----------------------------------------------------
@@ -1430,7 +1477,7 @@ class StorageService {
             if (Number.isFinite(limit) && limit > 0) list = list.slice(-limit);
             return list;
         }
-        // O-06: sayfalama — en yeni N kayıt, istenirse beforeSeq'ten geriye.
+        // O-06: sayfalama - en yeni N kayıt, istenirse beforeSeq'ten geriye.
         if (Number.isFinite(limit) && limit > 0) {
             const rows = Number.isFinite(beforeSeq)
                 ? this.db.prepare('SELECT * FROM audit_log WHERE seq < ? ORDER BY seq DESC LIMIT ?').all(beforeSeq, limit)

@@ -1,5 +1,5 @@
 /**
- * SecretStore.js — WP-04.T1/T2/T7
+ * SecretStore.js - WP-04.T1/T2/T7
  * Sırları Electron safeStorage (Windows'ta DPAPI) ile şifreleyip ayrı bir
  * `secrets.v1.json` dosyasında tutar. Düz metin fallback YOKTUR:
  * - backend yoksa `SECRET_BACKEND_UNAVAILABLE` fırlar,

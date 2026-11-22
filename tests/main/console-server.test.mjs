@@ -1,5 +1,5 @@
 /**
- * console-server.test.mjs — FAZ B
+ * console-server.test.mjs - FAZ B
  * Kayıt defteri, politika dağıtımı, WoL dalgası, RBAC, iptal, denetim.
  */
 import { describe, it, expect } from 'vitest';

@@ -1,5 +1,5 @@
 /**
- * secrets-extra.test.mjs — SecretStore kalan dallar (hidrasyon, migrasyon, yazım hataları)
+ * secrets-extra.test.mjs - SecretStore kalan dallar (hidrasyon, migrasyon, yazım hataları)
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'node:fs';
@@ -24,7 +24,7 @@ function backend(over = {}) {
 const file = () => path.join(dir, 'secrets.v1.json');
 const store = (opts = {}) => new SecretStore(Object.assign({ filePath: file(), safeStorage: backend() }, opts));
 
-describe('SecretStore — hidrasyon varyantları', () => {
+describe('SecretStore - hidrasyon varyantları', () => {
     it('only seçeneği yalnız belirtilen alanları doldurur', async () => {
         const s = store();
         await s.setSecret('consoleAgentKey', 'k');
@@ -50,7 +50,7 @@ describe('SecretStore — hidrasyon varyantları', () => {
     });
 });
 
-describe('SecretStore — migrasyon doğrulama hatası', () => {
+describe('SecretStore - migrasyon doğrulama hatası', () => {
     it('yazılan değer geri okunamıyorsa MIGRATION_VERIFY_FAILED', async () => {
         const s = store();
         const original = s.getSecret.bind(s);
@@ -73,7 +73,7 @@ describe('SecretStore — migrasyon doğrulama hatası', () => {
     });
 });
 
-describe('SecretStore — yazım hataları', () => {
+describe('SecretStore - yazım hataları', () => {
     it('dizin oluşturulamazsa yazım hatası yükselir', async () => {
         const brokenFs = {
             existsSync: () => false,
@@ -104,7 +104,7 @@ describe('SecretStore — yazım hataları', () => {
     });
 });
 
-describe('SecretStore — webhook senkronu ek dallar', () => {
+describe('SecretStore - webhook senkronu ek dallar', () => {
     it('sırsız hook eski kaydı siler', async () => {
         const s = store();
         await s.setSecret(webhookKey('https://old/h', 'hmacSecret'), 'eski');
@@ -125,7 +125,7 @@ describe('SecretStore — webhook senkronu ek dallar', () => {
     });
 });
 
-describe('SecretStore — disk kopyası ve tarama', () => {
+describe('SecretStore - disk kopyası ve tarama', () => {
     it('stripForDisk webhook nesnesi olmayan kayıtları atlar', () => {
         const s = store();
         const out = s.stripForDisk({ settings: {}, webhooks: [null, 'x', { url: 'u', hmacSecret: 's' }] });

@@ -1,5 +1,5 @@
 /**
- * DiagnosticsService.js — WP-5 (Dev Cleaner Standardı)
+ * DiagnosticsService.js - WP-5 (Dev Cleaner Standardı)
  * Yerel-öncelikli hata/çökme günlüğü, sistem tanılama özeti ve harici bağımlılıksız
  * (saf Node `zlib`) destek paketi (ZIP) oluşturucu.
  *
@@ -408,7 +408,7 @@ class DiagnosticsService {
         const crashCount = this.errorEntries.filter((e) => e.level === 'crash').length;
         const errCount = this.errorEntries.length;
         return [
-            'Power Pilot — Tanılama ve Çökme Raporu',
+            'Power Pilot - Tanılama ve Çökme Raporu',
             '======================================',
             `Oluşturulma  : ${info.generatedAt}`,
             `Sürüm        : ${info.appVersion} (${info.distribution}${info.portable ? ' / portable' : ''})`,
@@ -481,7 +481,7 @@ class DiagnosticsService {
 
     buildSupportMailto({ bundleFileName = null } = {}) {
         const info = this.getSystemInfo();
-        const subject = `Power Pilot v${info.appVersion} — Destek ve Hata Raporu`;
+        const subject = `Power Pilot v${info.appVersion} - Destek ve Hata Raporu`;
         const recent = this.errorEntries.slice(-5)
             .map((e) => `- [${e.ts}] ${e.kind}: ${e.message.slice(0, 140)}`)
             .join('\n');

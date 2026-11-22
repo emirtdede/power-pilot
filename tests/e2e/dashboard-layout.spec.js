@@ -1,9 +1,9 @@
 /**
- * dashboard-layout.spec.js — birincil eylemin dar ekranda erişilebilirliği.
+ * dashboard-layout.spec.js - birincil eylemin dar ekranda erişilebilirliği.
  *
  * Neden: `#view-dashboard` diğer tüm görünümlerin aksine `overflow-y-auto`
  * içermiyordu. 1366x768'de "Zamanlayıcıyı Başlat" ilk boyamada 7px, 1024x768'de
- * 163px kesiliyordu ve kaydırma çubuğu görünmüyordu — kullanıcı ana eylemi
+ * 163px kesiliyordu ve kaydırma çubuğu görünmüyordu - kullanıcı ana eylemi
  * göremiyordu. Ölçüm (önce): 1366x768 btnBottom=735 / winH=728.
  *
  * Kalıcı sözleşme: yaygın dizüstü boyutlarında birincil CTA **tam görünür**

@@ -6,7 +6,7 @@
 
 <br /><br />
 
-# <img src="assets/icons/spark.svg" width="20" height="20" align="absmiddle" alt="" /> Power Pilot — Local-First Windows Power Management & Automation
+# <img src="assets/icons/spark.svg" width="20" height="20" align="absmiddle" alt="" /> Power Pilot - Local-First Windows Power Management & Automation
 
 </div>
 
@@ -46,7 +46,7 @@
 
 <div align="center">
   <img src="public/power-pilot.svg" alt="Power Pilot Logo" width="108" height="108" />
-  <h3>Power Pilot — Smart, Local-First Power Management &amp; Task Automation for Windows</h3>
+  <h3>Power Pilot - Smart, Local-First Power Management &amp; Task Automation for Windows</h3>
   <p><em>Scheduled Power Transitions, Smart Finish Condition Engine, On-Device AI, Built-in MCP Server, Terminal CLI, 28 Themes, and a Hardened Local API</em></p>
   <p><strong>Developed &amp; Published by <a href="https://vellium.dev">Vellium</a></strong></p>
 </div>
@@ -57,7 +57,7 @@
 
 **Power Pilot (`v1.0.0`)** is a local-first Windows desktop application for scheduling, monitoring, and automating power transitions. Built with **Electron 43**, **Node.js 24**, and **vanilla JavaScript**, it combines a hardened main process, a sandboxed 60 FPS renderer, and a local **WAL-mode SQLite** database. Core scheduling works without an account, a cloud service, or an internet connection.
 
-It goes beyond a simple countdown. **Smart Finish** waits for real work to finish — a process to close, CPU usage to drop, network or disk activity to settle, battery thresholds, user idle time, or a file/folder to stop changing. The **Safety Policy Engine** blocks risky actions while protected applications are running, and the optional **on-device AI assistant** turns natural-language or voice commands into automation tasks using locally stored Qwen and Whisper models.
+It goes beyond a simple countdown. **Smart Finish** waits for real work to finish - a process to close, CPU usage to drop, network or disk activity to settle, battery thresholds, user idle time, or a file/folder to stop changing. The **Safety Policy Engine** blocks risky actions while protected applications are running, and the optional **on-device AI assistant** turns natural-language or voice commands into automation tasks using locally stored Qwen and Whisper models.
 
 For developers, AI coding agents, and enterprise teams, Power Pilot ships with a **built-in Model Context Protocol (MCP) server** (`powerpilot-mcp` / `powerpilot mcp`), a **terminal CLI** (`powerpilot`), a dedicated **in-app Documentation Center**, **multi-subpage Settings with one-click preset profiles**, and an optional **local REST API** with API-key roles, TLS/mTLS, IP allowlists, Ed25519-signed orders, webhooks, Wake-on-LAN, an n8n/Telegram workflow, and a headless Windows service agent. Every remote path is designed to fail closed.
 
@@ -79,7 +79,7 @@ For developers, AI coding agents, and enterprise teams, Power Pilot ships with a
 - Wait for **CPU usage**, **network throughput**, or **disk activity** to remain below a configured threshold.
 - Wait for keyboard/mouse **idle time** or **battery percentage** thresholds.
 - Wait for a **file or folder** to stop growing/changing.
-- Configurable **AND / OR condition operator**, **stability duration** (default 15–60 seconds), **recurring schedules** (daily, weekdays, weekends, custom days), and **action chaining**.
+- Configurable **AND / OR condition operator**, **stability duration** (default 15-60 seconds), **recurring schedules** (daily, weekdays, weekends, custom days), and **action chaining**.
 
 ### <img src="assets/icons/shield.svg" width="20" height="20" align="absmiddle" alt="" /> Safety, Fallbacks & Task Lifecycle
 - **Protected-app rules** for games, IDEs, render tools, fullscreen presentations, and active disk/network I/O.
@@ -104,8 +104,8 @@ For developers, AI coding agents, and enterprise teams, Power Pilot ships with a
 - Interactive **SVG daily trend bar chart**, **action & trigger-source distributions**, **24-hour automation intensity heatmap**, **recent measured sessions table**, and **CSV / JSON export**.
 
 ### <img src="assets/icons/terminal.svg" width="20" height="20" align="absmiddle" alt="" /> Built-in MCP Server, Terminal CLI & 10-Section Documentation Center
-- **Built-in MCP Server (`src/mcp/server.js`)**: JSON-RPC 2.0 over stdio for **Claude Desktop**, **Cursor**, **Antigravity**, **Windsurf**, and **Cline** with 8 tools (`powerpilot_status`, `powerpilot_schedule_timer`, `powerpilot_cancel_timer`, `powerpilot_list_tasks`, `powerpilot_power_action`, `powerpilot_audit_verify`, `powerpilot_inventory`, `powerpilot_pending_orders`).
-- **Terminal & PowerShell CLI (`powerpilot`)**: schedule timers (`--minutes` or `--durationMs`), list/cancel tasks, verify audit chains, trigger immediate power actions, or output raw `--json` for scripts.
+- **Built-in MCP Server (`src/mcp/server.js`, `powerpilot-mcp`, or standalone `Power Pilot.exe --mcp`)**: JSON-RPC 2.0 over stdio for **Claude Desktop**, **Cursor**, **Antigravity**, **Windsurf**, and **Cline** with **62 tools** and **11 live resources** covering 100% of headless power, task, active warning, template, settings, Cancel PIN, API key rotation, export/import, history, energy, hardware wattage, WoL, webhook, UPS, cloud sync, offline AI/model/RAG, diagnostics, update, and enterprise controls.
+- **Terminal & PowerShell CLI (`powerpilot`, auto-added to Windows PATH)**: zero-GUI bootstrap (`powerpilot init`), background daemon lifecycle (`powerpilot daemon start|stop|status`), conditional/recurring task creation (`task-create`), full task & warning lifecycle (`pause`, `resume`, `snooze`, `run-now`, `cancel`, `pause-all`, `warning`), templates, settings, Cancel PIN & key rotation, JSON export/import, stats, cloud sync, offline AI/models/docs, WoL/webhooks/UPS, clean human-readable output by default, and raw `--json` output.
 - **10-Section In-App Documentation Center with Instant Search**: split-layout guide covering Quick Start, Power & Safety Shields, Smart Finish, Templates, AI Assistant, CLI & Terminal, MCP Server JSON configs, REST API & Webhooks, WoL/UPS/Enterprise, and Shortcuts & Troubleshooting.
 
 ### <img src="assets/icons/sliders.svg" width="20" height="20" align="absmiddle" alt="" /> 8-Subpage Settings, Curated Presets & Diagnostics Center
@@ -116,8 +116,8 @@ For developers, AI coding agents, and enterprise teams, Power Pilot ships with a
 
 ### <img src="assets/icons/palette.svg" width="20" height="20" align="absmiddle" alt="" /> 28 Theme Palettes, 4 System-Wide App Icons & 73-Language Catalog
 - **2 Modes × 14 Color Themes (28 Palettes)**: `Obsidian`, `Slate`, `Navy`, `Blue`, `Cyan`, `Indigo`, `Purple`, `Pink`, `Red`, `Orange`, `Yellow`, `Emerald`, `Grass`, and `Lime` across Light and Dark modes.
-- **4 Selectable System-Wide App & Desktop Icons**: `Monochrome Dark` (default), `Monochrome Light`, `High-Contrast Monochrome`, and `Classic Cyan` — synchronized live across the main window, mini widget, system tray, taskbar, in-app SVG brand marks, and Windows Desktop / Start Menu shortcuts (`.lnk`).
-- **73-Language Catalog**: 17 fully translated locales (Turkish, English, German, Swedish, Norwegian, Danish, French, Polish, Italian, Dutch, Czech, Spanish, Portuguese, Japanese, Chinese, Korean, Arabic — 1,156 keys each, parity enforced in CI) + 56 selectable languages with automatic English fallback and full **RTL** mirroring (`ar`, `he`, `fa`, `ur`).
+- **4 Selectable System-Wide App & Desktop Icons**: `Monochrome Dark` (default), `Monochrome Light`, `High-Contrast Monochrome`, and `Classic Cyan` - synchronized live across the main window, mini widget, system tray, taskbar, in-app SVG brand marks, and Windows Desktop / Start Menu shortcuts (`.lnk`).
+- **73-Language Catalog**: 17 fully translated locales (Turkish, English, German, Swedish, Norwegian, Danish, French, Polish, Italian, Dutch, Czech, Spanish, Portuguese, Japanese, Chinese, Korean, Arabic - 1,156 keys each, parity enforced in CI) + 56 selectable languages with automatic English fallback and full **RTL** mirroring (`ar`, `he`, `fa`, `ur`).
 
 ### <img src="assets/icons/plug.svg" width="20" height="20" align="absmiddle" alt="" /> 7-Subpage Integrations & Local REST API
 - Dedicated split-navigation pages for **Local REST API (OpenAPI 3.0)**, **Outbound Webhooks**, **MCP Server (AI)**, **CLI & Scripts**, **Wake-on-LAN** (with saved devices list), **UPS / NUT Monitor**, and **Enterprise Console**.
@@ -140,30 +140,30 @@ For developers, AI coding agents, and enterprise teams, Power Pilot ships with a
 </div>
 
 ### Runtime & UI
-- **Electron 43.8.1** — Windows desktop runtime, tray, frameless window controls, and native integration
-- **Node.js 24.18.1+** — main-process services, IPC, CLI, and MCP stdio server
-- **HTML5 + CSS3 + vanilla JavaScript** — zero frontend framework overhead, locked 60 FPS GPU-friendly transitions
-- **Tailwind CSS 3.4.19** — build-time utility CSS, no runtime CDN
-- **Material Symbols + Public Sans** — locally bundled icon and text fonts
+- **Electron 43.8.1** - Windows desktop runtime, tray, frameless window controls, and native integration
+- **Node.js 24.18.1+** - main-process services, IPC, CLI, and MCP stdio server
+- **HTML5 + CSS3 + vanilla JavaScript** - zero frontend framework overhead, locked 60 FPS GPU-friendly transitions
+- **Tailwind CSS 3.4.19** - build-time utility CSS, no runtime CDN
+- **Material Symbols + Public Sans** - locally bundled icon and text fonts
 
 ### Data & Security
-- **better-sqlite3 13** — WAL-mode SQLite with atomic migrations and `secure_delete`
-- **@node-rs/argon2 2.2** — Argon2id PIN hashing (4 / 6 / 8 digits) with attempt lockout
-- **Electron `safeStorage` / Windows DPAPI** — encrypted secrets at rest
-- **Ed25519 + HMAC-SHA256** — signed orders and a tamper-evident audit chain
-- **TLS/mTLS** — optional HTTPS local API with client certificates
-- **Electron fuses + ASAR integrity** — hardened production packaging
+- **better-sqlite3 13** - WAL-mode SQLite with atomic migrations and `secure_delete`
+- **@node-rs/argon2 2.2** - Argon2id PIN hashing (4 / 6 / 8 digits) with attempt lockout
+- **Electron `safeStorage` / Windows DPAPI** - encrypted secrets at rest
+- **Ed25519 + HMAC-SHA256** - signed orders and a tamper-evident audit chain
+- **TLS/mTLS** - optional HTTPS local API with client certificates
+- **Electron fuses + ASAR integrity** - hardened production packaging
 
 ### Automation, AI & Integrations
-- **TaskManager + TimerRegistry** — persistent scheduling and execution claims
-- **SmartFinishEngine + SafetyPolicyEngine** — condition evaluation, fallbacks, and fail-closed policies
-- **node-llama-cpp 3.20 + @fugood/whisper.node** — local Qwen/Whisper AI stack
-- **Built-in MCP Server + Local REST API (OpenAPI 3.0)** — AI agents, n8n, CLI, webhook, and enterprise integrations
+- **TaskManager + TimerRegistry** - persistent scheduling and execution claims
+- **SmartFinishEngine + SafetyPolicyEngine** - condition evaluation, fallbacks, and fail-closed policies
+- **node-llama-cpp 3.20 + @fugood/whisper.node** - local Qwen/Whisper AI stack
+- **Built-in MCP Server + Local REST API (OpenAPI 3.0)** - AI agents, n8n, CLI, webhook, and enterprise integrations
 
 ### Build, Test & Release
-- **electron-builder 26.15** — custom Windows 11 NSIS installer/uninstaller, Portable build, and APPX packaging
-- **Vitest + Playwright 1.64** - 166 unit test suites and 26 Electron E2E test specs
-- **GitHub Actions** — CI (`main` and `development` branches), dependency audit, SBOM, signing, and release gates
+- **electron-builder 26.15** - custom Windows 11 NSIS installer/uninstaller, Portable build, and APPX packaging
+- **Vitest + Playwright 1.64** - 170 unit test suites and 27 Electron E2E test specs
+- **GitHub Actions** - CI (`main` and `development` branches), dependency audit, SBOM, signing, and release gates
 
 ---
 
@@ -197,7 +197,7 @@ Power_Pilot/
 │   ├── cli/                         # Command-line client (powerpilot & commands catalog)
 │   ├── console/                     # Enterprise console server and store
 │   ├── mcp/
-│   │   └── server.js                # Built-in JSON-RPC 2.0 stdio MCP server (8 tools, 2 resources)
+│   │   └── server.js                # Built-in JSON-RPC 2.0 stdio MCP server (62 tools, 11 resources)
 │   ├── main/
 │   │   ├── ai/                      # Input normalization and AI helpers
 │   │   ├── config/                  # Feature flags and external-link policy
@@ -336,7 +336,7 @@ Add Power Pilot to **Claude Desktop**, **Cursor**, **Antigravity**, **Windsurf**
 ### Installing as an end user (from the setup file)
 
 1. Download `Power Pilot Setup 1.0.0.exe` (or `Power Pilot Portable 1.0.0.exe`).
-2. Run it. **No administrator (UAC) prompt is requested** — it installs per-user (`asInvoker`, `perMachine: false`) into `%LOCALAPPDATA%\Programs\Power Pilot`.
+2. Run it. **No administrator (UAC) prompt is requested** - it installs per-user (`asInvoker`, `perMachine: false`) into `%LOCALAPPDATA%\Programs\Power Pilot`.
 3. You can pick a different install directory in the custom Vellium setup wizard.
 4. After install, **Power Pilot** appears in the Start menu.
 
@@ -361,7 +361,7 @@ npm start
 ### Tests & Release Gates
 
 ```bash
-npm test                 # Vitest unit tests (166 suites)
+npm test                 # Vitest unit tests (170 suites)
 npm run test:security    # Static security & CSP checks
 npm run test:e2e         # Playwright Electron E2E suite
 npm run coverage         # Coverage report (release gate)
@@ -393,12 +393,12 @@ npm run verify:pack
 
 Build artifacts are produced under `dist/`:
 
-- **NSIS installer** — `Power Pilot Setup 1.0.0.exe`
-- **Portable executable** — `Power Pilot Portable 1.0.0.exe` (stores data in adjacent `PowerPilotData/`)
-- **APPX package** — `Power Pilot 1.0.0.appx`
-- **Unpacked build** — `dist/win-unpacked/` via `npm run pack`
-- **SBOM** — `npm run sbom`
-- **Signature verification** — `npm run verify:signature`
+- **NSIS installer** - `Power Pilot Setup 1.0.0.exe`
+- **Portable executable** - `Power Pilot Portable 1.0.0.exe` (stores data in adjacent `PowerPilotData/`)
+- **APPX package** - `Power Pilot 1.0.0.appx`
+- **Unpacked build** - `dist/win-unpacked/` via `npm run pack`
+- **SBOM** - `npm run sbom`
+- **Signature verification** - `npm run verify:signature`
 
 Published builds and release notes are available on the [GitHub Releases](https://github.com/emirtdede/power-pilot/releases) page.
 
@@ -427,7 +427,7 @@ No rights are granted to copy, modify, publish, distribute, sublicense, or sell 
 
 <div align="center">
   <img src="public/power-pilot.svg" alt="Power Pilot Logosu" width="108" height="108" />
-  <h3>Power Pilot — Windows İçin Akıllı, Yerel Öncelikli Güç Yönetimi ve Görev Otomasyonu</h3>
+  <h3>Power Pilot - Windows İçin Akıllı, Yerel Öncelikli Güç Yönetimi ve Görev Otomasyonu</h3>
   <p><em>Zamanlanmış Güç Eylemleri, Smart Finish Koşul Motoru, Cihaz Üzeri Yapay Zekâ, Yerleşik MCP Sunucusu, Terminal CLI, 28 Tema ve Sıkılaştırılmış Yerel API</em></p>
   <p><strong>Geliştirici ve Yayıncı: <a href="https://vellium.dev">Vellium</a></strong></p>
 </div>
@@ -459,7 +459,7 @@ Geliştiriciler, yapay zekâ kodlama ajanları ve kurumsal ekipler için Power P
 - **CPU kullanımının**, **ağ hızının** veya **disk etkinliğinin** belirlenen eşiğin altında kalmasını bekleme.
 - Klavye/fare **boşta kalma süresini** veya **batarya seviyesini** bekleme.
 - Bir **dosya veya klasörün** büyümeyi/değişmeyi bırakmasını bekleme.
-- Yapılandırılabilir **VE / VEYA koşul bağlacı**, **kararlılık süresi** (varsayılan 15–60 sn), **tekrarlayan program** (her gün, hafta içi, hafta sonu, özel günler) ve **zincirleme güç eylemleri**.
+- Yapılandırılabilir **VE / VEYA koşul bağlacı**, **kararlılık süresi** (varsayılan 15-60 sn), **tekrarlayan program** (her gün, hafta içi, hafta sonu, özel günler) ve **zincirleme güç eylemleri**.
 
 ### <img src="assets/icons/shield.svg" width="20" height="20" align="absmiddle" alt="" /> Güvenlik, Fallback ve Görev Yaşam Döngüsü
 - Oyunlar, IDE'ler, render araçları, tam ekran sunumlar ve yoğun ağ/disk G/Ç işlemleri için **korunan uygulama kuralları**.
@@ -475,12 +475,12 @@ Geliştiriciler, yapay zekâ kodlama ajanları ve kurumsal ekipler için Power P
 - **Geri sayım süresi**, **belirli saat** ve **Smart Finish koşul** tetikleyicileri; sıfırdan özel şablon oluşturma, mevcut şablonları düzenleme (*Düzenlendi* rozeti), çoğaltma, gizleme/silme, tekil sıfırlama ve tüm varsayılanları tek tıkla geri getirme.
 
 ### <img src="assets/icons/chart.svg" width="20" height="20" align="absmiddle" alt="" /> Zenginleştirilmiş Enerji, CO₂ ve Otomasyon İstatistikleri
-- **7 Gün / 30 Gün / Tümü** dönem filtresi ve gerçek kapanış–yeniden açılış süresine dayalı doğrulama.
+- **7 Gün / 30 Gün / Tümü** dönem filtresi ve gerçek kapanış-yeniden açılış süresine dayalı doğrulama.
 - **4 Ana KPI Kartı** (*Önlenen Açık Kalma*, *Enerji Tasarrufu kWh + Aylık Projeksiyon*, *Maliyet Tasarrufu + Yıllık Projeksiyon*, *0.42 kg/kWh CO₂ Azaltımı + Başarı Oranı*), **5 İkincil Operasyonel Metrik**, etkileşimli **SVG günlük trend grafiği**, **eylem/kaynak dağılımları**, **24 saatlik yoğunluk haritası**, **ölçülen oturumlar tablosu** ve **CSV / JSON dışa aktarma**.
 
 ### <img src="assets/icons/terminal.svg" width="20" height="20" align="absmiddle" alt="" /> Yerleşik MCP Sunucusu, Terminal CLI ve 10 Bölümlü Dokümantasyon Merkezi
-- **Yerleşik MCP Sunucusu (`src/mcp/server.js`)**: **Claude Desktop**, **Cursor**, **Antigravity**, **Windsurf** ve **Cline** ajanları için 8 araçlık (`powerpilot_status`, `powerpilot_schedule_timer`, `powerpilot_cancel_timer`, `powerpilot_list_tasks`, `powerpilot_power_action`, `powerpilot_audit_verify`, `powerpilot_inventory`, `powerpilot_pending_orders`) stdio JSON-RPC 2.0 sunucusu.
-- **Terminal ve PowerShell CLI (`powerpilot`)**: `--minutes` veya `--durationMs` ile görev kurma, görev listeleme/iptal, denetim zinciri doğrulama ve `--json` çıktısı.
+- **Yerleşik MCP Sunucusu (`src/mcp/server.js`, `powerpilot-mcp` veya `Power Pilot.exe --mcp`)**: **Claude Desktop**, **Cursor**, **Antigravity**, **Windsurf** ve **Cline** ajanları için **62 araç** ve **11 canlı kaynak** sunan tam arayüzsüz stdio JSON-RPC 2.0 sunucusu.
+- **Terminal ve PowerShell CLI (`powerpilot`, Windows PATH'e otomatik eklenir)**: sıfır-GUI kurulum (`powerpilot init`), arayüzsüz arka plan servisi (`powerpilot daemon`), koşullu/tekrarlı görev kurma (`task-create`), tam görev yaşam döngüsü, şablon/ayar/bulut/WoL/AI/tanılama komutları ve `--json` çıktısı.
 - **Anlık Aramalı 10 Bölümlü Dokümantasyon Merkezi**: Hızlı Başlangıç, Güç ve Güvenlik, Smart Finish, Şablonlar, Yapay Zekâ Asistanı, CLI ve Terminal, MCP Sunucusu, REST API ve Webhooks, WoL/UPS/Kurumsal, Kısayollar ve Yardım alt sayfaları.
 
 ### <img src="assets/icons/sliders.svg" width="20" height="20" align="absmiddle" alt="" /> 8 Alt Sayfalı Ayarlar, Hazır Profiller ve Tanılama Merkezi
@@ -490,7 +490,7 @@ Geliştiriciler, yapay zekâ kodlama ajanları ve kurumsal ekipler için Power P
 
 ### <img src="assets/icons/palette.svg" width="20" height="20" align="absmiddle" alt="" /> 28 Tema Paleti, 4 Sistem Geneli Uygulama İkonu ve 73 Dil Kataloğu
 - **2 Mod × 14 Renk Teması (28 Palet)**: Açık ve Koyu modlarda `Siyah (Obsidian)`, `Gri`, `Lacivert`, `Mavi`, `Cyan`, `İndigo`, `Mor`, `Pembe`, `Kırmızı`, `Turuncu`, `Sarı`, `Zümrüt Yeşili`, `Çimen Yeşili` ve `Açık Yeşil`.
-- **4 Seçilebilir Sistem Geneli Uygulama ve Masaüstü İkonu**: `Koyu Monokrom` (varsayılan), `Açık Monokrom`, `Saf Siyah-Beyaz` ve `Klasik Cyan` — ana pencere, mini widget, sistem tepsisi, görev çubuğu, uygulama içi SVG logolar ve Windows Masaüstü/Başlat kısayollarında (`.lnk`) eşzamanlı güncellenir.
+- **4 Seçilebilir Sistem Geneli Uygulama ve Masaüstü İkonu**: `Koyu Monokrom` (varsayılan), `Açık Monokrom`, `Saf Siyah-Beyaz` ve `Klasik Cyan` - ana pencere, mini widget, sistem tepsisi, görev çubuğu, uygulama içi SVG logolar ve Windows Masaüstü/Başlat kısayollarında (`.lnk`) eşzamanlı güncellenir.
 - **73 Dil Desteği**: 17 tam çevrili dil (her biri 1.156 anahtar; parite CI'da zorunlu) + 56 seçilebilir dil için otomatik İngilizce yedekleme (fallback) ve 4 RTL dil (`ar`, `he`, `fa`, `ur`) için sağdan-sola arayüz desteği.
 
 ### <img src="assets/icons/plug.svg" width="20" height="20" align="absmiddle" alt="" /> 7 Alt Sayfalı Entegrasyonlar ve Yerel REST API
@@ -503,7 +503,7 @@ Geliştiriciler, yapay zekâ kodlama ajanları ve kurumsal ekipler için Power P
 ### Son kullanıcı için kurulum (kurulum dosyasından)
 
 1. `Power Pilot Setup 1.0.0.exe` (veya taşınabilir `Power Pilot Portable 1.0.0.exe`) dosyasını indirin.
-2. Çalıştırın. **Yönetici (UAC) izni istenmez** — kurulum kullanıcı hesabına (`%LOCALAPPDATA%\Programs\Power Pilot`) yapılır.
+2. Çalıştırın. **Yönetici (UAC) izni istenmez** - kurulum kullanıcı hesabına (`%LOCALAPPDATA%\Programs\Power Pilot`) yapılır.
 3. Özel Vellium kurulum sihirbazında dilerseniz farklı bir kurulum dizini seçebilirsiniz.
 4. Kurulumdan sonra Başlat menüsünde **Power Pilot** görünür.
 

@@ -1,5 +1,5 @@
 /**
- * contrast-a11y.test.mjs — WCAG AA kontrast sözleşmesi (statik kapı).
+ * contrast-a11y.test.mjs - WCAG AA kontrast sözleşmesi (statik kapı).
  *
  * Ölçülen gerçek kusurlar (uygulama, hesaplanmış etkin arka plan üzerinden,
  * 10 görünümün tamamı taranarak):
@@ -12,7 +12,7 @@
  *     text-primary   (#0067c2) bg-primary/20 üstünde ........ 4.19:1
  *
  *   koyu tema:
- *     text-primary   (#0067c2) koyu zeminlerde .............. 2.40–3.16:1
+ *     text-primary   (#0067c2) koyu zeminlerde .............. 2.40-3.16:1
  *     dark:text-slate-500 (#64748b) slate-800 üstünde ....... 3.07:1
  *
  * Düzeltme (ölçüldü, iki temada da AA):
@@ -57,7 +57,7 @@ function scan(predicate, label) {
     expect(offenders, `${label}:\n${offenders.join('\n')}`).toEqual([]);
 }
 
-describe('kontrast (WCAG AA) — açık ve koyu tema', () => {
+describe('kontrast (WCAG AA) - açık ve koyu tema', () => {
     it('çıplak `text-slate-400` yok (açık tema 2.56:1)', () => {
         // dark:text-slate-400 serbest (koyu temada 5.71:1).
         scan(
@@ -66,7 +66,7 @@ describe('kontrast (WCAG AA) — açık ve koyu tema', () => {
         );
     });
 
-    it('çıplak `text-slate-500` yok (açık temada 4.34:1 — sınırda)', () => {
+    it('çıplak `text-slate-500` yok (açık temada 4.34:1 - sınırda)', () => {
         // text-slate-500 artık text-slate-600 dark:text-slate-400 olmalı.
         scan(
             (line) => /(^|[\s"'`])text-slate-500(?=[\s"'`]|$)/.test(line),

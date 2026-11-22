@@ -1,5 +1,5 @@
 /**
- * mini-widget.spec.js — PPX-007 / PPX-014
+ * mini-widget.spec.js - PPX-007 / PPX-014
  * TC-48, TC-49.
  *
  * Mini pencere: 3 düğme 24×24, görünür klavye halkası, i18n öncesi de

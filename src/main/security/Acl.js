@@ -1,5 +1,5 @@
 /**
- * Acl.js — WP-04.T3
+ * Acl.js - WP-04.T3
  * Windows ACL sıkılaştırması: kalıtımı kaldırır, yalnızca sahip + SYSTEM +
  * Administrators (SID ile) erişim bırakır. İsim yerine SID kullanılır
  * (Türkçe/yerelleştirilmiş Windows çıktısından etkilenmez).
@@ -31,7 +31,7 @@ function systemTool(name) {
     const full = path.join(root, 'System32', `${name}.exe`);
     try {
         if (fs.existsSync(full)) return full;
-    } catch (_) { /* yut — aşağıdaki yalın ada düşer */ }
+    } catch (_) { /* yut - aşağıdaki yalın ada düşer */ }
     return name;
 }
 
@@ -99,7 +99,7 @@ function resetAclArgs(target, recursive) {
  * Eski sürümlerin bozduğu dosya erişimini tespit eder: dosya okunamıyorsa
  * ACL onarımı gerekir. `null` dönerse erişim sağlıklı.
  *
- * ÖNEMLİ: `fs.accessSync` bu durumda yanıltıcıdır — bozuk ACL'li dosyada
+ * ÖNEMLİ: `fs.accessSync` bu durumda yanıltıcıdır - bozuk ACL'li dosyada
  * `OK` dönerken gerçek `open()` EPERM veriyor. Bu yüzden gerçek okuma
  * denenir; tespit neyi engelliyorsa onu ölçmelidir.
  */
@@ -249,7 +249,7 @@ function secureFile(file) {
 }
 
 /**
- * L-08: async ACL — başlangıç/kapanışta ana thread'i bloke etmez.
+ * L-08: async ACL - başlangıç/kapanışta ana thread'i bloke etmez.
  * @returns {Promise<{ok:boolean, code?:string, error?:string, sid?:string}>}
  */
 function securePathAsync(target, { isDirectory = null } = {}) {

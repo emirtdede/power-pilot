@@ -1,5 +1,5 @@
 /**
- * backup-core.test.mjs — yedekleme/şifreleme/geri yükleme (PPBK1)
+ * backup-core.test.mjs - yedekleme/şifreleme/geri yükleme (PPBK1)
  * Gerçek SQLite + AES-GCM, GEÇİCİ dizinde. Ağ yok.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -31,7 +31,7 @@ function makeDb(file = path.join(dir, 'src.db')) {
     return file;
 }
 
-describe('Backup — anahtar normalizasyonu', () => {
+describe('Backup - anahtar normalizasyonu', () => {
     it('32 bayt buffer, 64 hex, base64 ve ham metin', () => {
         expect(normalizeKey(KEY)).toHaveLength(32);
         expect(normalizeKey(KEY.toString('hex'))).toHaveLength(32);
@@ -49,7 +49,7 @@ describe('Backup — anahtar normalizasyonu', () => {
     });
 });
 
-describe('Backup — vacuumInto ve şifreleme', () => {
+describe('Backup - vacuumInto ve şifreleme', () => {
     it('vacuumInto kopya üretir; DB yoksa DB_NOT_FOUND', () => {
         const src = makeDb();
         const target = path.join(dir, 'copy.db');
@@ -116,7 +116,7 @@ describe('Backup — vacuumInto ve şifreleme', () => {
     });
 });
 
-describe('Backup — prune / backupDatabase / restoreDatabase', () => {
+describe('Backup - prune / backupDatabase / restoreDatabase', () => {
     it('pruneBackups yaş ve sayı sınırı uygular', () => {
         const bdir = path.join(dir, 'backups');
         fs.mkdirSync(bdir, { recursive: true });

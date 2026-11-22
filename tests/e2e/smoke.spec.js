@@ -1,5 +1,5 @@
 /**
- * smoke.spec.js — WP-15/TS-34
+ * smoke.spec.js - WP-15/TS-34
  * Electron uygulaması açılır, preload köprüsü yüklenir ve güvenli
  * varsayılanlar (uzaktan kapatma koruması) IPC üzerinden okunur.
  *

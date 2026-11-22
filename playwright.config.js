@@ -1,5 +1,5 @@
 /**
- * playwright.config.js — WP-15/TS-34: Electron E2E duman testleri.
+ * playwright.config.js - WP-15/TS-34: Electron E2E duman testleri.
  * Yalnızca açılış + preload API + güvenli varsayılan doğrulaması.
  * CI'da tek worker (Electron penceresi çakışmasın).
  */

@@ -1,5 +1,5 @@
 /**
- * energy.test.mjs — EnergyEstimateService FAZ D: gerçek-ölçüm (kapanış→açılış),
+ * energy.test.mjs - EnergyEstimateService FAZ D: gerçek-ölçüm (kapanış→açılış),
  * beyanlı varsayım damgası, uydurma-sayı yok.
  */
 import { describe, it, expect } from 'vitest';

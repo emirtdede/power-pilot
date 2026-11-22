@@ -1,5 +1,5 @@
 /**
- * logger.js — WBS-3.2 / WP-04.T6
+ * logger.js - WBS-3.2 / WP-04.T6
  * Tek log kanalı. electron-log dosyaya yazar (5MB rotasyon, production'da console sessiz).
  * Test ortamında (NODE_ENV=test / vitest) electron-log yerine sessiz no-op kullanılır;
  * böylece birim testleri dosya sistemine yazmaz ve hızlı kalır.

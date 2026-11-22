@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Main-process i18n loader — WP-14.T3.
+ * Main-process i18n loader - WP-14.T3.
  *
  * Yalnızca aktif dilin `<lang>.server.json` dosyası okunur (vm yok).
  * Eksik anahtar önce Türkçe sözlükten (tembel, tek seferlik) tamamlanır;

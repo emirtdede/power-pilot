@@ -1,5 +1,5 @@
 /**
- * packaged-hygiene.test.mjs — yayın artefaktı temizliği sözleşmesi.
+ * packaged-hygiene.test.mjs - yayın artefaktı temizliği sözleşmesi.
  *
  * Neden: `app.asar` içinde `playwright.config.js`, `vitest.config.js`,
  * `tailwind.config.js`, `electron-builder*.cjs` ve `.nvmrc` dosyaları
@@ -29,7 +29,7 @@ const DEV_ONLY = [
     '.nvmrc'
 ];
 
-describe('paket hijyeni — geliştirici dosyaları yayına girmez', () => {
+describe('paket hijyeni - geliştirici dosyaları yayına girmez', () => {
     it('her geliştirici yapılandırması files listesinden hariç tutulur', () => {
         const missing = DEV_ONLY.filter((f) => !files.includes(`!${f}`));
         expect(missing, `build.files içinde hariç tutulmayan: ${missing.join(', ')}`).toEqual([]);

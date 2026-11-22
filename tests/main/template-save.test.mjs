@@ -1,5 +1,5 @@
 /**
- * template-save.test.mjs — "Şablonu Kaydet" sözleşmesi.
+ * template-save.test.mjs - "Şablonu Kaydet" sözleşmesi.
  *
  * GERÇEK HATA (bu turda bulundu ve düzeltildi): Smart Finish görünümündeki
  * "Şablonu Kaydet" düğmesi hiçbir zaman çalışmıyordu.
@@ -35,7 +35,7 @@ function saveTemplateBlock() {
     return mainSrc.slice(start, end);
 }
 
-describe('save-template — istemci id göndermez, sunucu üretir', () => {
+describe('save-template - istemci id göndermez, sunucu üretir', () => {
     it('TemplateService.isValidTemplate id olmadan false döner (birim sözleşmesi)', () => {
         // Bu davranış DOĞRU; hata, handler'ın ham payload'ı doğrulamasıydı.
         expect(TemplateService.isValidTemplate({
@@ -65,7 +65,7 @@ describe('save-template — istemci id göndermez, sunucu üretir', () => {
         expect(idAt, 'id üretimi doğrulamadan ÖNCE olmalı (aksi halde UI kaydı kırılır)')
             .toBeLessThan(validateAt);
 
-        // 2) Doğrulama `record` üzerinde olmalı — `tpl` (ham payload) üzerinde DEĞİL.
+        // 2) Doğrulama `record` üzerinde olmalı - `tpl` (ham payload) üzerinde DEĞİL.
         expect(block).toContain('isValidTemplate(record)');
         expect(block, 'ham payload doğrulanmamalı').not.toContain('isValidTemplate(tpl)');
     });

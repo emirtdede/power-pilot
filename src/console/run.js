@@ -1,9 +1,9 @@
 /**
- * run.js — FAZ B konsol sunucusu giriş noktası (şirket sunucusunda çalışır).
+ * run.js - FAZ B konsol sunucusu giriş noktası (şirket sunucusunda çalışır).
  *   set CONSOLE_ADMIN_KEY=... (gerekli)
  *   set CONSOLE_OPERATOR_KEY=... (opsiyonel)
  *   set CONSOLE_VIEWER_KEY=... (opsiyonel)
- *   set CONSOLE_AGENT_KEY=... (gerekli — ajan heartbeat anahtarı)
+ *   set CONSOLE_AGENT_KEY=... (gerekli - ajan heartbeat anahtarı)
  *   set CONSOLE_PORT=8443 / CONSOLE_HOST=0.0.0.0 / CONSOLE_STORE=./data/console.json
  *   TLS (WP-02): CONSOLE_CERT_FILE + CONSOLE_KEY_FILE (veya CONSOLE_PFX_FILE) zorunlu.
  *   Yalnızca geliştirme: CONSOLE_HOST=127.0.0.1 + PP_ALLOW_INSECURE_CONSOLE=1.

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * verify-models.js — WBS-06/TS-06: model pinleri ve (varsa) yerel dosya bütünlüğü.
+ * verify-models.js - WBS-06/TS-06: model pinleri ve (varsa) yerel dosya bütünlüğü.
  *
  * İki katman:
  *  1. Meta doğrulama (ağsız, her zaman): URL immutable commit içeriyor mu,

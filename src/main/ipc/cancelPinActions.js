@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * cancelPinActions.js — K-01
+ * cancelPinActions.js - K-01
  *
  * PIN kurulduktan sonra değiştirme/silme işlemleri mevcut PIN doğrulamasından
  * geçmelidir. Aksi halde yerel erişimi olan biri PIN'i sıfırlayıp korumalı

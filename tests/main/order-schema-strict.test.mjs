@@ -1,5 +1,5 @@
 /**
- * order-schema-strict.test.mjs — OrderSchema + SignedOrderService
+ * order-schema-strict.test.mjs - OrderSchema + SignedOrderService
  *
  * Tümü saf doğrulama/imza kodudur; OS çağrısı yok. Anahtarlar testte üretilir.
  */
@@ -109,7 +109,7 @@ describe('OrderSchema', () => {
     });
 });
 
-describe('SignedOrderService — imzalama ve doğrulama', () => {
+describe('SignedOrderService - imzalama ve doğrulama', () => {
     it('canonicalizer hazır olmalı', async () => {
         expect(SignedOrderService.isCanonicalizerReady()).toBe(true);
         await expect(SignedOrderService.initCanonicalizer()).resolves.toBe(true);

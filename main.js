@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Tray, Menu, screen, shell, powerMonitor, dialog, session, nativeImage, Notification } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu, screen, shell, powerMonitor, dialog, session, nativeImage, Notification, nativeTheme, globalShortcut, clipboard } = require('electron');
 const path = require('path');
 const os = require('os');
 const crypto = require('crypto');
@@ -8,6 +8,9 @@ const fs = require('fs');
 const { PowerService } = require('./src/main/services/PowerService');
 const AppIconService = require('./src/main/services/AppIconService');
 const { OneDriveSyncService } = require('./src/main/services/OneDriveSyncService');
+const JumpListService = require('./src/main/services/JumpListService');
+const { GlobalShortcutService } = require('./src/main/services/GlobalShortcutService');
+const { UpdateService, RELEASE_PAGE_URL } = require('./src/main/services/UpdateService');
 const { DiagnosticsService } = require('./src/main/services/DiagnosticsService');
 const { searchDocs } = require('./src/main/services/DocsKnowledgeBase');
 const { summarize: summarizeHealth } = require('./src/main/services/HealthMetrics');
@@ -48,6 +51,8 @@ if (process.platform === 'win32' && typeof app.setAppUserModelId === 'function')
 
 let diagnosticsService = null;
 let oneDriveSyncService = null;
+let globalShortcutService = null;
+let updateService = null;
 
 // Yayın dayanıklılığı: ana süreçteki yakalanmamış hata artık sessizce
 // uygulamayı kapatmaz; redakte edilmiş log satırı bırakır ve süreç ayakta kalır.
@@ -106,9 +111,30 @@ const ipcOn = (channel, handler) => ipcMain.on(channel, guardIpcHandler(handler,
 // WP-13.T6: tüm uzun ömürlü timer'lar tek kayıt defterinden temizlenir.
 const timers = new TimerRegistry();
 
-// WP-04.T5: headless servis modu. `PowerPilot.exe --headless --user-data-dir=<dir>`
-// ile UI açılmadan ajan yığını çalışır; SecretStore/DPAPI aynı süreçte kullanılır.
+// WP-04.T5: headless servis modu + sifir-GUI CLI/MCP/Init kapilari.
+// Harici Node.js olmadan da `Power Pilot.exe --init-headless | --headless | --cli <...> | --mcp` calisir.
 const HEADLESS_MODE = process.argv.includes('--headless') && distribution.isFeatureEnabled('headless');
+const INIT_HEADLESS_MODE = process.argv.includes('--init-headless');
+const CLI_MODE_INDEX = process.argv.indexOf('--cli');
+const CLI_MODE = CLI_MODE_INDEX !== -1;
+const MCP_MODE = process.argv.includes('--mcp');
+const NON_GUI_MODE = HEADLESS_MODE || INIT_HEADLESS_MODE || CLI_MODE || MCP_MODE;
+
+function parseArgValue(argv, flagName) {
+    for (let i = 0; i < argv.length; i++) {
+        const arg = argv[i];
+        if (arg === flagName) {
+            const next = argv[i + 1];
+            if (typeof next === 'string' && next.length > 0 && !next.startsWith('--')) return next;
+            return null;
+        }
+        if (arg.startsWith(`${flagName}=`)) {
+            const value = arg.slice(flagName.length + 1);
+            return value.length > 0 ? value : null;
+        }
+    }
+    return null;
+}
 
 function parseUserDataDir(argv) {
     for (let i = 0; i < argv.length; i++) {
@@ -309,11 +335,12 @@ const EnergyEstimateService = require('./src/main/services/EnergyEstimateService
 const DeviceProfileService = require('./src/main/services/DeviceProfileService');
 const TaskSchedulerBridge = require('./src/main/services/TaskSchedulerBridge');
 const { AiBackend } = require('./src/main/services/AiBackend');
-const { ModelManager, STT_MODEL_ID, STT_MODEL_FILE, STT_MODEL_URL } = require('./src/main/services/ModelManager');
+const { ModelManager, AI_TIERS, DEFAULT_AI_TIER, STT_MODEL_ID, STT_MODEL_FILE, STT_MODEL_URL } = require('./src/main/services/ModelManager');
 const { AiService } = require('./src/main/services/AiService');
 const { SttService } = require('./src/main/services/SttService');
 const { DeviceProfiler } = require('./src/main/services/DeviceProfiler');
 const { AgentOrchestrator } = require('./src/main/services/AgentOrchestrator');
+const { VoiceCommandRouter } = require('./src/main/services/VoiceCommandRouter');
 // FAZ B: kurumsal pilot servisleri
 const { InventoryService } = require('./src/main/services/InventoryService');
 const { ExemptionService } = require('./src/main/services/ExemptionService');
@@ -327,6 +354,8 @@ const { UpsSupervisor } = require('./src/main/services/UpsSupervisor');
 
 let mainWindow;
 let miniWindow = null;
+let voiceHudWindow = null;
+let voiceCommandRouter = null;
 let tray = null;
 // WP-13.T5: tray yalnızca 100 ms debounce + imza değişiminde yeniden kurulur.
 let trayUpdateTimer = null;
@@ -424,10 +453,15 @@ async function startHeadless() {
     const { bootAgent } = require('./src/agent/headless');
     const appVersion = getAppVersion();
     const syncMs = Number(process.env.PP_SYNC_MS) || 60000;
+    const rawPort = parseArgValue(process.argv, '--port');
+    const apiPort = rawPort ? Number(rawPort) : null;
     headlessHandle = await bootAgent({
         userDataPath: app.getPath('userData'),
         appVersion,
-        syncIntervalMs: syncMs
+        syncIntervalMs: syncMs,
+        autoEnableApi: process.argv.includes('--enable-api'),
+        apiPort: Number.isInteger(apiPort) && apiPort > 0 && apiPort <= 65535 ? apiPort : null,
+        exePath: Portable.portableExePath(process.env, fs.existsSync) || app.getPath('exe')
     });
     const shutdown = () => app.quit();
     process.on('SIGINT', shutdown);
@@ -773,27 +807,42 @@ async function initServices() {
     templateService = new TemplateService(storageService);
     energyService = new EnergyEstimateService(storageService);
     deviceService = new DeviceProfileService(storageService);
-    // WBS-7.1: AI arka ucu iskeleti - model yoksa AI_NOT_READY kipinde durur,
-    // uygulama AI'sız tam işlevsel açılır (IPC + görünüm WBS-7.4'te).
-    aiBackend = new AiBackend({ modelDir: path.join(app.getPath('userData'), 'models') });
-    log.info(`[AiBackend] durum: ${JSON.stringify(aiBackend.getStatus())}`);
-    // WBS-7.2: Model yöneticisi aynı dizini kullanır (indirme IPC'si WBS-7.4'te).
-    modelManager = new ModelManager({ modelDir: path.join(app.getPath('userData'), 'models') });
-    // Plan kapanışı: STT modelinin ayrı yöneticisi (ayrı manifest, aynı dizin).
-    sttModelManager = new ModelManager({
-        modelDir: path.join(app.getPath('userData'), 'models'),
-        modelId: STT_MODEL_ID,
-        file: STT_MODEL_FILE,
-        url: STT_MODEL_URL
+    // WBS-7.1 + WP-3.1: 3 kademeli yerel AI (lite / balanced / powerful) arka ucu ve model yöneticileri.
+    const modelsDir = path.join(app.getPath('userData'), 'models');
+    const initialAiTier = (storageService && storageService.getSettings().aiTier) || DEFAULT_AI_TIER;
+    const initialTierMgrs = ModelManager.createTierManagers(modelsDir, initialAiTier);
+    aiBackend = new AiBackend({
+        modelDir: modelsDir,
+        defaultModelFile: AiBackend.modelFileForTier(initialAiTier)
     });
+    log.info(`[AiBackend] durum (${initialAiTier}): ${JSON.stringify(aiBackend.getStatus())}`);
+    modelManager = initialTierMgrs.llm;
+    sttModelManager = initialTierMgrs.stt;
     // WBS-7.4: AI servisi (ayrıştırıcı). Model yoksa AI_NOT_READY döner.
     aiService = new AiService({ backend: aiBackend, translate: (key, vars) => t(key, vars) });
-    // WBS-8.1: Ses servisi aynı model dizinini kullanır (ggml-base.bin).
-    sttService = new SttService({ modelDir: path.join(app.getPath('userData'), 'models') });
-    // WBS-E3: Cihaz profilleyici (kasa + watt tahmini/ölçümü).
+    // WBS-8.1 + WP-3.1: Ses servisi seçili kademenin Whisper modelini (tiny / base / small-q5_1) kullanır.
+    sttService = new SttService({ modelDir: modelsDir, modelId: initialTierMgrs.tier.sttServiceKey });
+    // WBS-E3: Cihaz profilleyici (kasa + watt tahmini/ölçümü + AI donanım önerisi).
     deviceProfiler = new DeviceProfiler();
     // WBS-9.1 + WP-8: Ajan orkestratörü (deterministik yönlendirme + şablon/bağlantı/RAG).
     agentOrchestrator = new AgentOrchestrator({ aiService, aiBackend, storage: storageService, history: historyService });
+    // WP-4.1: Sıfır-Arayüz (Zero-UI) Görev Çubuğu Üstü Sesli Dikte yönlendiricisi.
+    voiceCommandRouter = new VoiceCommandRouter({
+        taskManager,
+        warningManager,
+        agentOrchestrator,
+        energyService,
+        historyService,
+        storageService,
+        t: (key, vars) => t(key, vars),
+        getLanguage: () => currentLanguage(),
+        onCancelQuickTimer: () => cancelQuickTimer(),
+        onRequirePinWindow: (reason) => showMainWindowForPin(reason),
+        onStateChanged: () => {
+            updateMiniWindowVisibility();
+            scheduleTrayUpdate();
+        }
+    });
     // WP-5: Yerel tanılama, hata/çökme raporlama ve ZIP destek paketi servisi.
     let downloadsDir = null;
     try { downloadsDir = app.getPath('downloads'); } catch (_) { downloadsDir = null; }
@@ -844,11 +893,102 @@ async function initServices() {
             log.warn('[OneDriveSync] Otomatik esitleme planlanamadi:', err && err.message);
         }
     });
+    // Sistem temasi (nativeTheme) senkronizasyonu, Windows Jump List ve Global Kisayollar.
+    globalShortcutService = new GlobalShortcutService({ globalShortcut, logger: log });
+    applyRuntimeThemeSource(storageService.getSettings().theme);
+    refreshWindowsJumpList();
+    applyRuntimeGlobalShortcuts(storageService.getSettings());
+    // Dagitim kanalina duyarli guncelleme servisi (Store: kapali, Portable: yalnizca bildirim, NSIS: electron-updater).
+    updateService = new UpdateService({
+        currentVersion: getAppVersion(),
+        isStore: distribution.isFeatureEnabled('storeUpdatesOnly'),
+        isPortable: Portable.isPortable(process.env),
+        isPackaged: app.isPackaged,
+        logger: log,
+        onStateChange: (state) => {
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                try { mainWindow.webContents.send('update-state-changed', state); } catch (_) { /* yut */ }
+            }
+        },
+        onBeforeQuitAndInstall: () => {
+            isQuitting = true;
+            try {
+                if (oneDriveSyncService && typeof oneDriveSyncService.flush === 'function') {
+                    oneDriveSyncService.flush();
+                }
+            } catch (_) { /* yut */ }
+        }
+    });
+    // Gizlilik ilkesi: autoCheckUpdates varsayilan false'tur; yalnizca kullanici actiysa (ve Store disinda) denetlenir.
+    if (!distribution.isFeatureEnabled('storeUpdatesOnly') && storageService.getSettings().autoCheckUpdates === true) {
+        const autoCheckTimer = timers.setTimeout(() => {
+            if (updateService) updateService.checkForUpdates().catch(() => { });
+        }, 15000);
+        if (autoCheckTimer && typeof autoCheckTimer.unref === 'function') autoCheckTimer.unref();
+    }
     // WP-11.T10: süresi geçen nonce'lar periyodik temizlenir.
     maintenanceTimer = timers.setInterval(() => {
         try { storageService.purgeExpiredNonces(); } catch (_) { /* yut */ }
     }, 6 * 60 * 60 * 1000);
     maintenanceTimer.unref?.();
+
+    // Full headless & GUI parity: expose all initialized domain services through LocalApiService
+    Object.assign(localApiService.deps, {
+        headless: false,
+        userDataDir: app.getPath('userData'),
+        secretStore,
+        warningManager,
+        metricCollector,
+        history: historyService,
+        templates: templateService,
+        energy: energyService,
+        devices: deviceService,
+        deviceProfiler,
+        webhooks: webhookService,
+        cloudSync: oneDriveSyncService,
+        diagnostics: diagnosticsService,
+        aiBackend,
+        modelManager,
+        sttModelManager,
+        sttService,
+        orchestrator: agentOrchestrator,
+        updates: updateService,
+        upsMonitor,
+        consoleClient,
+        executor: orderExecutor,
+        onSettingsUpdated: (patch, nextSettings) => {
+            try {
+                if (patch && Object.prototype.hasOwnProperty.call(patch, 'theme')) {
+                    applyRuntimeThemeSource(nextSettings.theme);
+                }
+                if (patch && (
+                    Object.prototype.hasOwnProperty.call(patch, 'globalShortcutsEnabled')
+                    || Object.prototype.hasOwnProperty.call(patch, 'globalShortcutToggleWindow')
+                    || Object.prototype.hasOwnProperty.call(patch, 'globalShortcutQuickStart')
+                    || Object.prototype.hasOwnProperty.call(patch, 'globalShortcutCancel')
+                    || Object.prototype.hasOwnProperty.call(patch, 'globalShortcutVoiceHud')
+                )) {
+                    applyRuntimeGlobalShortcuts(nextSettings);
+                }
+                if (patch && Object.prototype.hasOwnProperty.call(patch, 'aiTier')) {
+                    syncActiveAiTierManagers(nextSettings.aiTier).catch(() => {});
+                }
+                if (patch && Object.prototype.hasOwnProperty.call(patch, 'autostart')) {
+                    syncWindowsLoginItem(nextSettings.autostart === true, nextSettings.startMinimized === true);
+                }
+                if (patch && (
+                    Object.prototype.hasOwnProperty.call(patch, 'upsEnabled')
+                    || Object.prototype.hasOwnProperty.call(patch, 'upsHost')
+                    || Object.prototype.hasOwnProperty.call(patch, 'upsName')
+                    || Object.prototype.hasOwnProperty.call(patch, 'upsAutoActionEnabled')
+                )) {
+                    startUpsSupervisor(nextSettings);
+                }
+            } catch (err) {
+                log.warn('[LocalApiService] onSettingsUpdated yan etkisi uygulanamadi:', err && err.message);
+            }
+        }
+    });
 
     const apiStarted = await localApiService.start();
     if (!apiStarted || apiStarted.ok === false) {
@@ -1094,6 +1234,306 @@ function applyRuntimeUiZoom(zoomPercent) {
     return clamped;
 }
 
+function applyRuntimeThemeSource(mode) {
+    const valid = (mode === 'light' || mode === 'dark' || mode === 'system') ? mode : 'dark';
+    if (nativeTheme) {
+        try {
+            nativeTheme.themeSource = valid;
+        } catch (err) {
+            log.warn('[Theme] nativeTheme.themeSource uygulanamadı:', err && err.message);
+        }
+    }
+    return valid;
+}
+
+if (nativeTheme && typeof nativeTheme.on === 'function') {
+    nativeTheme.on('updated', () => {
+        const payload = {
+            shouldUseDarkColors: Boolean(nativeTheme.shouldUseDarkColors),
+            themeSource: nativeTheme.themeSource || 'system'
+        };
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            try { mainWindow.webContents.send('system-theme-changed', payload); } catch (_) { /* yut */ }
+        }
+        if (miniWindow && !miniWindow.isDestroyed()) {
+            try { miniWindow.webContents.send('system-theme-changed', payload); } catch (_) { /* yut */ }
+        }
+    });
+}
+
+function refreshWindowsJumpList() {
+    try {
+        const exePath = Portable.portableExePath(process.env, fs.existsSync) || app.getPath('exe');
+        const iconPath = getCurrentAppIconPath();
+        return JumpListService.registerJumpList({
+            appRef: app,
+            exePath,
+            iconPath,
+            translate: (key) => t(key),
+            logger: log
+        });
+    } catch (err) {
+        log.warn('[JumpList] yenilenemedi:', err && err.message);
+        return { ok: false, count: 0 };
+    }
+}
+
+function handleJumpAction(actionId) {
+    const spec = JumpListService.getJumpSpec(actionId);
+    if (!spec || !taskManager) return false;
+    if (spec.action === 'cancel') {
+        const settings = storageService ? storageService.getSettings() : {};
+        if (settings.cancelPinHash) {
+            showMainWindowForPin('cancel');
+            return true;
+        }
+        const active = taskManager.getActiveTasks();
+        if (!active || active.length === 0) {
+            if (tray && !tray.isDestroyed() && typeof tray.displayBalloon === 'function') {
+                try { tray.displayBalloon({ title: 'Power Pilot', content: t('toastJumpNoActive') }); } catch (_) { /* yut */ }
+            }
+            return true;
+        }
+        let res = { ok: false };
+        if (typeof taskManager.cancelActiveTask === 'function') res = taskManager.cancelActiveTask();
+        if (!res.ok && active[0]) taskManager.cancelTask(active[0].id);
+        cancelQuickTimer();
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('timer-cancelled-from-tray');
+        }
+        scheduleTrayUpdate();
+        return true;
+    }
+    try {
+        cancelQuickTimer();
+        const task = taskManager.createTask({
+            name: t(spec.titleKey),
+            action: spec.action,
+            source: 'user_interface',
+            trigger: { type: 'duration', durationMs: spec.durationMs }
+        });
+        quickTimerTaskId = task.id;
+        updateMiniWindowVisibility();
+        scheduleTrayUpdate();
+        if (tray && !tray.isDestroyed() && typeof tray.displayBalloon === 'function') {
+            try {
+                tray.displayBalloon({
+                    title: 'Power Pilot',
+                    content: t('toastJumpStarted', { label: t(spec.titleKey) })
+                });
+            } catch (_) { /* yut */ }
+        }
+        return true;
+    } catch (err) {
+        log.warn('[JumpList] aksiyon baslatilamadi:', err && err.message);
+        return false;
+    }
+}
+
+function applyRuntimeGlobalShortcuts(settings) {
+    if (!globalShortcutService) return { enabled: false, registered: [], failed: [] };
+    const s = settings || {};
+    return globalShortcutService.apply(s, {
+        toggleWindow: () => {
+            if (!mainWindow || mainWindow.isDestroyed()) return;
+            if (mainWindow.isVisible() && !mainWindow.isMinimized() && mainWindow.isFocused()) {
+                mainWindow.hide();
+            } else {
+                mainWindow.show();
+                if (mainWindow.isMinimized()) mainWindow.restore();
+                mainWindow.focus();
+            }
+        },
+        quickStart: () => {
+            if (!taskManager || !storageService) return;
+            const cur = storageService.getSettings();
+            const action = ['shutdown', 'restart', 'sleep', 'hibernate', 'lock', 'signout'].includes(cur.defaultAction)
+                ? cur.defaultAction
+                : 'shutdown';
+            const mins = Number.isInteger(cur.defaultMinutes) && cur.defaultMinutes > 0 ? cur.defaultMinutes : 30;
+            try {
+                cancelQuickTimer();
+                const task = taskManager.createTask({
+                    name: `Hızlı Zamanlayıcı (${action})`,
+                    action,
+                    source: 'user_interface',
+                    trigger: { type: 'duration', durationMs: mins * 60 * 1000 }
+                });
+                quickTimerTaskId = task.id;
+                updateMiniWindowVisibility();
+                scheduleTrayUpdate();
+                if (tray && !tray.isDestroyed() && typeof tray.displayBalloon === 'function') {
+                    try {
+                        tray.displayBalloon({
+                            title: 'Power Pilot',
+                            content: t('toastGlobalQuickStarted', { minutes: mins })
+                        });
+                    } catch (_) { /* yut */ }
+                }
+            } catch (err) {
+                log.warn('[GlobalShortcut] quickStart basarisiz:', err && err.message);
+            }
+        },
+        cancel: () => {
+            if (!taskManager || !storageService) return;
+            const cur = storageService.getSettings();
+            if (cur.cancelPinHash) {
+                showMainWindowForPin('cancel');
+                return;
+            }
+            const active = taskManager.getActiveTasks();
+            if (!active || active.length === 0) return;
+            let res = { ok: false };
+            if (typeof taskManager.cancelActiveTask === 'function') res = taskManager.cancelActiveTask();
+            if (!res.ok && active[0]) taskManager.cancelTask(active[0].id);
+            cancelQuickTimer();
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('timer-cancelled-from-tray');
+            }
+            scheduleTrayUpdate();
+        },
+        voiceHud: () => {
+            toggleVoiceHudWindow();
+        }
+    });
+}
+
+async function syncActiveAiTierManagers(tierId = DEFAULT_AI_TIER, { autoLoad = false } = {}) {
+    const resolvedTier = AI_TIERS[tierId] ? tierId : DEFAULT_AI_TIER;
+    const modelsDir = path.join(app.getPath('userData'), 'models');
+    ModelManager.invalidateTiersStatusCache();
+    const mgrs = ModelManager.createTierManagers(modelsDir, resolvedTier);
+    modelManager = mgrs.llm;
+    sttModelManager = mgrs.stt;
+    if (localApiService && localApiService.deps) {
+        localApiService.deps.modelManager = modelManager;
+        localApiService.deps.sttModelManager = sttModelManager;
+        localApiService.deps.sttService = sttService;
+    }
+    if (sttService) {
+        await sttService.setModelId(mgrs.tier.sttServiceKey);
+    }
+    if (aiBackend) {
+        await aiBackend.switchTier(resolvedTier, { autoLoad });
+    }
+    return resolvedTier;
+}
+
+function getVoiceHudPlacement() {
+    const anchorBounds = mainWindow && !mainWindow.isDestroyed() && mainWindow.isVisible()
+        ? mainWindow.getBounds()
+        : null;
+    let cursorPoint = null;
+    try { cursorPoint = screen.getCursorScreenPoint(); } catch (_) { cursorPoint = null; }
+    return miniPlacement.computeBottomCenterPlacement({
+        displays: screen.getAllDisplays(),
+        primaryDisplay: screen.getPrimaryDisplay(),
+        anchorBounds,
+        cursorPoint
+    });
+}
+
+function toggleVoiceHudWindow() {
+    const settings = storageService ? storageService.getSettings() : {};
+    if (settings.voiceHudEnabled === false) return { opened: false, reason: 'DISABLED' };
+    if (voiceHudWindow && !voiceHudWindow.isDestroyed() && voiceHudWindow.isVisible()) {
+        try {
+            const hudAction = 'TOGGLE';
+            voiceHudWindow.webContents.send('voice-hud-trigger', hudAction);
+        } catch (_) {}
+        return { opened: true, toggled: true };
+    }
+    return openVoiceHudWindow('START');
+}
+
+function openVoiceHudWindow(action = 'start') {
+    const placement = getVoiceHudPlacement();
+    if (voiceHudWindow && !voiceHudWindow.isDestroyed()) {
+        voiceHudWindow.setBounds(placement);
+        voiceHudWindow.setAlwaysOnTop(true, 'screen-saver');
+        voiceHudWindow.showInactive();
+        try {
+            voiceHudWindow.webContents.send('voice-hud-trigger', action);
+        } catch (_) {}
+        return { opened: true };
+    }
+
+    voiceHudWindow = new BrowserWindow({
+        width: placement.width,
+        height: placement.height,
+        x: placement.x,
+        y: placement.y,
+        frame: false,
+        transparent: true,
+        resizable: false,
+        alwaysOnTop: true,
+        skipTaskbar: true,
+        show: false,
+        icon: getCurrentAppIconImage(),
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            nodeIntegration: false,
+            contextIsolation: true,
+            sandbox: true,
+            webSecurity: true,
+            allowRunningInsecureContent: false
+        }
+    });
+
+    hardenWebContents(voiceHudWindow.webContents);
+    voiceHudWindow.loadURL('app://powerpilot/voice-hud.html');
+
+    voiceHudWindow.once('ready-to-show', () => {
+        if (!voiceHudWindow || voiceHudWindow.isDestroyed()) return;
+        voiceHudWindow.setBounds(getVoiceHudPlacement());
+        voiceHudWindow.setAlwaysOnTop(true, 'screen-saver');
+        try {
+            voiceHudWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+        } catch (_) {}
+        voiceHudWindow.showInactive();
+        setTimeout(() => {
+            if (voiceHudWindow && !voiceHudWindow.isDestroyed()) {
+                try { voiceHudWindow.webContents.send('voice-hud-trigger', action); } catch (_) {}
+            }
+        }, 80);
+    });
+
+    voiceHudWindow.on('closed', () => {
+        voiceHudWindow = null;
+    });
+    return { opened: true };
+}
+
+function closeVoiceHudWindow() {
+    if (voiceHudWindow && !voiceHudWindow.isDestroyed()) {
+        voiceHudWindow.hide();
+    }
+}
+
+function syncWindowsLoginItem(enable, startMinimized) {
+    if (distribution.isFeatureEnabled('startupViaWindowsSettings')) return null;
+    const exePath = Portable.portableExePath(process.env, fs.existsSync) || app.getPath('exe');
+    const args = startMinimized === true ? ['--minimized'] : [];
+    app.setLoginItemSettings({ openAtLogin: Boolean(enable), path: exePath, args });
+    return app.getLoginItemSettings({ path: exePath, args }).openAtLogin;
+}
+
+function buildSystemDiagnosticText() {
+    const s = storageService ? storageService.getSettings() : {};
+    const channel = distribution.IS_STORE
+        ? 'Microsoft Store (MSIX)'
+        : (Portable.isPortable(process.env) ? 'Portable' : 'Direct (NSIS)');
+    const lines = [
+        `Power Pilot v${getAppVersion()} (${channel})`,
+        `OS: ${os.platform()} ${os.release()} (${process.arch})`,
+        `Runtime: Electron ${process.versions.electron || '-'} / Node ${process.versions.node || '-'}`,
+        `Language: ${s.language || currentLanguage()} | Theme: ${s.theme || 'dark'} (${s.themeId || 'obsidian'}) | Zoom: ${s.uiZoom || 100}%`,
+        `Cloud Sync: ${s.oneDriveConnected === true ? 'Connected' : 'Disconnected'} (AutoSync: ${s.oneDriveAutoSync !== false ? 'On' : 'Off'})`,
+        `Global Shortcuts: ${s.globalShortcutsEnabled === true ? 'Enabled' : 'Disabled'}`
+    ];
+    return lines.join('\n');
+}
+
 function getCurrentAppIconPath() {
     return AppIconService.resolveIconIcoPath(getCurrentAppIconId(), {
         rootDir: __dirname,
@@ -1190,11 +1630,15 @@ function createWindow() {
         if (mainWindow && !mainWindow.isDestroyed()) {
             applyRuntimeAppIcon(getCurrentAppIconId(), { updateShortcuts: false });
             applyRuntimeUiZoom(getCurrentUiZoom());
-            const startMin = storageService && typeof storageService.getSettings === 'function'
-                && storageService.getSettings().startMinimized === true;
+            const startMin = process.argv.includes('--minimized')
+                || (storageService && typeof storageService.getSettings === 'function'
+                    && storageService.getSettings().startMinimized === true);
             if (!startMin) {
                 mainWindow.show();
                 mainWindow.focus();
+                // Win32 görev çubuğu düğmesi görünür olduktan hemen sonra WM_SETICON
+                // tazelenir; böylece ilk açılışta geçici beyaz ikon oluşmaz.
+                applyRuntimeAppIcon(getCurrentAppIconId(), { updateShortcuts: false });
             }
         }
     });
@@ -1551,16 +1995,20 @@ function createTray() {
 
 // WP-12: SingletonLock dosyası elle SİLİNMEZ. Electron süreç sahipliğini
 // kendisi doğrular; elle silme ikinci örneğin veriyi bozmasına yol açar.
-// Headless servis, GUI örneğinden bağımsızdır (farklı user-data-dir).
-const gotTheLock = HEADLESS_MODE ? true : app.requestSingleInstanceLock();
+// Headless servis, init, CLI ve MCP modlari GUI orneginden bagimsizdir.
+const gotTheLock = NON_GUI_MODE ? true : app.requestSingleInstanceLock();
 
 if (!gotTheLock) {
     app.quit();
 } else {
-    if (!HEADLESS_MODE) app.on('second-instance', (event, commandLine) => {
+    if (!NON_GUI_MODE) app.on('second-instance', (event, commandLine) => {
         // P0-2: Scheduler yedeği uygulama açıkken tetiklenirse argv buraya gelir;
         // kayıt tüketilip görev normal boru hattından çalıştırılır.
         TaskSchedulerBridge.forwardRunTask(commandLine, taskManager);
+        const jumpActionId = JumpListService.parseJumpActionArgv(commandLine);
+        if (jumpActionId) {
+            handleJumpAction(jumpActionId);
+        }
         if (mainWindow) {
             mainWindow.show();
             if (mainWindow.isMinimized()) mainWindow.restore();
@@ -1599,6 +2047,48 @@ if (!gotTheLock) {
         });
         // WP-01.T2: imza kanonikleştiricisi hazır olmadan emir üretilmez/doğrulanmaz.
         await SignedOrderService.initCanonicalizer();
+        if (INIT_HEADLESS_MODE) {
+            try {
+                const { initHeadlessConfig } = require('./src/agent/bootstrap');
+                const portVal = parseArgValue(process.argv, '--port');
+                const roleVal = parseArgValue(process.argv, '--role') || 'admin';
+                const hostVal = parseArgValue(process.argv, '--host') || '127.0.0.1';
+                const mcpEntry = resolveUnpackedEntry('src', 'mcp', 'server.js');
+                const res = initHeadlessConfig({
+                    userDataPath: app.getPath('userData'),
+                    port: portVal ? Number(portVal) : undefined,
+                    host: hostVal,
+                    role: roleVal,
+                    enableApi: true,
+                    rotateKey: process.argv.includes('--rotate'),
+                    saveProfile: !process.argv.includes('--no-save-profile'),
+                    mcpEntryPath: mcpEntry
+                });
+                process.stdout.write(`${JSON.stringify(res, null, 2)}\n`);
+                app.exit(0);
+            } catch (err) {
+                process.stderr.write(`${err && err.message ? err.message : String(err)}\n`);
+                app.exit(1);
+            }
+            return;
+        }
+        if (CLI_MODE) {
+            try {
+                const { runCli } = require('./src/cli/powerpilot');
+                const code = await runCli(process.argv.slice(CLI_MODE_INDEX + 1));
+                if (typeof code === 'number') app.exit(code);
+            } catch (err) {
+                process.stderr.write(`${err && err.message ? err.message : String(err)}\n`);
+                app.exit(1);
+            }
+            return;
+        }
+        if (MCP_MODE) {
+            const { startStdioServer } = require('./src/mcp/server');
+            startStdioServer();
+            process.stdin.on('end', () => app.exit(0));
+            return;
+        }
         if (HEADLESS_MODE) {
             try {
                 await startHeadless();
@@ -1663,6 +2153,10 @@ if (!gotTheLock) {
                 taskManager.schedulerBridge.removeTask(runTaskId);
             }
         }
+        const startupJumpId = JumpListService.parseJumpActionArgv(process.argv);
+        if (startupJumpId && taskManager) {
+            handleJumpAction(startupJumpId);
+        }
 
         app.on('activate', function () {
             if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -1709,6 +2203,7 @@ app.on('before-quit', (event) => {
     try { if (initialBackupTimer) clearTimeout(initialBackupTimer); } catch (_) { }
     try { if (maintenanceTimer) clearInterval(maintenanceTimer); } catch (_) { }
     try { if (taskManager && taskManager.loopInterval) clearInterval(taskManager.loopInterval); } catch (_) { }
+    try { if (globalShortcutService) globalShortcutService.unregisterAll(); } catch (_) { }
     try { if (metricCollector && typeof metricCollector.stopSampling === 'function') metricCollector.stopSampling(); } catch (_) { }
     try { if (aiBackend && typeof aiBackend.close === 'function') aiBackend.close().catch(() => { }); } catch (_) { }
 
@@ -2247,14 +2742,44 @@ const AI_STATUS_KEYS = {
     LOAD_FAILED: 'aiNoResponse'
 };
 
-ipcHandle('ai-status', () => {
+let aiHardwareProfileCache = { at: 0, dir: null, value: null };
+
+async function getCachedAiHardwareProfile(modelsDir) {
+    const now = Date.now();
+    if (aiHardwareProfileCache.value && aiHardwareProfileCache.dir === modelsDir && (now - aiHardwareProfileCache.at) < 15000) {
+        return aiHardwareProfileCache.value;
+    }
+    try {
+        const hw = deviceProfiler ? await deviceProfiler.getAiHardwareProfile(modelsDir) : null;
+        if (hw) {
+            aiHardwareProfileCache = { at: now, dir: modelsDir, value: hw };
+        }
+        return hw;
+    } catch (_) {
+        return DeviceProfiler.recommendAiTier({ totalRamBytes: os.totalmem() });
+    }
+}
+
+ipcHandle('ai-status', async () => {
     const totalGb = Math.round((os.totalmem() / 1073741824) * 10) / 10;
+    const modelsDir = path.join(app.getPath('userData'), 'models');
+    const settings = storageService ? storageService.getSettings() : {};
+    const activeTier = AI_TIERS[settings.aiTier] ? settings.aiTier : DEFAULT_AI_TIER;
     const status = aiBackend.getStatus();
     // Durum metni servis içinde Türkçe üretilir; arayüze aktif dilde gider.
     const key = AI_STATUS_KEYS[status.code];
+    const isDownloading = aiDownloadState && aiDownloadState.state === 'running';
+    const tiers = ModelManager.getAllTiersStatus(modelsDir, { cacheTtlMs: isDownloading ? 2500 : 1000 });
+    const hardware = await getCachedAiHardwareProfile(modelsDir);
     return {
         ...status,
         ...(key ? { message: t(key) } : {}),
+        activeTier,
+        tiers,
+        hardware,
+        voiceHudEnabled: settings.voiceHudEnabled !== false,
+        voiceReplyTtsEnabled: settings.voiceReplyTtsEnabled !== false,
+        globalShortcutVoiceHud: settings.globalShortcutVoiceHud || 'Ctrl+Shift+Space',
         model: modelManager.status(),
         stt: sttModelManager.status(),
         download: { ...aiDownloadState },
@@ -2377,39 +2902,167 @@ ipcHandle('stt-transcribe', async (event, payload) => {
     }
     return localizeResult(await sttService.transcribePcm(samples, uiLang), STT_RESULT_KEYS);
 });
-// WBS-7.5: Model indirme/yükleme IPC - indirme arka planda sürer, durum polling ile izlenir.
-let aiDownloadState = { state: 'idle', file: null, received: 0, total: null, step: 0, steps: 2, error: null };
-ipcHandle('ai-model-download', () => {
-    // AI paketi = LLM + STT modeli (sıralı, arka planda; canlı ilerleme ai-status.download ile).
+// WBS-7.5 + WP-3.3: 3 kademeli model indirme/duraklatma/silme/geçiş ve Sesli Dikte HUD IPC uçları.
+let aiDownloadState = { state: 'idle', tierId: null, file: null, received: 0, total: null, step: 0, steps: 2, error: null };
+ipcHandle('ai-model-download', async (event, payload) => {
     if (aiDownloadState.state === 'running') {
         return { started: false, code: 'ALREADY_DOWNLOADING', message: t('errorDownloadBusy') };
     }
-    aiDownloadState = { state: 'running', file: null, received: 0, total: null, step: 0, steps: 2, error: null };
+    const requestedTier = typeof payload === 'string'
+        ? payload
+        : (payload && typeof payload.tierId === 'string' ? payload.tierId : null);
+    const currentTier = (storageService && storageService.getSettings().aiTier) || DEFAULT_AI_TIER;
+    const targetTier = (requestedTier && AI_TIERS[requestedTier]) ? requestedTier : currentTier;
+
+    if (storageService && targetTier !== currentTier) {
+        storageService.updateSettings({ aiTier: targetTier });
+    }
+    await syncActiveAiTierManagers(targetTier, { autoLoad: false });
+
+    aiDownloadState = { state: 'running', tierId: targetTier, file: null, received: 0, total: null, step: 0, steps: 2, error: null };
     const run = async () => {
         try {
-            const { ModelManager } = require('./src/main/services/ModelManager');
             const out = await ModelManager.downloadBundle(modelManager, sttModelManager, (ev) => {
-                aiDownloadState = { state: 'running', file: ev.file, received: ev.received, total: ev.total, step: ev.step, steps: ev.steps, error: null };
+                aiDownloadState = {
+                    state: 'running',
+                    tierId: targetTier,
+                    file: ev.file,
+                    received: ev.received,
+                    total: ev.total,
+                    step: ev.step,
+                    steps: ev.steps,
+                    error: null
+                };
             });
-            log.info(`[ModelManager] LLM indirme: ${out.llm.success ? 'ok' : out.llm.error}`);
+            log.info(`[ModelManager] (${targetTier}) LLM indirme: ${out.llm.success ? 'ok' : out.llm.error}`);
             if (out.llm.success && out.stt) {
-                log.info(`[ModelManager] STT indirme: ${out.stt.success ? 'ok' : out.stt.error}`);
+                log.info(`[ModelManager] (${targetTier}) STT indirme: ${out.stt.success ? 'ok' : out.stt.error}`);
+            }
+            const wasCancelled = (out.llm && out.llm.code === 'CANCELLED') || (out.stt && out.stt.code === 'CANCELLED');
+            if (wasCancelled) {
+                aiDownloadState = {
+                    state: 'paused',
+                    tierId: targetTier,
+                    file: aiDownloadState.file,
+                    received: aiDownloadState.received,
+                    total: aiDownloadState.total,
+                    step: aiDownloadState.step,
+                    steps: 2,
+                    error: null
+                };
+                return;
             }
             const failed = !out.llm.success ? localizeDownloadFailure(out.llm)
                 : (out.stt && !out.stt.success ? localizeDownloadFailure(out.stt) : null);
-            aiDownloadState = failed
-                ? { state: 'failed', file: aiDownloadState.file, received: aiDownloadState.received, total: aiDownloadState.total, step: aiDownloadState.step, steps: 2, error: failed.error || t('errorAiDownloadFailed') }
-                : { state: 'done', file: null, received: 0, total: null, step: 2, steps: 2, error: null };
+            if (failed) {
+                aiDownloadState = {
+                    state: 'failed',
+                    tierId: targetTier,
+                    file: aiDownloadState.file,
+                    received: aiDownloadState.received,
+                    total: aiDownloadState.total,
+                    step: aiDownloadState.step,
+                    steps: 2,
+                    error: failed.error || t('errorAiDownloadFailed')
+                };
+                return;
+            }
+            // İndirme tamamlandığında seçilen kademeyi otomatik olarak RAM'e yükle ve hazırla
+            try {
+                await aiBackend.loadModel(modelManager.file);
+            } catch (loadErr) {
+                log.warn('[ModelManager] Otomatik model yükleme atlandı:', loadErr && loadErr.message);
+            }
+            aiDownloadState = { state: 'done', tierId: targetTier, file: null, received: 0, total: null, step: 2, steps: 2, error: null };
         } catch (err) {
             log.error('[ModelManager] beklenmeyen hata:', err && err.message);
-            aiDownloadState = { state: 'failed', file: null, received: 0, total: null, step: 0, steps: 2, error: t('unknownError') };
+            aiDownloadState = { state: 'failed', tierId: targetTier, file: null, received: 0, total: null, step: 0, steps: 2, error: t('unknownError') };
         }
     };
     run();
-    return { started: true };
+    return { started: true, tierId: targetTier };
 });
-ipcHandle('ai-model-load', async () => {
-    const res = await aiBackend.loadModel();
+
+ipcHandle('ai-model-cancel', () => {
+    const r1 = modelManager ? modelManager.cancel() : { cancelled: false };
+    const r2 = sttModelManager ? sttModelManager.cancel() : { cancelled: false };
+    if (aiDownloadState.state === 'running') {
+        aiDownloadState = {
+            ...aiDownloadState,
+            state: 'paused',
+            error: null
+        };
+    }
+    return { ok: true, cancelled: !!(r1.cancelled || r2.cancelled), state: aiDownloadState.state };
+});
+
+ipcHandle('ai-model-delete', async (event, payload) => {
+    const requestedTier = typeof payload === 'string'
+        ? payload
+        : (payload && typeof payload.tierId === 'string' ? payload.tierId : null);
+    const activeTier = (storageService && storageService.getSettings().aiTier) || DEFAULT_AI_TIER;
+    const targetTier = (requestedTier && AI_TIERS[requestedTier]) ? requestedTier : activeTier;
+
+    if (aiDownloadState.state === 'running' && aiDownloadState.tierId === targetTier) {
+        if (modelManager) modelManager.cancel();
+        if (sttModelManager) sttModelManager.cancel();
+        await new Promise((r) => setTimeout(r, 180));
+    }
+
+    // C++ mmap dosya kilitlerini serbest bırak
+    const tierSpec = ModelManager.getTierSpec(targetTier);
+    const targetLlmFile = AiBackend.modelFileForTier(targetTier);
+    if (aiBackend && (!aiBackend.modelId || aiBackend.modelId === targetLlmFile || targetTier === activeTier)) {
+        await aiBackend.unload();
+    }
+    if (sttService && (sttService.modelId === tierSpec.sttServiceKey || targetTier === activeTier)) {
+        await sttService.unload();
+    }
+
+    const modelsDir = path.join(app.getPath('userData'), 'models');
+    let delRes = ModelManager.deleteTierBundle(targetTier, modelsDir);
+    if (!delRes.ok) {
+        await new Promise((r) => setTimeout(r, 200));
+        delRes = ModelManager.deleteTierBundle(targetTier, modelsDir);
+    }
+    if (aiDownloadState.tierId === targetTier) {
+        aiDownloadState = { state: 'idle', tierId: null, file: null, received: 0, total: null, step: 0, steps: 2, error: null };
+    }
+    return {
+        ok: delRes.ok,
+        tierId: targetTier,
+        freedBytes: delRes.freedBytes,
+        code: delRes.code
+    };
+});
+
+ipcHandle('ai-select-tier', async (event, payload) => {
+    const requestedTier = typeof payload === 'string'
+        ? payload
+        : (payload && typeof payload.tierId === 'string' ? payload.tierId : null);
+    if (!requestedTier || !AI_TIERS[requestedTier]) {
+        return { ok: false, code: 'INVALID_TIER', message: t('errorInvalidRequest') };
+    }
+    if (storageService) {
+        storageService.updateSettings({ aiTier: requestedTier });
+    }
+    await syncActiveAiTierManagers(requestedTier, { autoLoad: true });
+    return {
+        ok: true,
+        activeTier: requestedTier,
+        status: aiBackend.getStatus()
+    };
+});
+
+ipcHandle('ai-model-load', async (event, payload) => {
+    const requestedTier = typeof payload === 'string'
+        ? payload
+        : (payload && typeof payload.tierId === 'string' ? payload.tierId : null);
+    if (requestedTier && AI_TIERS[requestedTier]) {
+        if (storageService) storageService.updateSettings({ aiTier: requestedTier });
+        await syncActiveAiTierManagers(requestedTier, { autoLoad: false });
+    }
+    const res = await aiBackend.loadModel(modelManager ? modelManager.file : undefined);
     if (res && res.loaded === false) {
         // Yükleme hatası kodu arayüzde ham kod olarak görünmesin.
         const key = AI_STATUS_KEYS[res.code];
@@ -2420,6 +3073,68 @@ ipcHandle('ai-model-load', async () => {
 ipcHandle('ai-model-unload', async () => {
     await aiBackend.unload();
     return { success: true, ...aiBackend.getStatus() };
+});
+
+// WP-4.2: Görev Çubuğu Üstü Sıfır-Arayüz (Zero-UI) Sesli Dikte HUD IPC uçları.
+ipcHandle('get-voice-hud-config', () => {
+    const settings = storageService ? storageService.getSettings() : {};
+    const activeTier = AI_TIERS[settings.aiTier] ? settings.aiTier : DEFAULT_AI_TIER;
+    const tierLabelKey = activeTier === 'lite' ? 'aiTierLiteName' : (activeTier === 'powerful' ? 'aiTierPowerfulName' : 'aiTierBalancedName');
+    return {
+        language: currentLanguage(),
+        activeTier,
+        tierLabel: `Power Pilot · ${t(tierLabelKey)}`,
+        voiceReplyTtsEnabled: settings.voiceReplyTtsEnabled !== false,
+        labels: {
+            voiceHudListeningTitle: t('voiceHudListeningTitle'),
+            voiceHudListeningHint: t('voiceHudListeningHint'),
+            voiceHudProcessingTitle: t('voiceHudProcessingTitle'),
+            voiceHudProcessingDesc: t('voiceHudProcessingDesc'),
+            voiceHudNoSpeechTitle: t('voiceHudNoSpeechTitle'),
+            voiceHudNoSpeechDesc: t('voiceHudNoSpeechDesc'),
+            voiceHudModelMissingTitle: t('voiceHudModelMissingTitle'),
+            voiceHudModelMissingDesc: t('voiceHudModelMissingDesc'),
+            voiceHudMicErrorTitle: t('voiceHudMicErrorTitle'),
+            voiceHudMicErrorDesc: t('voiceHudMicErrorDesc'),
+            voiceHudErrorTitle: t('voiceHudErrorTitle'),
+            voiceHudUndoBtn: t('voiceHudUndoBtn'),
+            voiceHudUndoneTitle: t('voiceHudUndoneTitle'),
+            voiceHudUndoneDesc: t('voiceHudUndoneDesc')
+        }
+    };
+});
+
+ipcHandle('open-voice-hud', () => openVoiceHudWindow('start'));
+ipcOn('close-voice-hud', () => closeVoiceHudWindow());
+
+ipcHandle('voice-hud-process-audio', async (event, payload) => {
+    const { samples, sampleRate, uiLang } = payload || {};
+    if (sampleRate !== 16000) {
+        return { ok: false, code: 'INVALID_SAMPLE_RATE', title: t('voiceHudErrorTitle'), speechText: t('errorAudioFormat') };
+    }
+    const len = samples && typeof samples.length === 'number' ? samples.length : 0;
+    if (len === 0 || len > 500000) {
+        return { ok: false, code: 'INVALID_AUDIO', title: t('voiceHudErrorTitle'), speechText: t('errorAudioSize') };
+    }
+    const sttRes = localizeResult(await sttService.transcribePcm(samples, uiLang || currentLanguage()), STT_RESULT_KEYS);
+    if (!sttRes || !sttRes.ok || !sttRes.text) {
+        return {
+            ok: false,
+            code: (sttRes && sttRes.code) || 'STT_FAILED',
+            title: t('voiceHudNoSpeechTitle'),
+            speechText: (sttRes && sttRes.message) || t('voiceHudNoSpeechDesc')
+        };
+    }
+    return await voiceCommandRouter.executeVoiceText(sttRes.text);
+});
+
+ipcHandle('voice-hud-execute-text', async (event, payload) => {
+    const text = typeof payload === 'string' ? payload : (payload && payload.text);
+    const input = normalizeAiInput(text, { allowEmpty: false });
+    if (!input.ok) {
+        return { ok: false, code: input.code, title: t('voiceHudErrorTitle'), speechText: t('errorInvalidRequest') };
+    }
+    return await voiceCommandRouter.executeVoiceText(input.text);
 });
 
 ipcHandle('get-settings', () => toRendererSettings(storageService.getSettings()));
@@ -2635,6 +3350,28 @@ async function applySettingsPatch(newSettings, current, auditAction) {
                 );
             }
         }
+        if (rest.theme !== undefined) {
+            applyRuntimeThemeSource(rest.theme);
+        }
+        if (rest.language !== undefined || rest.appIcon !== undefined || rest.customIconColor !== undefined) {
+            refreshWindowsJumpList();
+        }
+        if (rest.globalShortcutsEnabled !== undefined || rest.globalShortcutToggleWindow !== undefined
+            || rest.globalShortcutQuickStart !== undefined || rest.globalShortcutCancel !== undefined
+            || rest.globalShortcutVoiceHud !== undefined) {
+            applyRuntimeGlobalShortcuts(storageService.getSettings());
+        }
+        if (rest.aiTier !== undefined) {
+            await syncActiveAiTierManagers(storageService.getSettings().aiTier);
+        }
+        if (rest.startMinimized !== undefined) {
+            const eff = storageService.getSettings();
+            if (eff.autostart === true) {
+                try { syncWindowsLoginItem(true, eff.startMinimized === true); } catch (err) {
+                    log.warn('[Autostart] --minimized guncellenemedi:', err && err.message);
+                }
+            }
+        }
         scheduleTrayUpdate();
         return {
             success: true,
@@ -2669,6 +3406,17 @@ async function applySettingsPatch(newSettings, current, auditAction) {
             }
             if (rest.uiZoom !== undefined) {
                 applyRuntimeUiZoom(before.uiZoom);
+            }
+            if (rest.theme !== undefined) {
+                applyRuntimeThemeSource(before.theme);
+            }
+            if (rest.language !== undefined || rest.appIcon !== undefined || rest.customIconColor !== undefined) {
+                refreshWindowsJumpList();
+            }
+            if (rest.globalShortcutsEnabled !== undefined || rest.globalShortcutToggleWindow !== undefined
+                || rest.globalShortcutQuickStart !== undefined || rest.globalShortcutCancel !== undefined
+                || rest.globalShortcutVoiceHud !== undefined) {
+                applyRuntimeGlobalShortcuts(before);
             }
         } catch (_) { /* rollback best-effort */ }
         return { success: false, code: err && err.code ? err.code : 'SETTINGS_APPLY_FAILED', message: t('errorSettingsApplyReverted') };
@@ -2972,20 +3720,24 @@ ipcHandle('test-ups', async (event, args) => {
 ipcHandle('get-mcp-config', () => {
     const s = storageService.getSettings();
     // P0-4: paketlenmiş uygulamada `__dirname` app.asar içindedir ve düz
-    // `node` .asar'dan dosya ÇALIŞTIRAMAZ. asarUnpack'a alınan yolu
-    // (app.asar.unpacked) kullanmak zorunlu.
+    // `node` .asar'dan dosya ÇALIŞTIRAMAZ. Kurulumlu pakette powerpilot-mcp.cmd
+    // shim'i hem Node.js hem de Node.js olmayan makinelerde çalışır.
     const mcpEntry = resolveUnpackedEntry('src', 'mcp', 'server.js');
+    const packagedShim = app.isPackaged && process.resourcesPath
+        ? path.join(process.resourcesPath, 'bin', 'powerpilot-mcp.cmd')
+        : null;
+    const useShim = Boolean(packagedShim && fs.existsSync(packagedShim));
     return {
         apiEnabled: s.localApiEnabled === true,
         port: s.localApiPort || 18456,
         hasKey: Boolean(s.localApiKeyHash),
         keyMasked: s.localApiKeyMasked || null,
-        serverPath: mcpEntry,
+        serverPath: useShim ? packagedShim : mcpEntry,
         configJson: JSON.stringify({
             mcpServers: {
                 'power-pilot': {
-                    command: 'node',
-                    args: [mcpEntry],
+                    command: useShim ? packagedShim : 'node',
+                    args: useShim ? [] : [mcpEntry],
                     env: {
                         // P0-4: kanonik adlar (alt çizgili eski ad fallback olarak
                         // okunur, bkz. src/shared/localApiConnection.js).
@@ -3089,6 +3841,29 @@ ipcHandle('set-ui-zoom', (_event, zoom) => {
     }
     const applied = applyRuntimeUiZoom(num);
     return { ok: true, zoom: applied };
+});
+ipcHandle('get-system-theme', () => ({
+    shouldUseDarkColors: Boolean(nativeTheme && nativeTheme.shouldUseDarkColors),
+    themeSource: nativeTheme ? nativeTheme.themeSource : 'dark'
+}));
+ipcHandle('get-global-shortcut-status', () => ({
+    ok: true,
+    status: globalShortcutService
+        ? globalShortcutService.getStatus()
+        : { enabled: false, registered: [], failed: [] }
+}));
+ipcHandle('get-system-diagnostic-text', (_event, args) => {
+    const text = buildSystemDiagnosticText();
+    let copied = false;
+    if (args && args.copy === true && clipboard && typeof clipboard.writeText === 'function') {
+        try {
+            clipboard.writeText(text);
+            copied = true;
+        } catch (err) {
+            log.warn('[Clipboard] sistem bilgisi kopyalanamadi:', err && err.message);
+        }
+    }
+    return { ok: true, text, copied };
 });
 
 // WP-5: Tanılama, çökme raporları ve destek paketi (ZIP) IPC'leri
@@ -3281,6 +4056,15 @@ function applyRestoredOneDriveRuntime() {
             if (typeof applyRuntimeUiZoom === 'function') {
                 applyRuntimeUiZoom(s.uiZoom);
             }
+            if (typeof applyRuntimeThemeSource === 'function') {
+                applyRuntimeThemeSource(s.theme);
+            }
+            if (typeof refreshWindowsJumpList === 'function') {
+                refreshWindowsJumpList();
+            }
+            if (typeof applyRuntimeGlobalShortcuts === 'function') {
+                applyRuntimeGlobalShortcuts(s);
+            }
         }
     } catch (err) {
         log.warn('[OneDriveSync] Geri yukleme sonrasi gorunum guncellenemedi:', err && err.message);
@@ -3419,10 +4203,89 @@ ipcHandle('onedrive-reset-folder', () => {
     return { ok: res.ok, status: res.status, message: t('oneDriveToastFolderReset') };
 });
 
+ipcHandle('onedrive-use-provider', (event, args) => {
+    if (!oneDriveSyncService) return { ok: false, code: 'STORAGE_UNAVAILABLE', message: localizeOneDriveError('STORAGE_UNAVAILABLE') };
+    const providerId = args && typeof args.providerId === 'string' ? args.providerId : '';
+    const res = oneDriveSyncService.useDetectedProvider(providerId);
+    if (!res.ok) {
+        return { ok: false, code: res.code, message: localizeOneDriveError(res.code), status: res.status };
+    }
+    const found = res.status && Array.isArray(res.status.detectedProviders)
+        ? res.status.detectedProviders.find((p) => p.id === providerId.trim().toLowerCase())
+        : null;
+    const label = found ? found.label : providerId;
+    return { ok: true, status: res.status, message: t('oneDriveProviderSwitched', { provider: label }) };
+});
+
 ipcHandle('onedrive-dismiss-recovery', () => {
     if (!oneDriveSyncService) return { ok: false, code: 'STORAGE_UNAVAILABLE', message: localizeOneDriveError('STORAGE_UNAVAILABLE') };
     const res = oneDriveSyncService.dismissRecovery();
     return { ok: res.ok, status: res.status };
+});
+
+function localizeUpdateError(code) {
+    switch (code) {
+        case 'STORE_MANAGED': return t('updateStatusStoreManaged');
+        case 'PORTABLE_MANUAL_ONLY': return t('updateStatusAvailablePortableDetail');
+        case 'OFFLINE_OR_NETWORK': return t('updateErrOffline');
+        case 'SIGNATURE_OR_HASH_ERROR': return t('updateErrIntegrity');
+        case 'RATE_LIMITED': return t('updateErrRateLimit');
+        case 'UNPACKAGED_DEV': return t('updateErrDevBuild');
+        default: return t('updateErrGeneric');
+    }
+}
+
+ipcHandle('update-get-status', () => {
+    if (!updateService) return { ok: false, code: 'NOT_READY' };
+    return { ok: true, state: updateService.getState() };
+});
+
+ipcHandle('update-check', async () => {
+    if (!updateService) return { ok: false, code: 'NOT_READY', message: localizeUpdateError('CHECK_FAILED') };
+    const res = await updateService.checkForUpdates();
+    if (!res.ok) {
+        return { ok: false, code: res.code, state: res.state, message: localizeUpdateError(res.code) };
+    }
+    return { ok: true, busy: Boolean(res.busy), state: res.state };
+});
+
+ipcHandle('update-download', async () => {
+    if (!updateService) return { ok: false, code: 'NOT_READY', message: localizeUpdateError('CHECK_FAILED') };
+    const res = await updateService.downloadUpdate();
+    if (!res.ok) {
+        return { ok: false, code: res.code, state: res.state, message: localizeUpdateError(res.code) };
+    }
+    return { ok: true, state: res.state };
+});
+
+ipcHandle('update-set-install-on-quit', (_event, args) => {
+    if (!updateService) return { ok: false, code: 'NOT_READY', message: localizeUpdateError('CHECK_FAILED') };
+    const enabled = Boolean(args && args.enabled === true);
+    const res = updateService.setInstallOnQuit(enabled);
+    if (!res.ok) {
+        return { ok: false, code: res.code, state: res.state, message: localizeUpdateError(res.code) };
+    }
+    return { ok: true, state: res.state, message: t('updateToastInstallOnQuit') };
+});
+
+ipcHandle('update-install-now', async (_event, args) => {
+    if (!updateService) return { ok: false, code: 'NOT_READY', message: localizeUpdateError('CHECK_FAILED') };
+    // Sifir arka kapi: Iptal PIN'i ayarli ve aktif gorev varsa guncelleme icin yeniden baslatma PIN ister.
+    const hasActive = taskManager && taskManager.getActiveTasks().length > 0;
+    if (hasActive && storageService && storageService.getSettings().cancelPinHash) {
+        const pinCheck = await requireCancelPin(args && args.pin);
+        if (pinCheck) return pinCheck;
+    }
+    const res = updateService.installNow();
+    if (!res.ok) {
+        return { ok: false, code: res.code, state: res.state, message: localizeUpdateError(res.code) };
+    }
+    return { ok: true, state: res.state };
+});
+
+ipcHandle('update-open-release-page', () => {
+    const opened = openExternalSafely(shell, RELEASE_PAGE_URL, log);
+    return { ok: opened };
 });
 
 ipcOn('setting-autostart', (event, enable) => {
@@ -3435,16 +4298,12 @@ ipcOn('setting-autostart', (event, enable) => {
         shell.openExternal('ms-settings:startupapps').catch(() => { });
         return;
     }
-    const exePath = Portable.portableExePath(process.env, fs.existsSync) || app.getPath('exe');
     try {
-        app.setLoginItemSettings({ openAtLogin: enable, path: exePath });
-        // P1-6 (beşinci tur): `autostart` ayarı depoda ve şemada vardı ama
-        // hiçbir mantık okumuyor/yazmıyordu - yalnızca localStorage'da bir
-        // bayrak ve bir OS çağrısı vardı. Sonuç: uygulama ayarı bilmiyordu,
-        // başlangıçta Windows'taki gerçek durumla uzlaştıramıyordu. Artık
-        // gerçek OS durumu geri okunup ayara yazılır.
-        const effective = app.getLoginItemSettings({ path: exePath }).openAtLogin;
-        storageService.updateSettings({ autostart: effective });
+        const curSettings = storageService ? storageService.getSettings() : {};
+        const effective = syncWindowsLoginItem(enable, curSettings.startMinimized === true);
+        if (typeof effective === 'boolean') {
+            storageService.updateSettings({ autostart: effective });
+        }
     } catch (err) {
         log.warn('[IPC] setting-autostart uygulanamadı:', err && err.message);
     }
@@ -3505,6 +4364,9 @@ ipcHandle('delete-all-data', async (event, args) => {
         try {
             if (oneDriveSyncService && typeof oneDriveSyncService.cancelPending === 'function') {
                 oneDriveSyncService.cancelPending();
+            }
+            if (globalShortcutService && typeof globalShortcutService.unregisterAll === 'function') {
+                globalShortcutService.unregisterAll();
             }
             if (consoleSyncTimer) { clearInterval(consoleSyncTimer); consoleSyncTimer = null; }
             if (taskManager && taskManager.loopInterval) {
@@ -3571,6 +4433,7 @@ ipcHandle('delete-all-data', async (event, args) => {
         setTimeout(() => {
             try { if (tray && !tray.isDestroyed()) tray.destroy(); } catch (_) { /* yut */ }
             try { if (miniWindow && !miniWindow.isDestroyed()) miniWindow.destroy(); } catch (_) { /* yut */ }
+            try { if (voiceHudWindow && !voiceHudWindow.isDestroyed()) voiceHudWindow.destroy(); } catch (_) { /* yut */ }
             try { if (mainWindow && !mainWindow.isDestroyed()) mainWindow.destroy(); } catch (_) { /* yut */ }
             try { timers.clearAll(); } catch (_) { /* yut */ }
             try { app.quit(); } catch (_) { /* yut */ }

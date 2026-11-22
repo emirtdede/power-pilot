@@ -1,5 +1,5 @@
 /**
- * build-locales.mjs — WP-14.T1
+ * build-locales.mjs - WP-14.T1
  * Renderer sözlüklerini (17 dil) JSON'a çıkarır ve ana süreç kopyalarını üretir.
  *
  * İlk çalıştırma: legacy `src/renderer/i18n.js` içindeki `translations` +

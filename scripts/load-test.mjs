@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * load-test.mjs — WP-15.T4
+ * load-test.mjs - WP-15.T4
  * 100 ajanlı konsol yükü + soak testi (gerçek süre; hızlandırılmış değil).
  *
  * Kullanım:

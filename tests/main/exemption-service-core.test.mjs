@@ -1,5 +1,5 @@
 /**
- * exemption-service-core.test.mjs — muafiyet + bakım penceresi kuralları
+ * exemption-service-core.test.mjs - muafiyet + bakım penceresi kuralları
  * (Electron bağımsız; depo sahte, saf fonksiyonlar doğrudan test edilir.)
  */
 import { describe, it, expect, vi } from 'vitest';
@@ -77,7 +77,7 @@ describe('validateWindow / isInWindow', () => {
     });
 
     it('gece yarısını aşan pencere: önceki gün kaydı', () => {
-        // 2026-01-06 01:00 (Salı=2); pencere Pazartesi(1) 23:00–02:00
+        // 2026-01-06 01:00 (Salı=2); pencere Pazartesi(1) 23:00-02:00
         const t = new Date('2026-01-06T01:00:00').getTime();
         expect(new Date(t).getDay()).toBe(2);
         expect(isInWindow({ days: [1], start: '23:00', end: '02:00' }, t)).toBe(true);

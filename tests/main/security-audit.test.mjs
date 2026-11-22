@@ -1,5 +1,5 @@
 /**
- * security-audit.test.mjs — O-13
+ * security-audit.test.mjs - O-13
  * Güvenlikle ilgili mutasyonlarda denetim kaydı zorunludur; yazılamazsa
  * işlem geri alınır ve AUDIT_WRITE_FAILED döner.
  */

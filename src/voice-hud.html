@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html class="dark fonts-pending" lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; worker-src 'none'" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <link id="pp-favicon" rel="icon" type="image/png" href="assets/icons/monochrome-dark.png" />
+    <link href="vendor/fonts/public-sans.css" rel="stylesheet" />
+    <link href="vendor/fonts/material-symbols.css" rel="stylesheet" />
+    <link href="renderer/tailwind.css" rel="stylesheet" />
+    <link href="renderer/voice-hud.css" rel="stylesheet" />
+    <script src="renderer/font-ready.js"></script>
+</head>
+<body class="w-full h-full flex items-center justify-center select-none overflow-hidden bg-transparent">
+    <div id="hud-pill" class="pp-hud-pill" role="status" aria-live="polite">
+        <!-- Left: Animated Mic / State Orb -->
+        <button type="button" id="btn-hud-mic" class="pp-hud-orb" data-state="listening" title="Sesli Komut" aria-label="Sesli Komut">
+            <span id="hud-mic-icon" class="material-symbols-outlined text-[22px]" aria-hidden="true">mic</span>
+            <span class="pp-hud-ring"></span>
+        </button>
+
+        <!-- Center: Title, Live Waveform / Transcript & Answer -->
+        <div class="pp-hud-body">
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                    <span id="hud-title" class="pp-hud-title">Dinleniyor...</span>
+                    <div id="hud-wave" class="pp-hud-wave" aria-hidden="true">
+                        <span class="pp-wave-bar"></span>
+                        <span class="pp-wave-bar"></span>
+                        <span class="pp-wave-bar"></span>
+                        <span class="pp-wave-bar"></span>
+                        <span class="pp-wave-bar"></span>
+                    </div>
+                </div>
+                <span id="hud-badge" class="pp-hud-badge">Power Pilot AI</span>
+            </div>
+            <p id="hud-subtitle" class="pp-hud-subtitle">"45 dakika sonra kapat", "Zamanlayıcıyı durdur" veya "Kalan süre ne kadar?"</p>
+        </div>
+
+        <!-- Right: Optional Undo button + Close button -->
+        <div class="pp-hud-actions">
+            <button type="button" id="btn-hud-undo" class="pp-hud-undo hidden" title="Geri Al" aria-label="Geri Al">Geri Al</button>
+            <button type="button" id="btn-hud-close" class="pp-hud-close" title="Kapat" aria-label="Kapat">
+                <span class="material-symbols-outlined text-[16px]" aria-hidden="true">close</span>
+            </button>
+        </div>
+    </div>
+    <script src="renderer/voice-hud.js"></script>
+</body>
+</html>

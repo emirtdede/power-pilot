@@ -1,5 +1,5 @@
 /**
- * metric.test.mjs — MetricCollector: metrik zarfı, stale ısınma kuralı,
+ * metric.test.mjs - MetricCollector: metrik zarfı, stale ısınma kuralı,
  * timeout'un gerçekten bağlaması.
  *
  * DENETİM KUSURU (P1-6, dördüncü tur): `sampleOnce` içinde `await underlying`
@@ -7,7 +7,7 @@
  * yavaşladığında, 4 sn'lik `sampleTimeoutMs` sınırı yalnızca `stale`
  * bayrağını işaretliyordu; fonksiyon yavaş çağrı bitene kadar DÖNMÜYORDU
  * (bu makinede ölçüldü: tek örnek 27 sn). Sonuç: örnekleyici fiilen en yavaş
- * OS çağrısı hızında çalışıyor ve metrikler kalıcı `stale` kalıyordu — yani
+ * OS çağrısı hızında çalışıyor ve metrikler kalıcı `stale` kalıyordu - yani
  * ağ/disk koşullu Smart Finish görevleri hiç tetiklenmiyordu.
  *
  * Bu dosya artık:

@@ -25,7 +25,7 @@ const closeHandler = () => {
     return mainSrc.slice(idx, idx + 900);
 };
 
-describe('arka planda çalışma — pencere kapatma sözleşmesi', () => {
+describe('arka planda çalışma - pencere kapatma sözleşmesi', () => {
     it('aktif görev varken kapatma engellenir ve pencere gizlenir', () => {
         const block = closeHandler();
         expect(block).toMatch(/hasActive/);

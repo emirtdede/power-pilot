@@ -1,9 +1,9 @@
 /**
- * EnterprisePolicies.js — FAZ B.
+ * EnterprisePolicies.js - FAZ B.
  * Tek-şirket pilotunun 3 politika şablonu:
- *   P1 nightly-shutdown — mesai-dışı kapatma (yinelenen görev olarak somutlaşır)
- *   P2 pre-patch-wake    — yama-öncesi uyandırma (konsol-tarafı WoL işi)
- *   P3 idle-lock         — boşta kilit (PCI/CIS şablonları: 5/10/15dk)
+ *   P1 nightly-shutdown - mesai-dışı kapatma (yinelenen görev olarak somutlaşır)
+ *   P2 pre-patch-wake    - yama-öncesi uyandırma (konsol-tarafı WoL işi)
+ *   P3 idle-lock         - boşta kilit (PCI/CIS şablonları: 5/10/15dk)
  * Electron bağımlılığı yok → konsol sunucusu da require edebilir.
  */
 
@@ -151,7 +151,7 @@ function materializeToTask(policy, { source = 'console', nowMs = Date.now() } = 
 
 /**
  * P2 → konsol-tarafı WoL işi: hedeflere dalgalı (staggered) notBefore damgası.
- * targets: [{agentId, mac, broadcastIp, port}] — MAC'siz hedef atlanır (raporlanır).
+ * targets: [{agentId, mac, broadcastIp, port}] - MAC'siz hedef atlanır (raporlanır).
  */
 function materializeWakeJobs(policy, targets, { baseTimeMs = Date.now() } = {}) {
     const check = validatePolicy({ ...policy, targets: targets.filter((t) => t && typeof t === 'object').map((t) => t.agentId) });

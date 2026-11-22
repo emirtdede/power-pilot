@@ -1,5 +1,5 @@
 /**
- * SignedOrderService.js — WP-01 (OrderV2)
+ * SignedOrderService.js - WP-01 (OrderV2)
  * Konsol → ajan emirleri Ed25519 ile imzalanır. İmza, RFC 8785 (JCS) ile
  * kanonikleştirilmiş TÜM emir nesnesini kapsar; böylece `params` da imza
  * dışında kalamaz (K-01).

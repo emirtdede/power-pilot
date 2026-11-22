@@ -1,5 +1,5 @@
 /**
- * release-v2.test.mjs — Plan v2.0 tamamlayıcı regresyon kapısı.
+ * release-v2.test.mjs - Plan v2.0 tamamlayıcı regresyon kapısı.
  *
  * Kapsam: executionClaims takma adı, süreç örnekleme bütçesi, uyarı erteleme,
  * TLS/mTLS çapraz doğrulaması, şema v2 LAN uyarısı, prototip kirlenmesi,

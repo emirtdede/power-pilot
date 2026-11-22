@@ -1,5 +1,5 @@
 /**
- * smartfinish.test.mjs — WBS-0.1 / WBS-1.1 / WBS-1.2
+ * smartfinish.test.mjs - WBS-0.1 / WBS-1.1 / WBS-1.2
  * SmartFinishEngine: 7 koşul + stabilite + stale-guard + desteksiz-tip throw.
  */
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -204,7 +204,7 @@ describe('SmartFinishEngine koşullar', () => {
     it('AND: biri false ise grup false; OR: biri true ise grup true', () => {
         const andTask = taskWith([{ type: 'cpu_usage', thresholdPercent: 90 }, { type: 'network_speed', thresholdKbps: 1 }], 'AND', 0, 'task_sf_and');
         const orTask = taskWith([{ type: 'cpu_usage', thresholdPercent: 90 }, { type: 'network_speed', thresholdKbps: 1 }], 'OR', 0, 'task_sf_or');
-        // stabilitySeconds=0 ile ikinci çağrıda satisfied beklenir — önce tracker kurulsun:
+        // stabilitySeconds=0 ile ikinci çağrıda satisfied beklenir - önce tracker kurulsun:
         engine.evaluateTask(andTask);
         engine.stabilityTrackers.set(andTask.id, Date.now() - 1000);
         // andTask koşulları: cpu true, network false → grup false

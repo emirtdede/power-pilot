@@ -1,5 +1,5 @@
 /**
- * headless.js — FAZ A "Windows servisi" iskeleti (denetim turunda tamamlandı).
+ * headless.js - FAZ A "Windows servisi" iskeleti (denetim turunda tamamlandı).
  * Electron'sız ajan çalıştırıcı: aynı servis yığını (depolama, görev motoru,
  * güvenlik, envanter, emir kuyruğu, konsol senkronu) NSSM/Task Scheduler ile
  * Windows Servisi olarak koşar. UI yok, AI yok (ajan için gereksiz).
@@ -24,6 +24,16 @@ const LocalApiService = require('../main/services/LocalApiService');
 const { PowerService } = require('../main/services/PowerService');
 const DeviceProfileService = require('../main/services/DeviceProfileService');
 const EnergyEstimateService = require('../main/services/EnergyEstimateService');
+const TemplateService = require('../main/services/TemplateService');
+const { OneDriveSyncService } = require('../main/services/OneDriveSyncService');
+const { DiagnosticsService } = require('../main/services/DiagnosticsService');
+const { AiBackend } = require('../main/services/AiBackend');
+const { AiService } = require('../main/services/AiService');
+const { ModelManager, STT_MODEL_ID, STT_MODEL_FILE, STT_MODEL_URL } = require('../main/services/ModelManager');
+const { DeviceProfiler } = require('../main/services/DeviceProfiler');
+const { AgentOrchestrator } = require('../main/services/AgentOrchestrator');
+const { UpdateService } = require('../main/services/UpdateService');
+const TaskSchedulerBridge = require('../main/services/TaskSchedulerBridge');
 const { InventoryService } = require('../main/services/InventoryService');
 const { ExemptionService } = require('../main/services/ExemptionService');
 const { OrderQueue } = require('../main/services/OrderQueue');
@@ -32,6 +42,7 @@ const { ConsoleClient } = require('../main/services/ConsoleClient');
 const { OrderExecutor } = require('../main/services/OrderExecutor');
 const { UpsMonitor } = require('../main/services/UpsMonitor');
 const { TimerRegistry } = require('../main/util/TimerRegistry');
+const { initHeadlessConfig } = require('./bootstrap');
 const log = require('../main/logger');
 
 function defaultUserDataDir() {
@@ -44,12 +55,26 @@ async function bootAgent({
     appVersion = '1.0.0',
     syncIntervalMs = 60000,
     secretStore = null,
-    timerRegistry = null
+    timerRegistry = null,
+    autoEnableApi = false,
+    apiPort = null,
+    exePath = null
 } = {}) {
     const dir = userDataPath || defaultUserDataDir();
     // WP-13.T6: servis kapanışında hiçbir timer açık kalmaz.
     const timers = timerRegistry || new TimerRegistry();
     fs.mkdirSync(dir, { recursive: true });
+
+    // Zero-GUI convenience: when explicitly requested (`--enable-api`), bootstrap Local API + key before boot
+    if (autoEnableApi === true) {
+        initHeadlessConfig({
+            userDataPath: dir,
+            port: apiPort || undefined,
+            enableApi: true,
+            rotateKey: false,
+            saveProfile: true
+        });
+    }
 
     const storage = new StorageService(dir);
     // WP-04.T5: headless da aynı sır deposunu kullanır. Backend yoksa ve
@@ -136,8 +161,13 @@ async function bootAgent({
     const smart = new SmartFinishEngine(metrics);
     const webhooks = new WebhookService(storage);
     const tasks = new TaskManager(storage, warnings, safety, history, webhooks, smart, metrics, null, timers);
-    // Not: scheduler yedeği headless'ta yok (schtasks GUI bağlamı ister); birincil
-    // 1sn döngüsü + konsol emirleri serviste çalışır.
+    if (exePath) {
+        try {
+            tasks.schedulerBridge = new TaskSchedulerBridge({ exePath, isStoreApp: false });
+        } catch (err) {
+            log.warn('[Headless] TaskSchedulerBridge baslatilamadi:', err && err.message);
+        }
+    }
 
     let upsMonitor = null;
     try {
@@ -150,13 +180,84 @@ async function bootAgent({
     const exemptions = new ExemptionService(storage);
     const queue = new OrderQueue(storage);
     const audit = new AuditLog(storage);
-    const api = new LocalApiService(storage, tasks, PowerService, {
-        inventory, exemptions, queue, audit
-    });
     const devices = new DeviceProfileService(storage);
     const energy = new EnergyEstimateService(storage);
+    const templates = new TemplateService(storage);
+    const cloudSync = new OneDriveSyncService({
+        storageService: storage,
+        userDataDir: dir,
+        appVersion,
+        logger: log,
+        debounceMs: 300
+    });
+    storage.setChangeListener((reason) => {
+        try { cloudSync.scheduleAutoSync(reason); } catch (_) { /* best-effort */ }
+    });
+    const diagnostics = new DiagnosticsService({
+        userDataDir: dir,
+        logsDir: path.join(dir, 'logs'),
+        downloadsDir: path.join(dir, 'support-bundles'),
+        appVersion,
+        distributionChannel: 'headless',
+        isPortable: false,
+        storageService: storage
+    });
+    const aiBackend = new AiBackend({ modelDir: path.join(dir, 'models') });
+    const modelManager = new ModelManager({ modelDir: path.join(dir, 'models') });
+    const sttModelManager = new ModelManager({
+        modelDir: path.join(dir, 'models'),
+        modelId: STT_MODEL_ID,
+        file: STT_MODEL_FILE,
+        url: STT_MODEL_URL
+    });
+    const deviceProfiler = new DeviceProfiler();
+    const aiService = new AiService({ backend: aiBackend });
+    const orchestrator = new AgentOrchestrator({ aiService, aiBackend, storage, history });
+    const updates = new UpdateService({
+        currentVersion: appVersion,
+        isStore: false,
+        isPortable: true,
+        isPackaged: false,
+        logger: log
+    });
+
+    let electronPowerMonitor = null;
+    try {
+        const elec = require('electron');
+        if (elec && elec.powerMonitor) electronPowerMonitor = elec.powerMonitor;
+    } catch (_) { /* plain Node.js headless runtime */ }
+
     const consoleClient = new ConsoleClient({ storage, inventoryService: inventory, orderQueue: queue, auditLog: audit });
     const executor = new OrderExecutor({ taskManager: tasks, deviceService: devices, audit });
+
+    const api = new LocalApiService(storage, tasks, PowerService, {
+        headless: true,
+        userDataDir: dir,
+        secretStore: secrets,
+        powerMonitor: electronPowerMonitor,
+        warningManager: warnings,
+        metricCollector: metrics,
+        inventory,
+        exemptions,
+        queue,
+        audit,
+        history,
+        templates,
+        energy,
+        devices,
+        deviceProfiler,
+        webhooks,
+        cloudSync,
+        diagnostics,
+        aiBackend,
+        modelManager,
+        sttModelManager,
+        orchestrator,
+        updates,
+        upsMonitor,
+        consoleClient,
+        executor
+    });
 
     // O-01/O-21: bind hatası sessizce yutulmaz; başlatma sonucu beklenir.
     const started = await api.start();
@@ -188,11 +289,13 @@ async function bootAgent({
 
     return {
         dir, storage, history, tasks, api, inventory, exemptions, queue, audit,
-        consoleClient, executor, devices, energy, secretStore: secrets,
+        consoleClient, executor, devices, energy, templates, webhooks, cloudSync,
+        diagnostics, orchestrator, updates, secretStore: secrets,
         async stop() {
             stopped = true;
             try { timers.clearAll(); } catch (_) {}
             try { metrics.stopSampling(); } catch (_) {}
+            try { cloudSync.flush(); } catch (_) {}
             try { if (upsMonitor) upsMonitor.close(); } catch (_) {}
             try { await api.stop(); } catch (_) {}
             try { if (storage.auditCheckpoint) storage.auditCheckpoint.write(storage.getAuditLog(), { eventLog: false }); } catch (_) {}

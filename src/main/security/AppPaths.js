@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * AppPaths.js — WP-10.T1/T2
+ * AppPaths.js - WP-10.T1/T2
  * `app://powerpilot/...` isteklerini dosya sistemine güvenli biçimde çözer.
  * Electron bağımlılığı yoktur; birim testleri doğrudan çalıştırır.
  */

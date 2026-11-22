@@ -1,4 +1,4 @@
-# Power Pilot — n8n Entegrasyon ve Bağlantı Rehberi
+# Power Pilot - n8n Entegrasyon ve Bağlantı Rehberi
 
 Bu belge, Power Pilot uygulamasını kendi bilgisayarınızda çalışan **n8n** otomasyon platformuna nasıl bağlayacağınızı adım adım anlatır.
 
@@ -33,11 +33,11 @@ Bu belge, Power Pilot uygulamasını kendi bilgisayarınızda çalışan **n8n**
 
 ## 3. Kullanılabilir Uç Noktalar (Özet)
 
-- `GET /api/v1/status` — durum ve aktif görev sayısı
-- `GET /api/v1/tasks` — görev listesi
-- `POST /api/v1/tasks/timer` — hızlı zamanlayıcı (`action` + `durationMs`)
-- `POST /api/v1/tasks/{id}/cancel` — görev iptali
-- `POST /api/v1/power/{lock,signout,restart,sleep,hibernate}` — anında eylem
-- `POST /api/v1/power/shutdown` — 5sn gecikmeli güvenli kapatma
+- `GET /api/v1/status` - durum ve aktif görev sayısı
+- `GET /api/v1/tasks` - görev listesi
+- `POST /api/v1/tasks/timer` - hızlı zamanlayıcı (`action` + `durationMs`)
+- `POST /api/v1/tasks/{id}/cancel` - görev iptali
+- `POST /api/v1/power/{lock,signout,restart,sleep,hibernate}` - anında eylem
+- `POST /api/v1/power/shutdown` - 5sn gecikmeli güvenli kapatma
 
 Tam şema: `docs/openapi/power-pilot-local-api.yaml`. Webhook (giden) bildirimleri uygulama içinden **Entegrasyonlar > Webhook Bildirimleri** kartından yapılandırılır.

@@ -1,5 +1,5 @@
 /**
- * console-client.test.mjs — FAZ B
+ * console-client.test.mjs - FAZ B
  * Outbound senkron: heartbeat → imzalı emirler kuyruğa, imzasız red.
  */
 import { describe, it, expect, vi } from 'vitest';

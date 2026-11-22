@@ -1,5 +1,5 @@
 /**
- * performance.test.mjs — WP-13.T5/T6/T8
+ * performance.test.mjs - WP-13.T5/T6/T8
  * Timer kayıt defteri, tray debounce kaynağı ve taskManager değişim sinyali.
  */
 import { describe, it, expect, vi } from 'vitest';

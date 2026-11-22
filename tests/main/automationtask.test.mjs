@@ -1,5 +1,5 @@
 /**
- * automationtask.test.mjs — AutomationTask modeli: varsayılanlar, fromLegacyTimer, toJSON.
+ * automationtask.test.mjs - AutomationTask modeli: varsayılanlar, fromLegacyTimer, toJSON.
  */
 import { describe, it, expect } from 'vitest';
 import { AutomationTask, TASK_STATUS } from '../../src/main/services/models/AutomationTask.js';

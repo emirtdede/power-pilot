@@ -1,0 +1,191 @@
+﻿# Header, don't edit
+NLF v6
+# Start editing here
+# Language ID
+1097
+# Font and size - dash (-) means default
+-
+-
+# Codepage - dash (-) means ASCII code page
+1200
+# RTL - anything else than RTL means LTR
+-
+# Power Pilot custom NLF table
+# ^Branding
+Nullsoft Install System %s
+# ^SetupCaption
+$(^Name) நிறுவல்
+# ^UninstallCaption
+$(^Name) நீக்கம்
+# ^LicenseSubCaption
+: License
+# ^ComponentsSubCaption
+: நிறுவல் கோப்புறை
+# ^DirSubCaption
+: நிறுவல் கோப்புறை
+# ^InstallingSubCaption
+: நிறுவப்படுகிறது
+# ^CompletedSubCaption
+: முடிந்தது
+# ^UnComponentsSubCaption
+: நீக்கப்படுகிறது
+# ^UnDirSubCaption
+: நிறுவல் கோப்புறை
+# ^ConfirmSubCaption
+: நீக்கப்படுகிறது
+# ^UninstallingSubCaption
+: நீக்கப்படுகிறது
+# ^UnCompletedSubCaption
+: முடிந்தது
+# ^BackBtn
+< &பின்
+# ^NextBtn
+&அடுத்து >
+# ^AgreeBtn
+நான் &ஒப்புக்கொள்கிறேன்
+# ^AcceptBtn
+நான் &ஒப்புக்கொள்கிறேன்
+# ^DontAcceptBtn
+ரத்து செய்
+# ^InstallBtn
+&நிறுவு
+# ^UninstallBtn
+&நீக்கு
+# ^CancelBtn
+ரத்து செய்
+# ^CloseBtn
+&மூடு
+# ^BrowseBtn
+&உலாவு...
+# ^ShowDetailsBtn
+&விவரங்களைக் காட்டு
+# ^ClickNext
+தொடர அடுத்து என்பதைக் கிளிக் செய்யவும்.
+# ^ClickInstall
+நிறுவலைத் தொடங்க நிறுவு என்பதைக் கிளிக் செய்யவும்.
+# ^ClickUninstall
+நீக்கத்தைத் தொடங்க நீக்கு என்பதைக் கிளிக் செய்யவும்.
+# ^Name
+Name
+# ^Completed
+முடிந்தது
+# ^LicenseText
+தொடர அடுத்து என்பதைக் கிளிக் செய்யவும்.
+# ^LicenseTextCB
+தொடர அடுத்து என்பதைக் கிளிக் செய்யவும்.
+# ^LicenseTextRB
+தொடர அடுத்து என்பதைக் கிளிக் செய்யவும்.
+# ^UnLicenseText
+தொடர அடுத்து என்பதைக் கிளிக் செய்யவும்.
+# ^UnLicenseTextCB
+தொடர அடுத்து என்பதைக் கிளிக் செய்யவும்.
+# ^UnLicenseTextRB
+தொடர அடுத்து என்பதைக் கிளிக் செய்யவும்.
+# ^Custom
+Custom
+# ^ComponentsText
+தொடர அடுத்து என்பதைக் கிளிக் செய்யவும்.
+# ^ComponentsSubText1
+தொடர அடுத்து என்பதைக் கிளிக் செய்யவும்.
+# ^ComponentsSubText2_NoInstTypes
+தொடர அடுத்து என்பதைக் கிளிக் செய்யவும்.
+# ^ComponentsSubText2
+தொடர அடுத்து என்பதைக் கிளிக் செய்யவும்.
+# ^UnComponentsText
+தொடர அடுத்து என்பதைக் கிளிக் செய்யவும்.
+# ^UnComponentsSubText1
+தொடர அடுத்து என்பதைக் கிளிக் செய்யவும்.
+# ^UnComponentsSubText2_NoInstTypes
+தொடர அடுத்து என்பதைக் கிளிக் செய்யவும்.
+# ^UnComponentsSubText2
+தொடர அடுத்து என்பதைக் கிளிக் செய்யவும்.
+# ^DirText
+நிறுவி $(^NameDA) ஐ பின்வரும் கோப்புறையில் நிறுவும். வேறு கோப்புறையைத் தேர்ந்தெடுக்க உலாவு என்பதைக் கிளிக் செய்யவும். $_CLICK
+# ^DirSubText
+இலக்கு கோப்புறை
+# ^DirBrowseText
+$(^NameDA) ஐ நிறுவ கோப்புறையைத் தேர்ந்தெடுக்கவும்:
+# ^UnDirText
+பின்வரும் கோப்புறையிலிருந்து $(^NameDA) நீக்கப்படும். $_CLICK
+# ^UnDirSubText
+""
+# ^UnDirBrowseText
+$(^NameDA) ஐ நிறுவ கோப்புறையைத் தேர்ந்தெடுக்கவும்:
+# ^SpaceAvailable
+"கிடைக்கும் இடம்: "
+# ^SpaceRequired
+"தேவையான இடம்: "
+# ^UninstallingText
+பின்வரும் கோப்புறையிலிருந்து $(^NameDA) நீக்கப்படும். $_CLICK
+# ^UninstallingSubText
+நீக்கப்படும் இடம்:
+# ^FileError
+Error: \r\n\r\n$0
+# ^FileError_NoIgnore
+Error: \r\n\r\n$0
+# ^CantWrite
+"Error: "
+# ^CopyFailed
+Error
+# ^CopyTo
+"-> "
+# ^Registering
+"... "
+# ^Unregistering
+"... "
+# ^SymbolNotFound
+"Error: "
+# ^CouldNotLoad
+"Error: "
+# ^CreateFolder
+"+ "
+# ^CreateShortcut
+"+ "
+# ^CreatedUninstaller
+"+ "
+# ^Delete
+"- "
+# ^DeleteOnReboot
+"- "
+# ^ErrorCreatingShortcut
+"Error: "
+# ^ErrorCreating
+"Error: "
+# ^ErrorDecompressing
+கோப்புகளைப் பிரித்தெடுக்க முடியவில்லை. நிறுவியை மீண்டும் இயக்கவும்.
+# ^ErrorRegistering
+DLL Error
+# ^ExecShell
+"Exec: "
+# ^Exec
+"Exec: "
+# ^Extract
+"-> "
+# ^ErrorWriting
+"Error: "
+# ^InvalidOpcode
+கோப்புகளைப் பிரித்தெடுக்க முடியவில்லை. நிறுவியை மீண்டும் இயக்கவும்.
+# ^NoOLE
+"OLE: "
+# ^OutputFolder
+"-> "
+# ^RemoveFolder
+"- "
+# ^RenameOnReboot
+"-> "
+# ^Rename
+"-> "
+# ^Skipped
+"... "
+# ^CopyDetails
+விவரங்களை நகலெடு
+# ^LogInstall
+Log
+# ^Byte
+B
+# ^Kilo
+ K
+# ^Mega
+ M
+# ^Giga
+ G

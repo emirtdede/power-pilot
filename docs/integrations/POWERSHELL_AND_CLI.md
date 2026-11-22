@@ -1,4 +1,4 @@
-# Power Pilot — CLI ve PowerShell Kullanım Rehberi
+# Power Pilot - CLI ve PowerShell Kullanım Rehberi
 
 Power Pilot, komut satırı ve PowerShell ortamlarından güvenli biçimde kontrol edilebilir.
 
@@ -11,15 +11,15 @@ sözleşmeden** okur: `src/shared/localApiConnection.js`.
 
 | Değişken | Varsayılan | Anlamı |
 |---|---|---|
-| `POWERPILOT_API_KEY` | — | API anahtarı (zorunlu) |
+| `POWERPILOT_API_KEY` | - | API anahtarı (zorunlu) |
 | `POWERPILOT_API_HOST` | `127.0.0.1` | Yerel API ana bilgisayarı |
 | `POWERPILOT_API_PORT` | `18456` | Port |
 | `POWERPILOT_API_TLS` | kapalı | `1`/`true` ise `https` |
-| `POWERPILOT_API_CA` | — | Özel/self-signed sertifika için CA dosyası yolu |
+| `POWERPILOT_API_CA` | - | Özel/self-signed sertifika için CA dosyası yolu |
 
 > **Geriye uyum:** eski `POWER_PILOT_API_*` (alt çizgili) adlar fallback olarak
 > hâlâ okunur. Kanonik ad bitişik yazımdır. Arayüz "MCP yapılandırmasını kopyala"
-> çıktısı da bu kanonik adları üretir — kopyala-yapıştır yapan kullanıcı 401 almaz.
+> çıktısı da bu kanonik adları üretir - kopyala-yapıştır yapan kullanıcı 401 almaz.
 
 PowerShell ortamınızda API anahtarınızı tanımlayın:
 

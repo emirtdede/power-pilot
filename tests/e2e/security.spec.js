@@ -1,5 +1,5 @@
 /**
- * security.spec.js — WP-10 T1/T2/T5/T6/T8 E2E kabulü
+ * security.spec.js - WP-10 T1/T2/T5/T6/T8 E2E kabulü
  * app:// origin, katı CSP, sandbox, path traversal, sahte IPC ve dış gezinme.
  */
 const { test, expect, _electron: electron } = require('@playwright/test');

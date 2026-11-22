@@ -280,7 +280,7 @@ class SmartFinishEngine {
             }
 
             case CONDITION_TYPE.NETWORK_SPEED: {
-                // WBS-1.2: Ağ durağanlığı — indirme/render bitiş dedektörünün çekirdeği.
+                // WBS-1.2: Ağ durağanlığı - indirme/render bitiş dedektörünün çekirdeği.
                 // Toplam (rx+tx) eşik altında kalırsa satisfied. Eşik Kbps, varsayılan 50.
                 const thresholdKbps = cond.thresholdKbps != null ? cond.thresholdKbps : 50;
                 const totalKbps = (metrics.networkDownloadKbps || 0) + (metrics.networkUploadKbps || 0);
@@ -308,7 +308,7 @@ class SmartFinishEngine {
                 }
                 const thresholdKbps = cond.thresholdKbps != null ? cond.thresholdKbps : 100;
                 // `diskKbps` ölçülemiyorsa (eski örnek/ARA bellek) güvenli taraf:
-                // "meşgul" kabul et — erken kapatma yapma.
+                // "meşgul" kabul et - erken kapatma yapma.
                 if (typeof metrics.diskKbps !== 'number') {
                     return { satisfied: false, message: 'Disk verimi ölçülemedi; bekleniyor' };
                 }
@@ -340,7 +340,7 @@ class SmartFinishEngine {
             }
 
             default:
-                // WBS-1.2: Sessiz "Bilinmeyen koşul" yasaktır — createTask zaten reddeder.
+                // WBS-1.2: Sessiz "Bilinmeyen koşul" yasaktır - createTask zaten reddeder.
                 // Savunma amaçlı throw: evaluateTasks bunu FAILED + CONDITION_INVALID olarak loglar.
                 throw new Error(`Desteklenmeyen koşul tipi: ${cond.type}`);
         }

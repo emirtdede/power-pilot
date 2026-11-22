@@ -1,5 +1,5 @@
 /**
- * ai-session.test.mjs — WP-13.T1/T2
+ * ai-session.test.mjs - WP-13.T1/T2
  * Oturum semaforu, oturum başına sequence, 50 döngü, iptal/quit temizliği.
  */
 import { describe, it, expect } from 'vitest';

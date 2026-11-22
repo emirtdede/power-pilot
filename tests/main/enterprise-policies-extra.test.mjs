@@ -1,5 +1,5 @@
 /**
- * enterprise-policies-extra.test.mjs — kalan politika dalları
+ * enterprise-policies-extra.test.mjs - kalan politika dalları
  * (rolling-restart, parametre sınırları, WoL dalgalandırma kenarları)
  */
 import { describe, it, expect } from 'vitest';
@@ -21,7 +21,7 @@ const policy = (over = {}) => Object.assign({
     params: { timeOfDay: '23:00', days: [1, 2, 3] }
 }, over);
 
-describe('EnterprisePolicies — sabitler ve nextOccurrence', () => {
+describe('EnterprisePolicies - sabitler ve nextOccurrence', () => {
     it('sabit listeler', () => {
         expect(POLICY_TYPES).toEqual(['nightly-shutdown', 'pre-patch-wake', 'idle-lock', 'rolling-restart']);
         expect(IDLE_PRESETS_MIN).toEqual([5, 10, 15]);
@@ -39,7 +39,7 @@ describe('EnterprisePolicies — sabitler ve nextOccurrence', () => {
     });
 });
 
-describe('EnterprisePolicies — rolling-restart ve sınırlar', () => {
+describe('EnterprisePolicies - rolling-restart ve sınırlar', () => {
     it('rolling-restart hedef/parametre sınırları', () => {
         const p = (targets, params = {}) => policy({ type: 'rolling-restart', targets, params });
         expect(validatePolicy(p(['a'])).ok).toBe(true);
@@ -72,7 +72,7 @@ describe('EnterprisePolicies — rolling-restart ve sınırlar', () => {
     });
 });
 
-describe('EnterprisePolicies — materialize dal ve kenarları', () => {
+describe('EnterprisePolicies - materialize dal ve kenarları', () => {
     it('nightly-shutdown varsayılan uyarı/erteleme', () => {
         const out = materializeToTask(policy({ params: { timeOfDay: '23:00', days: [1] } }), { source: 'console', nowMs: NOW });
         expect(out.warningConfig).toEqual({ enabled: true, durationSeconds: 60, silentMode: false });
@@ -107,7 +107,7 @@ describe('EnterprisePolicies — materialize dal ve kenarları', () => {
     });
 });
 
-describe('EnterprisePolicies — materializeWakeJobs', () => {
+describe('EnterprisePolicies - materializeWakeJobs', () => {
     const wake = (over = {}) => policy({ type: 'pre-patch-wake', params: { wakeTime: '05:00', waveSize: 2, waveGapSec: 5 }, ...over });
     const targets = [
         { agentId: 'a1', mac: 'AA:BB:CC:DD:EE:01', broadcastIp: '192.168.1.255', port: 9 },

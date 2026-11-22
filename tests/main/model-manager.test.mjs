@@ -1,14 +1,15 @@
 /**
- * model-manager.test.mjs — WBS-7.2 / TS-7.2
+ * model-manager.test.mjs - WBS-7.2 / TS-7.2
  * ModelManager: tam indirme, resume, bozuk-dosya, bağlantı hatası.
- * Gerçek ağ yok — yerel HTTP bayt sunucusu (Range destekli).
+ * Gerçek ağ yok - yerel HTTP bayt sunucusu (Range destekli).
  */
 import { describe, it, expect, afterEach, afterAll } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import http from 'node:http';
-import { ModelManager, MODEL_FILE } from '../../src/main/services/ModelManager.js';
+import { ModelManager, MODEL_FILE, MODEL_SPECS, AI_TIERS } from '../../src/main/services/ModelManager.js';
+import { verifyMetadata } from '../../scripts/verify-models.js';
 
 let dirs = [];
 function freshDir() {
@@ -183,7 +184,91 @@ describe('ModelManager indirme (TS-7.2)', () => {
         expect(second.code).toBe('ALREADY_DOWNLOADING');
         const done = await first;
         expect(done.success).toBe(true);
-        // Bayrak temizlendi — yeni indirme başlayabilir (dosya sağlam olduğundan kısa devre).
+        // Bayrak temizlendi - yeni indirme başlayabilir (dosya sağlam olduğundan kısa devre).
         expect((await mm.download()).success).toBe(true);
+    });
+
+    it('TS-1.1: 6 model pininin tamamı (lite/balanced/powerful LLM + STT) verifyMetadata kontrolünden geçer', () => {
+        expect(Object.keys(MODEL_SPECS)).toHaveLength(6);
+        expect(Object.keys(AI_TIERS)).toEqual(['lite', 'balanced', 'powerful']);
+        expect(verifyMetadata(MODEL_SPECS)).toEqual([]);
+        expect(AI_TIERS.lite.totalBytes).toBe(484220320 + 77691713);
+        expect(AI_TIERS.balanced.totalBytes).toBe(1282439584 + 147951465);
+        expect(AI_TIERS.powerful.totalBytes).toBe(2497280960 + 190085487);
+    });
+
+    it('TS-1.2: indirme sırasında cancel() çağrıldığında .part korunur ve sonraki download() HTTP Range ile devam eder', async () => {
+        const totalBytes = 65536;
+        const fullBuf = Buffer.alloc(totalBytes, 0xcd);
+        const rangeHeaders = [];
+        let slowMode = true;
+        const server = http.createServer((req, res) => {
+            rangeHeaders.push(req.headers.range || null);
+            const m = req.headers.range ? req.headers.range.match(/bytes=(\d+)-/) : null;
+            const start = m ? parseInt(m[1], 10) : 0;
+            const slice = fullBuf.subarray(start);
+            if (m) {
+                res.writeHead(206, {
+                    'Content-Range': `bytes ${start}-${totalBytes - 1}/${totalBytes}`,
+                    'Content-Length': slice.length
+                });
+            } else {
+                res.writeHead(200, { 'Content-Length': totalBytes });
+            }
+            if (slowMode) {
+                res.write(slice.subarray(0, 16384));
+                // Kalan baytları beklet; test cancel() çağıracak
+            } else {
+                res.end(slice);
+            }
+        });
+        await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+        servers.push(server);
+
+        const dir = freshDir();
+        const mm = new ModelManager({
+            modelDir: dir,
+            url: `http://127.0.0.1:${server.address().port}/model.gguf`
+        });
+
+        let cancelledTriggered = false;
+        const firstPromise = mm.download((rec) => {
+            if (rec >= 16384 && !cancelledTriggered) {
+                cancelledTriggered = true;
+                mm.cancel();
+            }
+        });
+        const firstRes = await firstPromise;
+        expect(firstRes.success).toBe(false);
+        expect(firstRes.code).toBe('CANCELLED');
+        expect(fs.existsSync(mm.partPath())).toBe(true);
+        expect(fs.statSync(mm.partPath()).size).toBeGreaterThanOrEqual(16384);
+
+        slowMode = false;
+        const secondRes = await mm.download();
+        expect(secondRes.success).toBe(true);
+        expect(secondRes.resumed).toBe(true);
+        expect(rangeHeaders[1]).toMatch(/^bytes=\d+-$/);
+        expect(await mm.verify()).toBe(true);
+    });
+
+    it('TS-1.3: deleteTierBundle seçilen kademenin dosyalarını siler, diğer kademelere dokunmaz', () => {
+        const dir = freshDir();
+        const liteMgrs = ModelManager.createTierManagers(dir, 'lite');
+        const balMgrs = ModelManager.createTierManagers(dir, 'balanced');
+        fs.writeFileSync(liteMgrs.llm.modelPath(), Buffer.alloc(1024, 1));
+        fs.writeFileSync(liteMgrs.stt.modelPath(), Buffer.alloc(512, 2));
+        fs.writeFileSync(liteMgrs.llm.manifestPath(), '{}');
+        fs.writeFileSync(balMgrs.llm.modelPath(), Buffer.alloc(2048, 3));
+
+        const statusesBefore = ModelManager.getAllTiersStatus(dir);
+        expect(statusesBefore.lite.ready).toBe(true);
+
+        const del = ModelManager.deleteTierBundle('lite', dir);
+        expect(del.ok).toBe(true);
+        expect(del.freedBytes).toBeGreaterThanOrEqual(1536);
+        expect(fs.existsSync(liteMgrs.llm.modelPath())).toBe(false);
+        expect(fs.existsSync(liteMgrs.stt.modelPath())).toBe(false);
+        expect(fs.existsSync(balMgrs.llm.modelPath())).toBe(true);
     });
 });

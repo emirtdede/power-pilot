@@ -1,5 +1,5 @@
 /**
- * data-wipe.test.mjs — "Verilerimi sil" akışı (Store 10.2.7).
+ * data-wipe.test.mjs - "Verilerimi sil" akışı (Store 10.2.7).
  * Gerçek dosya sistemi yerine enjekte edilen fs kullanılır; hiçbir kullanıcı
  * dosyası silinmez.
  */

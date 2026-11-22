@@ -1,10 +1,10 @@
 /**
- * ExemptionService.js — FAZ B.
+ * ExemptionService.js - FAZ B.
  * Muafiyet listesi (PA-eyalet Exclusion Form deseninin dijitali) + bakım pencereleri.
  * - Muafiyet: {id, deviceId?, user?, policyId|null, from, to, reason, approvedBy, createdAt}
  *   deviceId VEYA user zorunlu; policyId null = tüm politikalardan muaf.
  * - Bakım penceresi: {id, name, days:[0-6], start:'HH:mm', end:'HH:mm'}
- *   Pencere içindeyse yıkıcı politika (shutdown/restart) çalışmaz — yama penceresi
+ *   Pencere içindeyse yıkıcı politika (shutdown/restart) çalışmaz - yama penceresi
  *   bunun İSTİSNASIDIR (yama penceresi görevleri pencere DIŞINDA da çalışabilir mi?
  *   Hayır: yama-öncesi-wake yalnızca bakım penceresinde anlamlıdır; muafiyet ise
  *   bakım penceresini de ezer).
@@ -75,7 +75,7 @@ function isInWindow(w, nowMs = Date.now()) {
     const s = minutesOf(w.start);
     const e = minutesOf(w.end);
     if (s <= e) return w.days.includes(day) && cur >= s && cur < e;
-    // Gece yarısını aşan pencere: 23:00–02:00, Salı 01:00 → Pazartesi kaydı.
+    // Gece yarısını aşan pencere: 23:00-02:00, Salı 01:00 → Pazartesi kaydı.
     if (cur >= s) return w.days.includes(day);
     if (cur < e) return w.days.includes((day + 6) % 7);
     return false;

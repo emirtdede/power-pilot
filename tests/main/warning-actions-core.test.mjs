@@ -1,5 +1,5 @@
 /**
- * warning-actions-core.test.mjs — uyarı bannerı eylemleri (TOCTOU + PIN)
+ * warning-actions-core.test.mjs - uyarı bannerı eylemleri (TOCTOU + PIN)
  */
 import { describe, it, expect, vi } from 'vitest';
 import { cancelWarningAction, snoozeWarningAction, confirmWarningAction, activeTaskId } from '../../src/main/ipc/warningActions.js';
@@ -19,7 +19,7 @@ function warning(active = { taskId: 't1' }) {
 
 const okPin = async () => null;
 
-describe('warningActions — activeTaskId', () => {
+describe('warningActions - activeTaskId', () => {
     it('manager yok/boş durumda null', () => {
         expect(activeTaskId(null)).toBeNull();
         expect(activeTaskId({})).toBeNull();

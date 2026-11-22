@@ -5,7 +5,7 @@
  *  - 6 adet +/- arttır/azalt düğmesi `h-1/2` + `py-1` kapsayıcı yüzünden
  *    **24×21px** kalıyordu (min 24px hedefin altı).
  *  - `#btn-open-data-folder` yalnızca satır içi metin kadar (**99×16px**)
- *    tıklanabilirdi — 16px yükseklik titrek elle/touchpad'de ıskalanır.
+ *    tıklanabilirdi - 16px yükseklik titrek elle/touchpad'de ıskalanır.
  *
  * Ölçüm (öncesi): 7 düğme 24px altında; `btn-open-data-folder` 99×16.
  * Ölçüm (sonrası): görünür düğmelerin tümü ≥24px → 0 ihlal.
@@ -53,7 +53,7 @@ describe('dokunma hedefleri ≥24px (WCAG 2.5.8)', () => {
     });
 });
 
-describe('metin ölçekleme — taşma üretmeyen yapı', () => {
+describe('metin ölçekleme - taşma üretmeyen yapı', () => {
     it('overflow-hidden kullanan görünümler içinde kaydırılabilir gövde var', () => {
         // `view-about` gibi kaplar dışta `overflow-hidden` kullanır ama içinde
         // `overflow-y-auto` gövde bulunur; içerik kaydırılır, kırpılmaz.

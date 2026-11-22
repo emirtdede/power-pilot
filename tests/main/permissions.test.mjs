@@ -1,5 +1,5 @@
 /**
- * permissions.test.mjs — izin kararları (mikrofon regresyonu)
+ * permissions.test.mjs - izin kararları (mikrofon regresyonu)
  *
  * "Sesli komut" `getUserMedia({ audio })` çağırıyor; eski izin tutucusu
  * yalnızca `notifications`'a izin verdiği için mikrofon her seferinde

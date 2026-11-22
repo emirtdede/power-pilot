@@ -1,5 +1,5 @@
 /**
- * task-remove.test.mjs — biten görevleri kaldırma sözleşmesi.
+ * task-remove.test.mjs - biten görevleri kaldırma sözleşmesi.
  *
  * GERÇEK HATA (bu turda bulundu ve düzeltildi): iptal edilen/tamamlanan
  * görevler diskte kalıcı olarak kalıyor ve "Tüm" filtresinde EYLEM DÜĞMESİ
@@ -25,7 +25,7 @@ const mainSrc = fs.readFileSync(path.join(root, 'main.js'), 'utf8');
 const preloadSrc = fs.readFileSync(path.join(root, 'preload.js'), 'utf8');
 const appSrc = fs.readFileSync(path.join(root, 'src', 'renderer', 'app.js'), 'utf8');
 
-/** Bellek içi storage sahtesi — persistChanges gerçekten yazabilsin. */
+/** Bellek içi storage sahtesi - persistChanges gerçekten yazabilsin. */
 function makeStorage() {
     const tasks = [];
     return {
@@ -52,7 +52,7 @@ function makeManager() {
     return { tm, storage };
 }
 
-describe('TaskManager.removeTask — biten görevleri kaldırma', () => {
+describe('TaskManager.removeTask - biten görevleri kaldırma', () => {
     it('terminal durumdaki görev kaldırılır (bellek + disk)', () => {
         const { tm, storage } = makeManager();
         const task = new AutomationTask({

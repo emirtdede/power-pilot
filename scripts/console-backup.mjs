@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * console-backup.mjs — WP-03.T8
+ * console-backup.mjs - WP-03.T8
  * Şirket konsolu `console.db` için günlük VACUUM INTO + AES-256-GCM yedek
  * ve isteğe bağlı geri yükleme.
  *

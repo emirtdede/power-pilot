@@ -24,7 +24,7 @@ class TaskManager {
         this.metricCollector = metricCollector;
         // WBS-4.2: OS çağrıları test edilebilirlik için enjekte edilir.
         // Üretimde varsayılan gerçek PowerService; testlerde sahte nesne verilir.
-        // (Doğrudan modül mock'una güvenilmez — çift modül kaydı riski.)
+        // (Doğrudan modül mock'una güvenilmez - çift modül kaydı riski.)
         this.power = powerService || PowerService;
 
         this.tasks = [];
@@ -73,6 +73,19 @@ class TaskManager {
         this.startLoop();
     }
 
+    reloadFromStorage() {
+        const rawTasks = (this.storage && typeof this.storage.getTasks === 'function')
+            ? this.storage.getTasks()
+            : [];
+        this.tasks = rawTasks.map((t) => new AutomationTask(t));
+        this._savedTaskState = this._taskSnapshot();
+        this.pausedAll = !!(this.storage && typeof this.storage.getSettings === 'function' && this.storage.getSettings().automationPaused);
+        if (typeof this.changeListener === 'function') {
+            try { this.changeListener(); } catch (_) { /* yut */ }
+        }
+        return this.tasks.length;
+    }
+
     // --- WP-02: atomik claim / token -------------------------------------
 
     claimTask(taskId, source = 'scheduler') {
@@ -81,9 +94,9 @@ class TaskManager {
         if (this.pausedAll) return { ok: false, code: 'PAUSED' };
         if (this.claims.size > 0) return { ok: false, code: 'ALREADY_RUNNING' };
         const runnable = [TASK_STATUS.SCHEDULED, TASK_STATUS.MONITORING, TASK_STATUS.EXPIRED,
-            // P1-6 (üçüncü tur): ertelenmiş/bekleyen görevler de çalıştırılabilir
-            // olmalı; aksi halde vadesi dolan ertelenmiş görev sessizce atlanırdı.
-            TASK_STATUS.SNOOZED, TASK_STATUS.WAITING];
+        // P1-6 (üçüncü tur): ertelenmiş/bekleyen görevler de çalıştırılabilir
+        // olmalı; aksi halde vadesi dolan ertelenmiş görev sessizce atlanırdı.
+        TASK_STATUS.SNOOZED, TASK_STATUS.WAITING];
         if (!runnable.includes(task.status)) return { ok: false, code: 'NOT_RUNNABLE' };
         const token = crypto.randomUUID();
         this.claims.set(taskId, {
@@ -350,7 +363,7 @@ class TaskManager {
                     return;
                 }
 
-                // Time-based trigger check — YALNIZCA koşulsuz görevler.
+                // Time-based trigger check - YALNIZCA koşulsuz görevler.
                 // ADR-09/K-04: koşullu görevde targetTime yoktur; erteleme notBefore'tadır.
                 const hasConditions = !!(task.conditionGroup && Array.isArray(task.conditionGroup.conditions) && task.conditionGroup.conditions.length > 0);
                 // P1-6 (üçüncü tur): `snoozed` de zamanlanmış sayılır. Erteleme
@@ -385,7 +398,7 @@ class TaskManager {
                         this.persistChanges();
                     }
                     if (!this.smartFinishEngine) return;
-                    // WBS-11.5: Açılış koruması — sessizlik-tipi koşullarda ilk 120sn atlanır.
+                    // WBS-11.5: Açılış koruması - sessizlik-tipi koşullarda ilk 120sn atlanır.
                     // Tracker'a dokunulmaz, history şişirilmez; yalnızca bu tur pas geçilir.
                     if (this.hasIdleLikeCondition(task) && this.safetyPolicyEngine &&
                         typeof this.safetyPolicyEngine.isBootGuardActive === 'function' &&
@@ -771,7 +784,7 @@ class TaskManager {
     removeScheduler(taskId) {
         if (this.schedulerBridge && typeof this.schedulerBridge.removeTask === 'function' && taskId) {
             try {
-                Promise.resolve(this.schedulerBridge.removeTask(taskId)).catch(() => {});
+                Promise.resolve(this.schedulerBridge.removeTask(taskId)).catch(() => { });
             } catch (_) { /* best-effort */ }
         }
     }
@@ -878,7 +891,7 @@ class TaskManager {
      *
      * `EXECUTION_RESULT_CODE` içinde `timeout` ve `authorization_error` zaten
      * tanımlıydı, 17 dilde etiketleri vardı ve `HealthMetrics` bunları
-     * başarısızlık olarak sayıyordu — ama hiçbir kod yolu bu değerleri
+     * başarısızlık olarak sayıyordu - ama hiçbir kod yolu bu değerleri
      * üretmiyordu; her şey `os_execution_failed` oluyordu. Kullanıcı zaman
      * aşımını yetki reddinden ayırt edemiyordu.
      *
@@ -1175,7 +1188,7 @@ class TaskManager {
      * yoktu.
      *
      * Güvenlik: yalnızca terminal durumdaki görevler silinebilir; çalışan bir
-     * görev (scheduled/monitoring/executing/...) silinemez — önce iptal
+     * görev (scheduled/monitoring/executing/...) silinemez - önce iptal
      * edilmelidir. Bu, "çalışan görevi kazara silme" riskini kapatır.
      */
     removeTask(taskId) {
@@ -1204,7 +1217,7 @@ class TaskManager {
     /**
      * Terminal (artık çalışmayacak) durumlar.
      *
-     * P1-6 (üçüncü tur): `disabled` artık terminal DEĞİLDİR — duraklatılmış
+     * P1-6 (üçüncü tur): `disabled` artık terminal DEĞİLDİR - duraklatılmış
      * görevi temsil eder ve `resumeTask` ile sürdürülebilir. Terminal sayılsaydı
      * "Bitenleri temizle" duraklatılmış görevleri sessizce silerdi.
      */
@@ -1320,7 +1333,7 @@ class TaskManager {
      * Denetim kusuru: `task.enabled` beş yürütme yolunda gerçek bir kapıydı
      * (`evaluateTasks`, `getActiveTasks`, `hasInFlight`, `runScheduledTask`,
      * `TaskSchedulerBridge`), `statusDisabled` 17 dilde çeviriye sahipti ve
-     * renderer `task.enabled !== false` kontrolünü yapıyordu — ama hiçbir kod
+     * renderer `task.enabled !== false` kontrolünü yapıyordu - ama hiçbir kod
      * yolu `enabled` alanını ASLA false yapmıyordu. Yani "görevi duraklat"
      * yeteneği motorda vardı, kullanıcıya ulaşmıyordu. Tıpkı `directory_idle`
      * gibi: altyapı tam, kapı yok.
@@ -1470,7 +1483,7 @@ class TaskManager {
             return false;
         }
         // WBS-9.4: Scheduler-ateşlemeli görevde uyarı zaman-aşımı devam eder
-        // (kullanıcı başında olmayabilir). Geçici bayrak — persist edilmez.
+        // (kullanıcı başında olmayabilir). Geçici bayrak - persist edilmez.
         task._schedulerFired = true;
         Promise.resolve(this.executeTask(task, claim.token)).catch((err) => {
             this.handleExecutionError(task, err);
@@ -1478,7 +1491,7 @@ class TaskManager {
         return true;
     }
 
-    // WBS-11.1: Zincir — biten görevin sıradaki halkasını süreli görev olarak kurar.
+    // WBS-11.1: Zincir - biten görevin sıradaki halkasını süreli görev olarak kurar.
     // Geçersiz halka atlanır (durmaz); kalan zincir yeni göreve taşınır.
     spawnChainLink(task) {
         const remaining = Array.isArray(task.chain) ? task.chain : [];

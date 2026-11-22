@@ -1,5 +1,5 @@
 /**
- * taskmanager-resume.test.mjs — uykudan dönüş senkronizasyonu
+ * taskmanager-resume.test.mjs - uykudan dönüş senkronizasyonu
  *
  * Kullanıcı politikası (wakeMode / wakeToleranceMinutes):
  *  - 'run' + tolerans içinde  → görev hemen çalıştırılır

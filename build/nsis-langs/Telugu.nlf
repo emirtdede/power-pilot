@@ -1,0 +1,191 @@
+﻿# Header, don't edit
+NLF v6
+# Start editing here
+# Language ID
+1098
+# Font and size - dash (-) means default
+-
+-
+# Codepage - dash (-) means ASCII code page
+1200
+# RTL - anything else than RTL means LTR
+-
+# Power Pilot custom NLF table
+# ^Branding
+Nullsoft Install System %s
+# ^SetupCaption
+$(^Name) సెటప్
+# ^UninstallCaption
+$(^Name) అన్‌ఇన్‌స్టాల్
+# ^LicenseSubCaption
+: License
+# ^ComponentsSubCaption
+: ఇన్‌స్టాలేషన్ ఫోల్డర్
+# ^DirSubCaption
+: ఇన్‌స్టాలేషన్ ఫోల్డర్
+# ^InstallingSubCaption
+: ఇన్‌స్టాల్ అవుతోంది
+# ^CompletedSubCaption
+: పూర్తయింది
+# ^UnComponentsSubCaption
+: అన్‌ఇన్‌స్టాల్ అవుతోంది
+# ^UnDirSubCaption
+: ఇన్‌స్టాలేషన్ ఫోల్డర్
+# ^ConfirmSubCaption
+: అన్‌ఇన్‌స్టాల్ అవుతోంది
+# ^UninstallingSubCaption
+: అన్‌ఇన్‌స్టాల్ అవుతోంది
+# ^UnCompletedSubCaption
+: పూర్తయింది
+# ^BackBtn
+< &వెనుకకు
+# ^NextBtn
+&తదుపరి >
+# ^AgreeBtn
+నేను &అంగీకరిస్తున్నాను
+# ^AcceptBtn
+నేను &అంగీకరిస్తున్నాను
+# ^DontAcceptBtn
+రద్దు చేయి
+# ^InstallBtn
+&ఇన్‌స్టాల్ చేయి
+# ^UninstallBtn
+&అన్‌ఇన్‌స్టాల్ చేయి
+# ^CancelBtn
+రద్దు చేయి
+# ^CloseBtn
+&మూసివేయి
+# ^BrowseBtn
+&బ్రౌజ్ చేయి...
+# ^ShowDetailsBtn
+&వివరాలు చూపించు
+# ^ClickNext
+కొనసాగడానికి తదుపరి క్లిక్ చేయండి.
+# ^ClickInstall
+ఇన్‌స్టాలేషన్ ప్రారంభించడానికి ఇన్‌స్టాల్ చేయి క్లిక్ చేయండి.
+# ^ClickUninstall
+అన్‌ఇన్‌స్టాల్ ప్రారంభించడానికి అన్‌ఇన్‌స్టాల్ చేయి క్లిక్ చేయండి.
+# ^Name
+Name
+# ^Completed
+పూర్తయింది
+# ^LicenseText
+కొనసాగడానికి తదుపరి క్లిక్ చేయండి.
+# ^LicenseTextCB
+కొనసాగడానికి తదుపరి క్లిక్ చేయండి.
+# ^LicenseTextRB
+కొనసాగడానికి తదుపరి క్లిక్ చేయండి.
+# ^UnLicenseText
+కొనసాగడానికి తదుపరి క్లిక్ చేయండి.
+# ^UnLicenseTextCB
+కొనసాగడానికి తదుపరి క్లిక్ చేయండి.
+# ^UnLicenseTextRB
+కొనసాగడానికి తదుపరి క్లిక్ చేయండి.
+# ^Custom
+Custom
+# ^ComponentsText
+కొనసాగడానికి తదుపరి క్లిక్ చేయండి.
+# ^ComponentsSubText1
+కొనసాగడానికి తదుపరి క్లిక్ చేయండి.
+# ^ComponentsSubText2_NoInstTypes
+కొనసాగడానికి తదుపరి క్లిక్ చేయండి.
+# ^ComponentsSubText2
+కొనసాగడానికి తదుపరి క్లిక్ చేయండి.
+# ^UnComponentsText
+కొనసాగడానికి తదుపరి క్లిక్ చేయండి.
+# ^UnComponentsSubText1
+కొనసాగడానికి తదుపరి క్లిక్ చేయండి.
+# ^UnComponentsSubText2_NoInstTypes
+కొనసాగడానికి తదుపరి క్లిక్ చేయండి.
+# ^UnComponentsSubText2
+కొనసాగడానికి తదుపరి క్లిక్ చేయండి.
+# ^DirText
+సెటప్ $(^NameDA) ను ఈ క్రింది ఫోల్డర్‌లో ఇన్‌స్టాల్ చేస్తుంది. వేరే ఫోల్డర్ కోసం బ్రౌజ్ క్లిక్ చేయండి. $_CLICK
+# ^DirSubText
+గమ్య ఫోల్డర్
+# ^DirBrowseText
+$(^NameDA) ఇన్‌స్టాల్ చేయడానికి ఫోల్డర్‌ను ఎంచుకోండి:
+# ^UnDirText
+ఈ క్రింది ఫోల్డర్ నుండి $(^NameDA) తొలగించబడుతుంది. $_CLICK
+# ^UnDirSubText
+""
+# ^UnDirBrowseText
+$(^NameDA) ఇన్‌స్టాల్ చేయడానికి ఫోల్డర్‌ను ఎంచుకోండి:
+# ^SpaceAvailable
+"అందుబాటులో ఉన్న స్థలం: "
+# ^SpaceRequired
+"అవసరమైన స్థలం: "
+# ^UninstallingText
+ఈ క్రింది ఫోల్డర్ నుండి $(^NameDA) తొలగించబడుతుంది. $_CLICK
+# ^UninstallingSubText
+తొలగిస్తున్న స్థలం:
+# ^FileError
+Error: \r\n\r\n$0
+# ^FileError_NoIgnore
+Error: \r\n\r\n$0
+# ^CantWrite
+"Error: "
+# ^CopyFailed
+Error
+# ^CopyTo
+"-> "
+# ^Registering
+"... "
+# ^Unregistering
+"... "
+# ^SymbolNotFound
+"Error: "
+# ^CouldNotLoad
+"Error: "
+# ^CreateFolder
+"+ "
+# ^CreateShortcut
+"+ "
+# ^CreatedUninstaller
+"+ "
+# ^Delete
+"- "
+# ^DeleteOnReboot
+"- "
+# ^ErrorCreatingShortcut
+"Error: "
+# ^ErrorCreating
+"Error: "
+# ^ErrorDecompressing
+ఫైళ్ళను అన్‌ప్యాక్ చేయడంలో విఫలమైంది. ఇన్‌స్టాలర్‌ను మళ్లీ అమలు చేయండి.
+# ^ErrorRegistering
+DLL Error
+# ^ExecShell
+"Exec: "
+# ^Exec
+"Exec: "
+# ^Extract
+"-> "
+# ^ErrorWriting
+"Error: "
+# ^InvalidOpcode
+ఫైళ్ళను అన్‌ప్యాక్ చేయడంలో విఫలమైంది. ఇన్‌స్టాలర్‌ను మళ్లీ అమలు చేయండి.
+# ^NoOLE
+"OLE: "
+# ^OutputFolder
+"-> "
+# ^RemoveFolder
+"- "
+# ^RenameOnReboot
+"-> "
+# ^Rename
+"-> "
+# ^Skipped
+"... "
+# ^CopyDetails
+వివరాలను కాపీ చేయి
+# ^LogInstall
+Log
+# ^Byte
+B
+# ^Kilo
+ K
+# ^Mega
+ M
+# ^Giga
+ G

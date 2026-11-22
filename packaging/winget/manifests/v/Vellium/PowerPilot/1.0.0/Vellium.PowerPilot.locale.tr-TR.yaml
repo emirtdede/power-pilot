@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.locale.1.6.0.schema.json
+PackageIdentifier: Vellium.PowerPilot
+PackageVersion: 1.0.0
+PackageLocale: tr-TR
+Publisher: Vellium Teknoloji Anonim Sirketi
+PublisherUrl: https://vellium.dev
+PublisherSupportUrl: https://vellium.dev/tr/legal/support
+PrivacyUrl: https://vellium.dev/tr/legal/privacy
+Author: Vellium
+PackageName: Power Pilot
+PackageUrl: https://github.com/emirtdede/power-pilot
+License: Proprietary
+ShortDescription: Windows icin akilli, yerel oncelikli guc yonetimi ve gorev otomasyonu.
+Description: >-
+  Power Pilot; kapatma, yeniden baslatma, uyku, hazirda bekletme, kilitleme ve
+  Akilli Tamamlanma (Smart Finish) kosullarini yerel SQLite deposu, sunucusuz
+  OneDrive esitlemesi, 73 dil ve ozel tema destegiyle tamamen cevrimdisi yonetir.
+Tags:
+  - guc-yonetimi
+  - kapatma
+  - zamanlayici
+  - otomasyon
+  - uyku
+  - windows
+ManifestType: locale
+ManifestVersion: 1.6.0

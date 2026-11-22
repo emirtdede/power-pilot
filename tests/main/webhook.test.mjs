@@ -1,5 +1,5 @@
 /**
- * webhook.test.mjs — WebhookService: gizlilik (secret sızıntısı yok), eşleşme filtresi, geçersiz protokol.
+ * webhook.test.mjs - WebhookService: gizlilik (secret sızıntısı yok), eşleşme filtresi, geçersiz protokol.
  */
 import { describe, it, expect, vi } from 'vitest';
 import WebhookService from '../../src/main/services/WebhookService.js';

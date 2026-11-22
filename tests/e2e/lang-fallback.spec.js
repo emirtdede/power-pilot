@@ -1,5 +1,5 @@
 /**
- * lang-fallback.spec.js — desteklenmeyen sistem dilinde ilk açılış.
+ * lang-fallback.spec.js - desteklenmeyen sistem dilinde ilk açılış.
  *
  * Neden: `StorageService` varsayılanı `language: 'tr'` idi ve sunucu ayarları
  * sistem dili algısından önce geldiği için, Rusça/Hintçe/Vietnamca bir

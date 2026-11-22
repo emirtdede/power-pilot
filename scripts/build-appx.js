@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * build-appx.js — WP-18/TS-18: APPX üretim kapısı.
+ * build-appx.js - WP-18/TS-18: APPX üretim kapısı.
  *
  * Kural (Plan v2.0): Varsayılan dağıtım NSIS-only'dir. APPX yalnızca
  *  1. APPX_PUBLISHER ortam değişkeni verilmişse,

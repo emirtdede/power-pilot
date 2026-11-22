@@ -1,5 +1,5 @@
 /**
- * AiService.js — WBS-7.3
+ * AiService.js - WBS-7.3
  * Doğal dil → görev önerisi ayrıştırıcısı (deterministik parametrelerle).
  *
  * Güvenlik modeli:
@@ -7,7 +7,7 @@
  * - Çıktı önce JSON-şema dayatmasıyla (grammar), sonra validateTaskData ile
  *   çift kapıdan geçer. Geçemeyen çıktı kullanıcıya gösterilmez.
  * - Ayrıştırma deterministik parametrelerle yapılır (temperature 0,
- *   max-tokens 256) — küçük-model varyansı ana hata kaynağı olduğundan.
+ *   max-tokens 256) - küçük-model varyansı ana hata kaynağı olduğundan.
  * - Eksik/bozuk her durumda needsClarification döner (tek net soru);
  *   asla fırlatmaz, asla tahmin yürütmez.
  */
@@ -29,7 +29,7 @@ const PARSE_SCHEMA = {
         kind: { enum: ['duration', 'scheduled_time', 'condition'] },
         durationMs: { type: 'integer' },
         targetTime: { type: 'integer' },
-        // K1b: koşul nesnesi şemalı — boş `{}` üretimini kapatır (canlı kanıtlı
+        // K1b: koşul nesnesi şemalı - boş `{}` üretimini kapatır (canlı kanıtlı
         // model zaafı). Desteklenen türler motorun kabul listesiyle birebirdir.
         condition: {
             type: 'object',
@@ -56,7 +56,7 @@ const PARSE_SCHEMA = {
     additionalProperties: false
 };
 
-// K1b: Gramer DARALTILMIŞ şemadan üretilir — model taahhüt etmek zorundadır
+// K1b: Gramer DARALTILMIŞ şemadan üretilir - model taahhüt etmek zorundadır
 // (missing/question kaçış kapısı gramerde YOK). Gerekçe: küçük model kaçış
 // yolunu kötüye kullanıyordu (canlı kanıt). Yanlış taahhüt riski, öneri
 // kartındaki Kur/Düzenle/Vazgeç insan onayıyla karşılanır; buildProposal'daki

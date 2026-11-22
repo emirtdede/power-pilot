@@ -1,5 +1,5 @@
 /**
- * TlsConfig.js — WP-02.T1
+ * TlsConfig.js - WP-02.T1
  * TLS/mTLS materyalini tek yerden çözer. Runtime'da "TLS yoksa düz HTTP'ye düş"
  * davranışı YOKTUR; eksik materyal null döner ve çağıran katman isteği reddeder.
  */

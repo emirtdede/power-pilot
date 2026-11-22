@@ -1,5 +1,5 @@
 /**
- * DeterministicParser.js — K1b.
+ * DeterministicParser.js - K1b.
  * Türkçe güç cümlelerini LLM'siz çözer (eylem + süre/saat). Neden:
  * 1.7B model milisaniye hesabını tutturamıyor (canlı kanıt: "2 saat"→200000ms),
  * oysa kurallar %100 deterministiktir (AgentOrchestrator felsefesiyle aynı).
@@ -101,7 +101,7 @@ function parseClockTarget(text, nowMs = Date.now()) {
         min = parseInt(hm[2], 10);
         if (h > 23 || min > 59) return null;
     } else if (isPmCue || isAmCue) {
-        // "akşam 8", "sabah 8" — yalnızca ipucu varken çıplak saat kabul edilir.
+        // "akşam 8", "sabah 8" - yalnızca ipucu varken çıplak saat kabul edilir.
         const hOnly = lower.match(/(?:^|\s)(\d{1,2})(?:\s|$)/);
         if (!hOnly) return null;
         h = parseInt(hOnly[1], 10);
