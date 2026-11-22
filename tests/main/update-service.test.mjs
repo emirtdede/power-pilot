@@ -8,6 +8,7 @@ const {
     compareSemver,
     parseLatestYml,
     sanitizeReleaseNotes,
+    classifyErrorCode,
     RELEASE_PAGE_URL,
     STATIC_LATEST_YML_URL
 } = require('../../src/main/services/UpdateService');
@@ -214,5 +215,48 @@ describe('UpdateService - 3 Kanal Ayrimi (Store / Portable / Direct NSIS)', () =
         expect(res.ok).toBe(false);
         expect(res.code).toBe('SIGNATURE_OR_HASH_ERROR');
         expect(res.state.status).toBe('error');
+    });
+
+    it('classifyErrorCode, statik latest.yml 404/guncel dallari ve unpackaged/hatali durum gecislerini eksiksiz kapsar', async () => {
+        expect(classifyErrorCode({ code: 'RATE_LIMITED' })).toBe('RATE_LIMITED');
+        expect(classifyErrorCode({ message: 'HTTP 429 rate limit' })).toBe('RATE_LIMITED');
+        expect(classifyErrorCode({ code: 'NO_RELEASE_METADATA' })).toBe('NO_RELEASE_METADATA');
+        expect(classifyErrorCode({ message: 'ENOTFOUND github.com' })).toBe('OFFLINE_OR_NETWORK');
+        expect(classifyErrorCode({ message: 'unknown failure' })).toBe('CHECK_FAILED');
+
+        // Static latest.yml returns 404 -> treated as up-to-date
+        const svc404 = new UpdateService({
+            currentVersion: '1.0.0',
+            isPortable: true,
+            isPackaged: true,
+            fetchText: vi.fn().mockRejectedValue(Object.assign(new Error('404'), { code: 'NO_RELEASE_METADATA' }))
+        });
+        const r404 = await svc404.checkForUpdates();
+        expect(r404.ok).toBe(true);
+        expect(r404.state.status).toBe('up-to-date');
+
+        // Static latest.yml same version -> up-to-date
+        const svcSame = new UpdateService({
+            currentVersion: '1.0.0',
+            isPortable: true,
+            isPackaged: true,
+            fetchText: vi.fn().mockResolvedValue('version: 1.0.0\n')
+        });
+        const rSame = await svcSame.checkForUpdates();
+        expect(rSame.ok).toBe(true);
+        expect(rSame.state.status).toBe('up-to-date');
+        expect(svcSame.setInstallOnQuit(true).code).toBe('PORTABLE_MANUAL_ONLY');
+
+        // Unpackaged dev mode guards
+        const svcDev = new UpdateService({
+            currentVersion: '1.0.0',
+            isStore: false,
+            isPortable: false,
+            isPackaged: false,
+            fetchText: vi.fn().mockResolvedValue('')
+        });
+        expect((await svcDev.checkForUpdates()).state.status).toBe('up-to-date');
+        expect((await svcDev.downloadUpdate()).code).toBe('UNPACKAGED_DEV');
+        expect(svcDev.installNow().code).toBe('NOT_DOWNLOADED');
     });
 });

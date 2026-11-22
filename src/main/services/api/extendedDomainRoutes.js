@@ -98,7 +98,8 @@ function handleAiModelAndInsights(svc, method, pathStr, body, res, ctx) {
     }
 
     if (method === 'POST' && pathStr === '/api/v1/ai/tier') {
-        const tierId = body && typeof body.tierId === 'string' ? body.tierId.trim() : '';
+        const rawTier = body && (typeof body.tierId === 'string' ? body.tierId : (typeof body.tier === 'string' ? body.tier : ''));
+        const tierId = rawTier.trim();
         if (!tierId || !AI_TIERS[tierId]) {
             return svc.sendJson(res, 400, { ok: false, code: 'INVALID_TIER', error: 'tierId must be lite, balanced, or powerful.' });
         }
